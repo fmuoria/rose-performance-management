@@ -2,847 +2,555 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <title>Quarterly Performance Scorecard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ROSE Staff Performance Management System</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 20px;
+            margin: 0;
+            padding: 0;
         }
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
+            max-width: 1100px;
+            background: #fff;
+            margin: 30px auto 30px auto;
+            border-radius: 18px;
+            box-shadow: 0 10px 32px rgba(80,60,120,0.15);
+            padding: 36px 28px 30px 28px;
         }
-        .header {
-            background: linear-gradient(135deg, #2c3e50, #3498db);
-            color: white;
-            padding: 30px;
+        h1, h2 {
             text-align: center;
+            color: #2c3e50;
+            margin-top: 0;
         }
-        .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-        }
-        .header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
-        .nav-tabs {
+        .info-row {
             display: flex;
-            background: #f8f9fa;
-            border-bottom: 1px solid #dee2e6;
+            gap: 30px;
+            margin-bottom: 22px;
+            flex-wrap: wrap;
         }
-        .nav-tab {
+        .info-col {
             flex: 1;
-            padding: 15px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 500;
-            color: #6c757d;
-            transition: all 0.3s ease;
+            min-width: 220px;
         }
-        .nav-tab.active {
-            background: white;
-            color: #2c3e50;
-            border-bottom: 3px solid #3498db;
-        }
-        .nav-tab:hover { background: #e9ecef; }
-        .tab-content { display: none; padding: 30px; }
-        .tab-content.active { display: block; }
-        .employee-info {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 10px;
-        }
-        .form-group { margin-bottom: 20px; }
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #2c3e50;
-        }
-        .form-group input, .form-group select, .form-group textarea {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: border-color 0.3s ease;
-        }
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-            outline: none;
-            border-color: #3498db;
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-        }
-        .metrics-section {
-            background: #f8f9fa;
-            padding: 25px;
-            border-radius: 10px;
-            margin-bottom: 25px;
-        }
-        .metrics-section h3 {
-            color: #2c3e50;
-            margin-bottom: 20px;
-            font-size: 1.3rem;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 10px;
-        }
-        .metric-item {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-        .metric-item h4 {
-            color: #34495e;
-            margin-bottom: 10px;
-        }
-        .metric-inputs {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
-        }
-        .btn {
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            color: white;
-            padding: 12px 30px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            margin: 10px 5px;
-        }
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
-        }
-        .btn-success { background: linear-gradient(135deg, #27ae60, #229954); }
-        .btn-warning { background: linear-gradient(135deg, #f39c12, #e67e22); }
-        .performance-summary {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-        .score-display {
-            text-align: center;
-            padding: 30px;
-            background: linear-gradient(135deg, #e8f5e8, #f0f8f0);
-            border-radius: 15px;
-            margin: 20px 0;
-        }
-        .score-number {
-            font-size: 3rem;
+        label {
             font-weight: bold;
-            color: #27ae60;
-            margin-bottom: 10px;
+            color: #444;
         }
-        .score-category {
-            font-size: 1.3rem;
-            color: #2c3e50;
-            font-weight: 600;
-        }
-        .progress-bars { margin: 30px 0; }
-        .progress-item { margin-bottom: 20px; }
-        .progress-label {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: #2c3e50;
-        }
-        .progress-bar {
-            width: 100%;
-            height: 15px;
-            background: #e9ecef;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #3498db, #2980b9);
-            transition: width 0.6s ease;
-            border-radius: 10px;
-        }
-        .recommendations {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-        .recommendations h4 { color: #856404; margin-bottom: 15px; }
-        .recommendations ul { color: #856404; padding-left: 20px; }
-        .recommendations li { margin-bottom: 8px; }
-        .data-table {
+        .scorecard-table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
-            background: white;
+            margin: 30px 0;
+            background: #fafafa;
+        }
+        .scorecard-table th, .scorecard-table td {
+            border: 1px solid #d1d5db;
+            padding: 10px 8px;
+            font-size: 1rem;
+            vertical-align: top;
+        }
+        .scorecard-table th {
+            background: #f2f6fa;
+            color: #34495e;
+            font-weight: bold;
+        }
+        .scorecard-section-header {
+            background: #667eea;
+            color: #fff;
+            font-size: 1.1rem;
+            letter-spacing: 0.05em;
+        }
+        .section-total-row {
+            background: #e4e8f8;
+            font-weight: bold;
+        }
+        .final-total-row {
+            background: #27ae60;
+            color: #fff;
+            font-weight: bold;
+            font-size: 1.12rem;
+        }
+        input[type="number"], select, textarea {
+            font-size: 1rem;
+            padding: 6px;
+            width: 100%;
+            border: 1.5px solid #e1e6ef;
+            border-radius: 5px;
+            background: #f8fafc;
+            box-sizing: border-box;
+            margin-top: 2px;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 32px;
+            max-height: 90px;
+        }
+        input[type="number"]:disabled, textarea:disabled {
+            background: #f1f1f6;
+            color: #999;
+        }
+        .legend, .score-summary {
+            margin: 25px 0 5px 0;
+            padding: 15px 18px;
+            background: #fdf6e3;
             border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-        .data-table th {
-            background: #2c3e50;
-            color: white;
-            padding: 15px;
-            text-align: left;
-            font-weight: 600;
-        }
-        .data-table td {
-            padding: 12px 15px;
-            border-bottom: 1px solid #e9ecef;
-        }
-        .data-table tr:hover { background: #f8f9fa; }
-        .alert {
-            padding: 15px 20px;
-            border-radius: 8px;
-            margin: 15px 0;
-            font-weight: 500;
-        }
-        .alert-success {
-            background: #d4edda;
-            border: 1px solid #c3e6cb;
-            color: #155724;
-        }
-        .alert-warning {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
             color: #856404;
+            font-size: 1rem;
         }
-        @media (max-width: 768px) {
-            .container { margin: 10px; border-radius: 10px; }
-            .header { padding: 20px; }
-            .header h1 { font-size: 2rem; }
-            .nav-tabs { flex-direction: column; }
-            .tab-content { padding: 20px; }
-            .employee-info {
-                grid-template-columns: 1fr;
-                gap: 15px;
-                padding: 15px;
-            }
-            .metric-inputs { grid-template-columns: 1fr; gap: 10px; }
+        .score-summary {
+            background: #eafaf1;
+            color: #1e824c;
+            font-size: 1.08rem;
+        }
+        .btn-row {
+            text-align: center;
+            margin: 32px 0 14px 0;
+        }
+        button {
+            background: linear-gradient(90deg, #667eea 70%, #764ba2 100%);
+            color: #fff;
+            font-weight: bold;
+            font-size: 1rem;
+            border: none;
+            border-radius: 7px;
+            padding: 12px 34px;
+            margin: 7px 10px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(80,60,120,0.10);
+            transition: transform 0.08s;
+        }
+        button:active {
+            transform: scale(0.97);
+        }
+        .manager-comment {
+            background: #f5faff;
+            border-left: 4px solid #3498db;
+            padding: 4px 8px;
+            color: #2d3748;
+        }
+        @media (max-width: 900px) {
+            .container { padding: 16px 2vw; }
+            .info-row { flex-direction: column; gap: 10px;}
+        }
+        @media (max-width: 600px) {
+            .container { padding: 7px 0; }
+            .scorecard-table th, .scorecard-table td { font-size: 0.93rem; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🎯 ROSE Performance Management System</h1>
-            <p>Track, Measure, and Excel Together</p>
-        </div>
-        <div class="nav-tabs">
-            <button class="nav-tab active" onclick="showTab('data-entry')">📊 Data Entry</button>
-            <button class="nav-tab" onclick="showTab('dashboard')">📈 Dashboard</button>
-            <button class="nav-tab" onclick="showTab('reports')">📋 Reports</button>
-            <button class="nav-tab" onclick="showTab('settings')">⚙️ Settings</button>
-        </div>
-        <!-- Data Entry Tab -->
-        <div id="data-entry" class="tab-content active">
-            <div class="employee-info">
-                <div class="form-group">
-                    <label for="employeeName">Employee Name</label>
-                    <input type="text" id="employeeName" placeholder="Enter full name">
+        <h1>Quarterly Performance Scorecard</h1>
+        <form id="scorecardForm" autocomplete="off">
+            <div class="info-row">
+                <div class="info-col">
+                    <label>Employee's Name:</label><br>
+                    <input type="text" id="employeeName" value="Dennis Chomba" required>
                 </div>
-                <div class="form-group">
-                    <label for="jobTitle">Job Title</label>
-                    <input type="text" id="jobTitle" placeholder="Enter job title">
+                <div class="info-col">
+                    <label>Job Title:</label><br>
+                    <input type="text" id="employeeJob" value="IT Intern">
                 </div>
-                <div class="form-group">
-                    <label for="division">Division</label>
-                    <input type="text" id="division" placeholder="Enter division">
+                <div class="info-col">
+                    <label>Division:</label><br>
+                    <input type="text" id="division" value="Head office">
                 </div>
-                <div class="form-group">
-                    <label for="reportingPeriod">Reporting Period</label>
-                    <select id="reportingPeriod">
-                        <option value="">Select Period</option>
-                        <option value="week1">Week 1</option>
-                        <option value="week2">Week 2</option>
-                        <option value="week3">Week 3</option>
-                        <option value="week4">Week 4</option>
-                    </select>
+                <div class="info-col">
+                    <label>Immediate Manager:</label><br>
+                    <input type="text" id="managerName" value="Francis Muoria">
+                </div>
+                <div class="info-col">
+                    <label>Period:</label><br>
+                    <input type="text" id="period" value="Q3 2025">
                 </div>
             </div>
-            <!-- Financial Performance -->
-            <div class="metrics-section">
-                <h3>💰 Financial Performance (Weight: 10%)</h3>
-                <div class="metric-item">
-                    <h4>Cost Reduction Measures</h4>
-                    <p>Target: Spend 2% less on organizational IT Budget</p>
-                    <div class="metric-inputs">
-                        <div class="form-group">
-                            <label>Actual Cost Reduction (%)</label>
-                            <input type="number" id="costReduction" min="0" max="100" placeholder="Enter percentage">
-                        </div>
-                        <div class="form-group">
-                            <label>Supporting Evidence</label>
-                            <textarea id="costEvidence" rows="3" placeholder="Describe cost-saving initiatives implemented"></textarea>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Customer Perspective -->
-            <div class="metrics-section">
-                <h3>👥 Customer Perspective (Weight: 20%)</h3>
-                <div class="metric-item">
-                    <h4>Service Turnaround Time</h4>
-                    <p>Target: 24h general, 1h urgent, 6h consultations</p>
-                    <div class="metric-inputs">
-                        <div class="form-group">
-                            <label>General Issues Avg Response (hours)</label>
-                            <input type="number" id="generalResponse" min="0" placeholder="Average hours">
-                        </div>
-                        <div class="form-group">
-                            <label>Urgent Issues Avg Response (hours)</label>
-                            <input type="number" id="urgentResponse" min="0" placeholder="Average hours">
-                        </div>
-                        <div class="form-group">
-                            <label>Tickets Resolved This Week</label>
-                            <input type="number" id="ticketsResolved" min="0" placeholder="Number of tickets">
-                        </div>
-                    </div>
-                </div>
-                <div class="metric-item">
-                    <h4>Stakeholder Relationships</h4>
-                    <div class="metric-inputs">
-                        <div class="form-group">
-                            <label>Relationship Quality (1-5)</label>
-                            <select id="relationshipQuality">
-                                <option value="">Select Rating</option>
-                                <option value="1">1 - Poor</option>
-                                <option value="2">2 - Below Average</option>
-                                <option value="3">3 - Average</option>
-                                <option value="4">4 - Good</option>
-                                <option value="5">5 - Excellent</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Complaints Received</label>
-                            <input type="number" id="complaints" min="0" placeholder="Number of complaints">
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Internal Business Processes -->
-            <div class="metrics-section">
-                <h3>⚙️ Internal Business Processes (Weight: 45%)</h3>
-                <div class="metric-item">
-                    <h4>Salesforce & Taroworks Support</h4>
-                    <div class="metric-inputs">
-                        <div class="form-group">
-                            <label>Issues Reported</label>
-                            <input type="number" id="issuesReported" min="0" placeholder="Total issues">
-                        </div>
-                        <div class="form-group">
-                            <label>Issues Resolved</label>
-                            <input type="number" id="issuesResolved" min="0" placeholder="Issues resolved">
-                        </div>
-                    </div>
-                </div>
-                <div class="metric-item">
-                    <h4>Digital Capacity Building</h4>
-                    <div class="metric-inputs">
-                        <div class="form-group">
-                            <label>Training Sessions Conducted</label>
-                            <input type="number" id="trainingSessions" min="0" placeholder="Number of sessions">
-                        </div>
-                        <div class="form-group">
-                            <label>Staff Members Trained</label>
-                            <input type="number" id="staffTrained" min="0" placeholder="Number of staff">
-                        </div>
-                        <div class="form-group">
-                            <label>Digital Skill Improvement (%)</label>
-                            <input type="number" id="skillImprovement" min="0" max="100" placeholder="Improvement percentage">
-                        </div>
-                    </div>
-                </div>
-                <div class="metric-item">
-                    <h4>IT Maintenance</h4>
-                    <div class="metric-inputs">
-                        <div class="form-group">
-                            <label>Maintenance Sessions Completed</label>
-                            <input type="number" id="maintenanceSessions" min="0" placeholder="Number of sessions">
-                        </div>
-                        <div class="form-group">
-                            <label>Device Issues Resolved (%)</label>
-                            <input type="number" id="deviceIssues" min="0" max="100" placeholder="Resolution percentage">
-                        </div>
-                    </div>
-                </div>
-                <div class="metric-item">
-                    <h4>Data Analysis</h4>
-                    <div class="metric-inputs">
-                        <div class="form-group">
-                            <label>Reports Generated</label>
-                            <input type="number" id="reportsGenerated" min="0" placeholder="Number of reports">
-                        </div>
-                        <div class="form-group">
-                            <label>Data Quality Score (1-5)</label>
-                            <select id="dataQuality">
-                                <option value="">Select Rating</option>
-                                <option value="1">1 - Poor</option>
-                                <option value="2">2 - Below Average</option>
-                                <option value="3">3 - Average</option>
-                                <option value="4">4 - Good</option>
-                                <option value="5">5 - Excellent</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Learning and Growth -->
-            <div class="metrics-section">
-                <h3>📚 Learning and Growth (Weight: 15%)</h3>
-                <div class="metric-item">
-                    <h4>Career Development</h4>
-                    <div class="metric-inputs">
-                        <div class="form-group">
-                            <label>Learning Hours This Week</label>
-                            <input type="number" id="learningHours" min="0" placeholder="Hours spent learning">
-                        </div>
-                        <div class="form-group">
-                            <label>Skills/Topics Studied</label>
-                            <textarea id="skillsStudied" rows="3" placeholder="List skills or topics studied"></textarea>
-                        </div>
-                    </div>
-                </div>
-                <div class="metric-item">
-                    <h4>Innovation & Recommendations</h4>
-                    <div class="metric-inputs">
-                        <div class="form-group">
-                            <label>Innovations Proposed</label>
-                            <input type="number" id="innovations" min="0" placeholder="Number of innovations">
-                        </div>
-                        <div class="form-group">
-                            <label>Process Improvements Suggested</label>
-                            <input type="number" id="improvements" min="0" placeholder="Number of improvements">
-                        </div>
-                        <div class="form-group">
-                            <label>Innovation Details</label>
-                            <textarea id="innovationDetails" rows="3" placeholder="Describe innovations or improvements"></textarea>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Work Ethic -->
-            <div class="metrics-section">
-                <h3>🏆 Work Ethic (Weight: 10%)</h3>
-                <div class="metric-item">
-                    <h4>Time Management & Professionalism</h4>
-                    <div class="metric-inputs">
-                        <div class="form-group">
-                            <label>Punctuality Score (1-5)</label>
-                            <select id="punctuality">
-                                <option value="">Select Rating</option>
-                                <option value="1">1 - Poor</option>
-                                <option value="2">2 - Below Average</option>
-                                <option value="3">3 - Average</option>
-                                <option value="4">4 - Good</option>
-                                <option value="5">5 - Excellent</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Deadline Adherence (1-5)</label>
-                            <select id="deadlines">
-                                <option value="">Select Rating</option>
-                                <option value="1">1 - Poor</option>
-                                <option value="2">2 - Below Average</option>
-                                <option value="3">3 - Average</option>
-                                <option value="4">4 - Good</option>
-                                <option value="5">5 - Excellent</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Teamwork Quality (1-5)</label>
-                            <select id="teamwork">
-                                <option value="">Select Rating</option>
-                                <option value="1">1 - Poor</option>
-                                <option value="2">2 - Below Average</option>
-                                <option value="3">3 - Average</option>
-                                <option value="4">4 - Good</option>
-                                <option value="5">5 - Excellent</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div style="text-align: center; margin: 30px 0;">
-                <button class="btn btn-success" onclick="saveWeeklyData()">💾 Save Weekly Data</button>
-                <button class="btn btn-warning" onclick="calculateScore()">🧮 Calculate Performance Score</button>
-            </div>
-        </div>
-        <!-- Dashboard Tab -->
-        <div id="dashboard" class="tab-content">
-            <div class="performance-summary">
-                <h2>📊 Performance Dashboard</h2>
-                <div class="score-display">
-                    <div class="score-number" id="overallScore">0.00</div>
-                    <div class="score-category" id="scoreCategory">Not Calculated</div>
-                </div>
-                <div class="progress-bars">
-                    <div class="progress-item">
-                        <div class="progress-label">
-                            <span>Financial Performance</span>
-                            <span id="financialScore">0%</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="financialProgress"></div>
-                        </div>
-                    </div>
-                    <div class="progress-item">
-                        <div class="progress-label">
-                            <span>Customer Perspective</span>
-                            <span id="customerScore">0%</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="customerProgress"></div>
-                        </div>
-                    </div>
-                    <div class="progress-item">
-                        <div class="progress-label">
-                            <span>Internal Processes</span>
-                            <span id="processScore">0%</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="processProgress"></div>
-                        </div>
-                    </div>
-                    <div class="progress-item">
-                        <div class="progress-label">
-                            <span>Learning & Growth</span>
-                            <span id="learningScore">0%</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="learningProgress"></div>
-                        </div>
-                    </div>
-                    <div class="progress-item">
-                        <div class="progress-label">
-                            <span>Work Ethic</span>
-                            <span id="ethicScore">0%</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="ethicProgress"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="recommendations" id="recommendationsSection" style="display: none;">
-                    <h4>💡 Areas for Improvement</h4>
-                    <ul id="recommendationsList"></ul>
-                </div>
-            </div>
-        </div>
-        <!-- Reports Tab -->
-        <div id="reports" class="tab-content">
-            <h2>📋 Performance Reports</h2>
-            <div style="margin: 20px 0;">
-                <button class="btn" onclick="generateWeeklyReport()">📄 Generate Weekly Report</button>
-                <button class="btn" onclick="generateQuarterlyReport()">📊 Generate Quarterly Report</button>
-                <button class="btn" onclick="exportToSheets()">📈 Export to Google Sheets</button>
-            </div>
-            <table class="data-table" id="reportsTable">
+            <table class="scorecard-table" id="scorecardTable">
                 <thead>
                     <tr>
-                        <th>Date</th>
-                        <th>Employee</th>
-                        <th>Period</th>
-                        <th>Overall Score</th>
-                        <th>Category</th>
-                        <th>Actions</th>
+                        <th style="width: 20%;">Dimension</th>
+                        <th style="width: 24%;">Performance Measure</th>
+                        <th style="width: 15%;">Target</th>
+                        <th style="width: 18%;">Actual<br><span style="font-weight:normal;">(employee input)</span></th>
+                        <th style="width: 8%;">Rating<br>(1-5)</th>
+                        <th style="width: 7%;">Weight<br>(%)</th>
+                        <th style="width: 10%;">Weighted<br>Average</th>
+                        <th style="width: 20%;">Manager's Comments</th>
                     </tr>
                 </thead>
-                <tbody id="reportsTableBody">
+                <tbody id="scorecardBody">
+                    <!-- Financials -->
+                    <tr class="scorecard-section-header"><td colspan="8">Financials</td></tr>
                     <tr>
-                        <td colspan="6" style="text-align: center; padding: 30px; color: #6c757d;">
-                            No reports generated yet. Start by saving weekly data.
-                        </td>
+                        <td>The individual should employ measures that help in reducing operational costs</td>
+                        <td>Employing Cost cutting measures to ensure no organisation over spending, specifically on transport, airtime</td>
+                        <td>Spend 2% less on org IT Budget</td>
+                        <td><textarea name="actual"></textarea></td>
+                        <td><input type="number" min="1" max="5" step="0.1" name="rating" required></td>
+                        <td><input type="number" name="weight" value="10" disabled></td>
+                        <td><input type="number" name="weighted" step="0.001" disabled></td>
+                        <td><textarea name="managerComment" disabled></textarea></td>
                     </tr>
+                    <tr class="section-total-row"><td colspan="5">Financials Subtotal</td><td>10%</td><td id="financialsTotal"></td><td></td></tr>
+
+                    <!-- Customer Perspective -->
+                    <tr class="scorecard-section-header"><td colspan="8">Customer Perspective</td></tr>
+                    <tr>
+                        <td>The individual should display exemplary service to the customers (Internal or external) whom they work with/assist in day to day operations</td>
+                        <td>Turnaround time of Service to internal Customers</td>
+                        <td>Avg. response time: 24h (general), 1h (urgent), 6h (consultations)</td>
+                        <td><textarea name="actual"></textarea></td>
+                        <td><input type="number" min="1" max="5" step="0.1" name="rating" required></td>
+                        <td><input type="number" name="weight" value="10" disabled></td>
+                        <td><input type="number" name="weighted" step="0.001" disabled></td>
+                        <td><textarea name="managerComment" disabled></textarea></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Relationship with Internal ROSE stakeholders</td>
+                        <td>Minimal to no relationship complaints</td>
+                        <td><textarea name="actual"></textarea></td>
+                        <td><input type="number" min="1" max="5" step="0.1" name="rating" required></td>
+                        <td><input type="number" name="weight" value="10" disabled></td>
+                        <td><input type="number" name="weighted" step="0.001" disabled></td>
+                        <td><textarea name="managerComment" disabled></textarea></td>
+                    </tr>
+                    <tr class="section-total-row"><td colspan="5">Customer Perspective Subtotal</td><td>20%</td><td id="customerTotal"></td><td></td></tr>
+
+                    <!-- Internal Business Processes -->
+                    <tr class="scorecard-section-header"><td colspan="8">Internal Business Processes</td></tr>
+                    <tr>
+                        <td>Salesforce and Taroworks Management/Support</td>
+                        <td>Percentage of reported issues resolved</td>
+                        <td>100% issues resolved</td>
+                        <td><textarea name="actual"></textarea></td>
+                        <td><input type="number" min="1" max="5" step="0.1" name="rating" required></td>
+                        <td><input type="number" name="weight" value="10" disabled></td>
+                        <td><input type="number" name="weighted" step="0.001" disabled></td>
+                        <td><textarea name="managerComment" disabled></textarea></td>
+                    </tr>
+                    <tr>
+                        <td>Digital Capacity Building Sessions (Trainers, Staff, Data Team)</td>
+                        <td>Number of group sessions conducted monthly & percentage upskill in ROSE members</td>
+                        <td>3 sessions/month, 70% upskill</td>
+                        <td><textarea name="actual"></textarea></td>
+                        <td><input type="number" min="1" max="5" step="0.1" name="rating" required></td>
+                        <td><input type="number" name="weight" value="15" disabled></td>
+                        <td><input type="number" name="weighted" step="0.001" disabled></td>
+                        <td><textarea name="managerComment" disabled></textarea></td>
+                    </tr>
+                    <tr>
+                        <td>IT Maintenance and Troubleshooting</td>
+                        <td>Frequency of scheduled maintenance & % device issues resolved</td>
+                        <td>Quarterly, 90% device issues resolved</td>
+                        <td><textarea name="actual"></textarea></td>
+                        <td><input type="number" min="1" max="5" step="0.1" name="rating" required></td>
+                        <td><input type="number" name="weight" value="15" disabled></td>
+                        <td><input type="number" name="weighted" step="0.001" disabled></td>
+                        <td><textarea name="managerComment" disabled></textarea></td>
+                    </tr>
+                    <tr>
+                        <td>Data Analysis</td>
+                        <td>Number of audited monthly reports generated</td>
+                        <td>2 reports biannually</td>
+                        <td><textarea name="actual"></textarea></td>
+                        <td><input type="number" min="1" max="5" step="0.1" name="rating" required></td>
+                        <td><input type="number" name="weight" value="5" disabled></td>
+                        <td><input type="number" name="weighted" step="0.001" disabled></td>
+                        <td><textarea name="managerComment" disabled></textarea></td>
+                    </tr>
+                    <tr class="section-total-row"><td colspan="5">Internal Business Processes Subtotal</td><td>45%</td><td id="internalTotal"></td><td></td></tr>
+
+                    <!-- Learning and Growth -->
+                    <tr class="scorecard-section-header"><td colspan="8">Learning and Growth</td></tr>
+                    <tr>
+                        <td></td>
+                        <td>Hours of Career Development</td>
+                        <td>40 hours learning in 6 months</td>
+                        <td><textarea name="actual"></textarea></td>
+                        <td><input type="number" min="1" max="5" step="0.1" name="rating" required></td>
+                        <td><input type="number" name="weight" value="5" disabled></td>
+                        <td><input type="number" name="weighted" step="0.001" disabled></td>
+                        <td><textarea name="managerComment" disabled></textarea></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Business Continuity Planning</td>
+                        <td>At least 1 trained individual who can relieve duties</td>
+                        <td><textarea name="actual"></textarea></td>
+                        <td><input type="number" min="1" max="5" step="0.1" name="rating" required></td>
+                        <td><input type="number" name="weight" value="5" disabled></td>
+                        <td><input type="number" name="weighted" step="0.001" disabled></td>
+                        <td><textarea name="managerComment" disabled></textarea></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Innovations and Recommendations</td>
+                        <td>1 innovation/quarter, 3 improvement recommendations</td>
+                        <td><textarea name="actual"></textarea></td>
+                        <td><input type="number" min="1" max="5" step="0.1" name="rating" required></td>
+                        <td><input type="number" name="weight" value="5" disabled></td>
+                        <td><input type="number" name="weighted" step="0.001" disabled></td>
+                        <td><textarea name="managerComment" disabled></textarea></td>
+                    </tr>
+                    <tr class="section-total-row"><td colspan="5">Learning and Growth Subtotal</td><td>15%</td><td id="learningTotal"></td><td></td></tr>
+
+                    <!-- Work Ethic -->
+                    <tr class="scorecard-section-header"><td colspan="8">Work Ethic</td></tr>
+                    <tr>
+                        <td>Time management (Punctuality)</td>
+                        <td>Reports for office meetings and functions on time</td>
+                        <td></td>
+                        <td><textarea name="actual"></textarea></td>
+                        <td><input type="number" min="1" max="5" step="0.1" name="rating" required></td>
+                        <td><input type="number" name="weight" value="0.8" disabled></td>
+                        <td><input type="number" name="weighted" step="0.001" disabled></td>
+                        <td><textarea name="managerComment" disabled></textarea></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Meets deadlines</td>
+                        <td></td>
+                        <td><textarea name="actual"></textarea></td>
+                        <td><input type="number" min="1" max="5" step="0.1" name="rating" required></td>
+                        <td><input type="number" name="weight" value="0.8" disabled></td>
+                        <td><input type="number" name="weighted" step="0.001" disabled></td>
+                        <td><textarea name="managerComment" disabled></textarea></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Shows up and works agreed-upon hours</td>
+                        <td></td>
+                        <td><textarea name="actual"></textarea></td>
+                        <td><input type="number" min="1" max="5" step="0.1" name="rating" required></td>
+                        <td><input type="number" name="weight" value="0.8" disabled></td>
+                        <td><input type="number" name="weighted" step="0.001" disabled></td>
+                        <td><textarea name="managerComment" disabled></textarea></td>
+                    </tr>
+
+                    <tr>
+                        <td>Integrity</td>
+                        <td>Fosters trusting relationships with clients, coworkers and supervisors</td>
+                        <td></td>
+                        <td><textarea name="actual"></textarea></td>
+                        <td><input type="number" min="1" max="5" step="0.1" name="rating" required></td>
+                        <td><input type="number" name="weight" value="0.8" disabled></td>
+                        <td><input type="number" name="weighted" step="0.001" disabled></td>
+                        <td><textarea name="managerComment" disabled></textarea></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Supervisors rely on the employee's high moral standards</td>
+                        <td></td>
+                        <td><textarea name="actual"></textarea></td>
+                        <td><input type="number" min="1" max="5" step="0.1" name="rating" required></td>
+                        <td><input type="number" name="weight" value="0.8" disabled></td>
+                        <td><input type="number" name="weighted" step="0.001" disabled></td>
+                        <td><textarea name="managerComment" disabled></textarea></td>
+                    </tr>
+
+                    <tr>
+                        <td>Productivity</td>
+                        <td>Does more than the bare minimum to deliver results to customers</td>
+                        <td></td>
+                        <td><textarea name="actual"></textarea></td>
+                        <td><input type="number" min="1" max="5" step="0.1" name="rating" required></td>
+                        <td><input type="number" name="weight" value="0.8" disabled></td>
+                        <td><input type="number" name="weighted" step="0.001" disabled></td>
+                        <td><textarea name="managerComment" disabled></textarea></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Cares about the quality of the work, not just the quantity of the work</td>
+                        <td></td>
+                        <td><textarea name="actual"></textarea></td>
+                        <td><input type="number" min="1" max="5" step="0.1" name="rating" required></td>
+                        <td><input type="number" name="weight" value="0.8" disabled></td>
+                        <td><input type="number" name="weighted" step="0.001" disabled></td>
+                        <td><textarea name="managerComment" disabled></textarea></td>
+                    </tr>
+
+                    <tr>
+                        <td>Professionalism</td>
+                        <td>Complies with standard office attire</td>
+                        <td></td>
+                        <td><textarea name="actual"></textarea></td>
+                        <td><input type="number" min="1" max="5" step="0.1" name="rating" required></td>
+                        <td><input type="number" name="weight" value="0.8" disabled></td>
+                        <td><input type="number" name="weighted" step="0.001" disabled></td>
+                        <td><textarea name="managerComment" disabled></textarea></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Maintains a professional outlook</td>
+                        <td></td>
+                        <td><textarea name="actual"></textarea></td>
+                        <td><input type="number" min="1" max="5" step="0.1" name="rating" required></td>
+                        <td><input type="number" name="weight" value="0.8" disabled></td>
+                        <td><input type="number" name="weighted" step="0.001" disabled></td>
+                        <td><textarea name="managerComment" disabled></textarea></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Adheres to Standard Operating Procedures</td>
+                        <td></td>
+                        <td><textarea name="actual"></textarea></td>
+                        <td><input type="number" min="1" max="5" step="0.1" name="rating" required></td>
+                        <td><input type="number" name="weight" value="0.8" disabled></td>
+                        <td><input type="number" name="weighted" step="0.001" disabled></td>
+                        <td><textarea name="managerComment" disabled></textarea></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Takes responsibility and ownership of assigned role</td>
+                        <td></td>
+                        <td><textarea name="actual"></textarea></td>
+                        <td><input type="number" min="1" max="5" step="0.1" name="rating" required></td>
+                        <td><input type="number" name="weight" value="0.8" disabled></td>
+                        <td><input type="number" name="weighted" step="0.001" disabled></td>
+                        <td><textarea name="managerComment" disabled></textarea></td>
+                    </tr>
+
+                    <tr>
+                        <td>Teamwork</td>
+                        <td>Takes responsibility for other people’s welfare</td>
+                        <td></td>
+                        <td><textarea name="actual"></textarea></td>
+                        <td><input type="number" min="1" max="5" step="0.1" name="rating" required></td>
+                        <td><input type="number" name="weight" value="0.8" disabled></td>
+                        <td><input type="number" name="weighted" step="0.001" disabled></td>
+                        <td><textarea name="managerComment" disabled></textarea></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Fair and objective treatment of other staff members</td>
+                        <td></td>
+                        <td><textarea name="actual"></textarea></td>
+                        <td><input type="number" min="1" max="5" step="0.1" name="rating" required></td>
+                        <td><input type="number" name="weight" value="0.8" disabled></td>
+                        <td><input type="number" name="weighted" step="0.001" disabled></td>
+                        <td><textarea name="managerComment" disabled></textarea></td>
+                    </tr>
+                    <tr class="section-total-row"><td colspan="5">Work Ethic Subtotal</td><td>10%</td><td id="workEthicTotal"></td><td></td></tr>
+                    <!-- Final total row -->
+                    <tr class="final-total-row"><td colspan="6">TOTAL SCORE</td><td id="finalTotal"></td><td></td></tr>
                 </tbody>
             </table>
-        </div>
-        <!-- Settings Tab -->
-        <div id="settings" class="tab-content">
-            <h2>⚙️ System Settings</h2>
-            <div class="metrics-section">
-                <h3>🔧 Performance Thresholds</h3>
-                <div class="metric-inputs">
-                    <div class="form-group">
-                        <label>Exceeded Threshold (≥)</label>
-                        <input type="number" id="exceededThreshold" value="4.5" min="4" max="5" step="0.1">
-                    </div>
-                    <div class="form-group">
-                        <label>Generally Exceeding (≥)</label>
-                        <input type="number" id="exceedingThreshold" value="4.0" min="3.5" max="4.5" step="0.1">
-                    </div>
-                    <div class="form-group">
-                        <label>Met Expectations (≥)</label>
-                        <input type="number" id="metThreshold" value="3.0" min="2.5" max="3.5" step="0.1">
-                    </div>
-                    <div class="form-group">
-                        <label>Partially Met (≥)</label>
-                        <input type="number" id="partialThreshold" value="2.0" min="1.5" max="2.5" step="0.1">
-                    </div>
-                </div>
+            <div class="btn-row">
+                <button type="button" onclick="saveScorecard()">Save</button>
+                <button type="reset">Reset</button>
             </div>
-            <div class="metrics-section">
-                <h3>🔗 Integration Settings</h3>
-                <div class="metric-inputs">
-                    <div class="form-group">
-                        <label>Google Sheets URL</label>
-                        <input type="url" id="sheetsUrl" placeholder="Enter Google Sheets URL">
-                    </div>
-                    <div class="form-group">
-                        <label>Salesforce Org URL</label>
-                        <input type="url" id="salesforceUrl" placeholder="Enter Salesforce URL">
-                    </div>
-                    <div class="form-group">
-                        <label>API Key</label>
-                        <input type="password" id="apiKey" placeholder="Enter integration API key">
-                    </div>
-                    <div class="form-group">
-                        <label>Auto-sync Frequency</label>
-                        <select id="syncFrequency">
-                            <option value="daily">Daily</option>
-                            <option value="weekly">Weekly</option>
-                            <option value="manual">Manual Only</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-            <div style="text-align: center; margin: 30px 0;">
-                <button class="btn btn-success" onclick="saveSettings()">💾 Save Settings</button>
-                <button class="btn btn-warning" onclick="resetData()">🔄 Reset All Data</button>
-            </div>
+        </form>
+        <div class="score-summary" id="scoreSummary"></div>
+        <div class="legend">
+            <b>Score Legend:</b><br>
+            1.00–1.99 Not met; &nbsp; 2.00–2.99 Partially met; &nbsp; 3.00–3.99 Met; &nbsp; 4.00–4.99 Generally Exceeding; &nbsp; 5.00 Exceeded by far
         </div>
     </div>
     <script>
-        // JavaScript as in previous answer (already expanded)
-        // (See previous code blocks for full script)
-        // For brevity: use the complete JavaScript provided above
-        let performanceData = JSON.parse(localStorage.getItem('performanceData')) || [];
-        let currentWeekData = {};
-        let settings = JSON.parse(localStorage.getItem('settings')) || {
-            exceededThreshold: 4.5,
-            exceedingThreshold: 4.0,
-            metThreshold: 3.0,
-            partialThreshold: 2.0
-        };
-        function initializeApp() {
-            loadSettings();
-            updateDashboard();
-            loadReports();
+        // Get all rows that have input fields for ratings, weights, weighted
+        const scorecardBody = document.getElementById('scorecardBody');
+        const rows = Array.from(scorecardBody.querySelectorAll('tr')).filter(tr =>
+            tr.querySelector('input[name="rating"]')
+        );
+
+        function calcWeighted(rating, weight) {
+            if (isNaN(rating) || isNaN(weight)) return '';
+            return +(rating * (weight / 100)).toFixed(3);
         }
-        function showTab(tabName) {
-            const tabContents = document.querySelectorAll('.tab-content');
-            tabContents.forEach(tab => tab.classList.remove('active'));
-            const navTabs = document.querySelectorAll('.nav-tab');
-            navTabs.forEach(tab => tab.classList.remove('active'));
-            document.getElementById(tabName).classList.add('active');
-            event.target.classList.add('active');
-        }
-        function saveWeeklyData() {
-            const employeeName = document.getElementById('employeeName').value;
-            const jobTitle = document.getElementById('jobTitle').value;
-            const division = document.getElementById('division').value;
-            const reportingPeriod = document.getElementById('reportingPeriod').value;
-            if (!employeeName || !reportingPeriod) {
-                alert('Please fill in employee name and reporting period');
-                return;
-            }
-            currentWeekData = {
-                id: Date.now(),
-                timestamp: new Date().toISOString(),
-                employeeName: employeeName,
-                jobTitle: jobTitle,
-                division: division,
-                reportingPeriod: reportingPeriod,
-                financial: {
-                    costReduction: parseFloat(document.getElementById('costReduction').value) || 0,
-                    costEvidence: document.getElementById('costEvidence').value
-                },
-                customer: {
-                    generalResponse: parseFloat(document.getElementById('generalResponse').value) || 0,
-                    urgentResponse: parseFloat(document.getElementById('urgentResponse').value) || 0,
-                    ticketsResolved: parseInt(document.getElementById('ticketsResolved').value) || 0,
-                    relationshipQuality: parseInt(document.getElementById('relationshipQuality').value) || 0,
-                    complaints: parseInt(document.getElementById('complaints').value) || 0
-                },
-                process: {
-                    issuesReported: parseInt(document.getElementById('issuesReported').value) || 0,
-                    issuesResolved: parseInt(document.getElementById('issuesResolved').value) || 0,
-                    trainingSessions: parseInt(document.getElementById('trainingSessions').value) || 0,
-                    staffTrained: parseInt(document.getElementById('staffTrained').value) || 0,
-                    skillImprovement: parseFloat(document.getElementById('skillImprovement').value) || 0,
-                    maintenanceSessions: parseInt(document.getElementById('maintenanceSessions').value) || 0,
-                    deviceIssues: parseFloat(document.getElementById('deviceIssues').value) || 0,
-                    reportsGenerated: parseInt(document.getElementById('reportsGenerated').value) || 0,
-                    dataQuality: parseInt(document.getElementById('dataQuality').value) || 0
-                },
-                learning: {
-                    learningHours: parseInt(document.getElementById('learningHours').value) || 0,
-                    skillsStudied: document.getElementById('skillsStudied').value,
-                    innovations: parseInt(document.getElementById('innovations').value) || 0,
-                    improvements: parseInt(document.getElementById('improvements').value) || 0,
-                    innovationDetails: document.getElementById('innovationDetails').value
-                },
-                ethic: {
-                    punctuality: parseInt(document.getElementById('punctuality').value) || 0,
-                    deadlines: parseInt(document.getElementById('deadlines').value) || 0,
-                    teamwork: parseInt(document.getElementById('teamwork').value) || 0
-                }
+
+        // Calculate and update all weighted average fields, subtotals, and total
+        function updateCalculations() {
+            let sectionSums = {
+                financials: 0,
+                customer: 0,
+                internal: 0,
+                learning: 0,
+                workEthic: 0
             };
-            performanceData.push(currentWeekData);
-            localStorage.setItem('performanceData', JSON.stringify(performanceData));
-            alert('Weekly data saved.');
-            loadReports();
-        }
-        function calculateScore() {
-            if (!currentWeekData.employeeName) {
-                alert('Please save weekly data first.');
-                return;
-            }
-            let financialScore = Math.min(currentWeekData.financial.costReduction / 2, 1) * 10;
-            let customerScore = (
-                (24 - Math.min(currentWeekData.customer.generalResponse, 24)) / 24 +
-                (1 - Math.min(currentWeekData.customer.urgentResponse, 1)) +
-                (6 - Math.min(currentWeekData.customer.generalResponse, 6)) / 6 +
-                (currentWeekData.customer.relationshipQuality / 5) +
-                (5 - Math.min(currentWeekData.customer.complaints, 5)) / 5
-            ) / 5 * 20;
-            let processScore = (
-                (currentWeekData.process.issuesResolved / Math.max(currentWeekData.process.issuesReported, 1)) +
-                (currentWeekData.process.trainingSessions / 5) +
-                (currentWeekData.process.skillImprovement / 100) +
-                (currentWeekData.process.maintenanceSessions / 5) +
-                (currentWeekData.process.deviceIssues / 100) +
-                (currentWeekData.process.dataQuality / 5)
-            ) / 6 * 45;
-            let learningScore = (
-                (currentWeekData.learning.learningHours / 10) +
-                (currentWeekData.learning.innovations / 2) +
-                (currentWeekData.learning.improvements / 2)
-            ) / 3 * 15;
-            let ethicScore = (
-                (currentWeekData.ethic.punctuality / 5) +
-                (currentWeekData.ethic.deadlines / 5) +
-                (currentWeekData.ethic.teamwork / 5)
-            ) / 3 * 10;
-            let overall = financialScore + customerScore + processScore + learningScore + ethicScore;
-            let normalized = overall / 100 * 5;
-            currentWeekData.scores = {
-                financialScore: financialScore,
-                customerScore: customerScore,
-                processScore: processScore,
-                learningScore: learningScore,
-                ethicScore: ethicScore,
-                overall: normalized
+            let sectionWeights = {
+                financials: 10,
+                customer: 20,
+                internal: 45,
+                learning: 15,
+                workEthic: 10
             };
-            updateDashboard();
-            alert(`Performance Score calculated: ${normalized.toFixed(2)}`);
-        }
-        function updateDashboard() {
-            if (!currentWeekData.scores) return;
-            document.getElementById('overallScore').textContent = currentWeekData.scores.overall.toFixed(2);
-            let category = "Not Calculated";
-            if (currentWeekData.scores.overall >= settings.exceededThreshold) category = "Exceeded";
-            else if (currentWeekData.scores.overall >= settings.exceedingThreshold) category = "Generally Exceeding";
-            else if (currentWeekData.scores.overall >= settings.metThreshold) category = "Met Expectations";
-            else if (currentWeekData.scores.overall >= settings.partialThreshold) category = "Partially Met";
-            else category = "Not Met";
-            document.getElementById('scoreCategory').textContent = category;
-            document.getElementById('financialScore').textContent = `${Math.round(currentWeekData.scores.financialScore)}%`;
-            document.getElementById('financialProgress').style.width = currentWeekData.scores.financialScore + '%';
-            document.getElementById('customerScore').textContent = `${Math.round(currentWeekData.scores.customerScore)}%`;
-            document.getElementById('customerProgress').style.width = currentWeekData.scores.customerScore + '%';
-            document.getElementById('processScore').textContent = `${Math.round(currentWeekData.scores.processScore)}%`;
-            document.getElementById('processProgress').style.width = currentWeekData.scores.processScore + '%';
-            document.getElementById('learningScore').textContent = `${Math.round(currentWeekData.scores.learningScore)}%`;
-            document.getElementById('learningProgress').style.width = currentWeekData.scores.learningScore + '%';
-            document.getElementById('ethicScore').textContent = `${Math.round(currentWeekData.scores.ethicScore)}%`;
-            document.getElementById('ethicProgress').style.width = currentWeekData.scores.ethicScore + '%';
-        }
-        function loadReports() {
-            const tableBody = document.getElementById('reportsTableBody');
-            tableBody.innerHTML = '';
-            if (performanceData.length === 0) {
-                tableBody.innerHTML = `<tr>
-                    <td colspan="6" style="text-align: center; padding: 30px; color: #6c757d;">
-                        No reports generated yet. Start by saving weekly data.
-                    </td>
-                </tr>`;
-                return;
-            }
-            performanceData.slice(-10).reverse().forEach(report => {
-                let cat = report.scores ? getCategory(report.scores.overall) : "Not Calculated";
-                tableBody.innerHTML += `<tr>
-                    <td>${new Date(report.timestamp).toLocaleDateString()}</td>
-                    <td>${report.employeeName}</td>
-                    <td>${report.reportingPeriod}</td>
-                    <td>${report.scores ? report.scores.overall.toFixed(2) : "N/A"}</td>
-                    <td>${cat}</td>
-                    <td><button class="btn" onclick="viewReport(${report.id})">View</button></td>
-                </tr>`;
+
+            let sectionMap = [
+                { name: 'financials', start: 0, end: 1 },
+                { name: 'customer', start: 1, end: 3 },
+                { name: 'internal', start: 3, end: 7 },
+                { name: 'learning', start: 7, end: 10 },
+                { name: 'workEthic', start: 10, end: rows.length }
+            ];
+
+            // For each row with rating and weight, update weighted
+            rows.forEach((tr, idx) => {
+                const ratingInput = tr.querySelector('input[name="rating"]');
+                const weightInput = tr.querySelector('input[name="weight"]');
+                const weightedInput = tr.querySelector('input[name="weighted"]');
+                const rating = parseFloat(ratingInput.value) || 0;
+                const weight = parseFloat(weightInput.value) || 0;
+                const weighted = calcWeighted(rating, weight);
+                weightedInput.value = weighted || '';
             });
+
+            // Section subtotals
+            sectionMap.forEach(section => {
+                let subtotal = 0;
+                for (let i = section.start; i < section.end; ++i) {
+                    const weighted = parseFloat(rows[i].querySelector('input[name="weighted"]').value) || 0;
+                    subtotal += weighted;
+                }
+                document.getElementById(section.name.charAt(0).toLowerCase() + section.name.slice(1) + "Total").textContent = subtotal ? subtotal.toFixed(3) : '';
+                sectionSums[section.name] = subtotal;
+            });
+
+            // Final total
+            let finalTotal = Object.values(sectionSums).reduce((a,b) => a+b, 0);
+            document.getElementById('finalTotal').textContent = finalTotal ? finalTotal.toFixed(3) : '';
+            // Score summary
+            let category = '';
+            if (finalTotal >= 5) category = "Exceeded by far";
+            else if (finalTotal >= 4) category = "Generally Exceeding";
+            else if (finalTotal >= 3) category = "Met";
+            else if (finalTotal >= 2) category = "Partially met";
+            else if (finalTotal > 0) category = "Not met";
+            document.getElementById('scoreSummary').textContent = finalTotal ? `Your overall quarterly score is ${finalTotal.toFixed(2)}. Category: ${category}.` : '';
         }
-        function getCategory(score) {
-            if (score >= settings.exceededThreshold) return "Exceeded";
-            if (score >= settings.exceedingThreshold) return "Generally Exceeding";
-            if (score >= settings.metThreshold) return "Met Expectations";
-            if (score >= settings.partialThreshold) return "Partially Met";
-            return "Not Met";
+
+        // Attach listeners to all rating fields
+        rows.forEach(tr => {
+            const ratingInput = tr.querySelector('input[name="rating"]');
+            ratingInput.addEventListener('input', updateCalculations);
+        });
+
+        // Run once on load to fill any prefilled data
+        updateCalculations();
+
+        // Save to localStorage (for demo purposes)
+        function saveScorecard() {
+            const data = {
+                employee: document.getElementById('employeeName').value,
+                job: document.getElementById('employeeJob').value,
+                division: document.getElementById('division').value,
+                manager: document.getElementById('managerName').value,
+                period: document.getElementById('period').value,
+                rows: rows.map(tr => ({
+                    dimension: tr.children[0].textContent,
+                    measure: tr.children[1].textContent,
+                    target: tr.children[2].textContent,
+                    actual: tr.querySelector('textarea[name="actual"]').value,
+                    rating: tr.querySelector('input[name="rating"]').value,
+                    weight: tr.querySelector('input[name="weight"]').value,
+                    weighted: tr.querySelector('input[name="weighted"]').value,
+                    managerComment: tr.querySelector('textarea[name="managerComment"]').value
+                }))
+            };
+            localStorage.setItem('quarterlyScorecard', JSON.stringify(data));
+            alert('Scorecard saved locally (demo only).');
         }
-        function viewReport(id) {
-            const report = performanceData.find(r => r.id === id);
-            if (!report) return;
-            currentWeekData = report;
-            showTab('dashboard');
-            updateDashboard();
-        }
-        function saveSettings() {
-            settings.exceededThreshold = parseFloat(document.getElementById('exceededThreshold').value) || 4.5;
-            settings.exceedingThreshold = parseFloat(document.getElementById('exceedingThreshold').value) || 4.0;
-            settings.metThreshold = parseFloat(document.getElementById('metThreshold').value) || 3.0;
-            settings.partialThreshold = parseFloat(document.getElementById('partialThreshold').value) || 2.0;
-            localStorage.setItem('settings', JSON.stringify(settings));
-            alert('Settings saved.');
-        }
-        function loadSettings() {
-            document.getElementById('exceededThreshold').value = settings.exceededThreshold;
-            document.getElementById('exceedingThreshold').value = settings.exceedingThreshold;
-            document.getElementById('metThreshold').value = settings.metThreshold;
-            document.getElementById('partialThreshold').value = settings.partialThreshold;
-        }
-        function resetData() {
-            if (confirm('This will erase all stored data. Continue?')) {
-                localStorage.removeItem('performanceData');
-                performanceData = [];
-                loadReports();
-                alert('All data reset.');
-            }
-        }
-        function exportToSheets() { alert('Export to Google Sheets is a demo feature.'); }
-        function generateWeeklyReport() { alert('Weekly report generated (simulated).'); }
-        function generateQuarterlyReport() { alert('Quarterly report generated (simulated).'); }
-        window.onload = initializeApp;
     </script>
 </body>
 </html>
