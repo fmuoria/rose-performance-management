@@ -5,170 +5,57 @@
   <title>Quarterly Performance Scorecard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-      margin: 0;
-      padding: 0;
-    }
-    .container {
-      max-width: 1100px;
-      background: #fff;
-      margin: 30px auto 30px auto;
-      border-radius: 18px;
-      box-shadow: 0 10px 32px rgba(80,60,120,0.15);
-      padding: 36px 28px 30px 28px;
-    }
-    h1, h2 {
-      text-align: center;
-      color: #2c3e50;
-      margin-top: 0;
-    }
-    .info-row {
-      display: flex;
-      gap: 30px;
-      margin-bottom: 22px;
-      flex-wrap: wrap;
-    }
-    .info-col {
-      flex: 1;
-      min-width: 220px;
-    }
-    label {
-      font-weight: bold;
-      color: #444;
-    }
-    .scorecard-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 30px 0;
-      background: #fafafa;
-    }
-    .scorecard-table th, .scorecard-table td {
-      border: 1px solid #d1d5db;
-      padding: 10px 8px;
-      font-size: 1rem;
-      vertical-align: top;
-    }
-    .scorecard-table th {
-      background: #f2f6fa;
-      color: #34495e;
-      font-weight: bold;
-    }
-    .scorecard-section-header {
-      background: #667eea;
-      color: #fff;
-      font-size: 1.1rem;
-      letter-spacing: 0.05em;
-    }
-    .section-total-row {
-      background: #e4e8f8;
-      font-weight: bold;
-    }
-    .final-total-row {
-      background: #27ae60;
-      color: #fff;
-      font-weight: bold;
-      font-size: 1.12rem;
-    }
-    input[type="number"], select, textarea {
-      font-size: 1rem;
-      padding: 6px;
-      width: 100%;
-      border: 1.5px solid #e1e6ef;
-      border-radius: 5px;
-      background: #f8fafc;
-      box-sizing: border-box;
-      margin-top: 2px;
-    }
-    textarea {
-      resize: vertical;
-      min-height: 32px;
-      max-height: 90px;
-    }
-    input[type="number"]:disabled, textarea:disabled {
-      background: #f1f1f6;
-      color: #999;
-    }
-    .legend, .score-summary {
-      margin: 25px 0 5px 0;
-      padding: 15px 18px;
-      background: #fdf6e3;
-      border-radius: 10px;
-      color: #856404;
-      font-size: 1rem;
-    }
-    .score-summary {
-      background: #eafaf1;
-      color: #1e824c;
-      font-size: 1.08rem;
-    }
-    .btn-row {
-      text-align: center;
-      margin: 32px 0 14px 0;
-    }
-    button {
-      background: linear-gradient(90deg, #667eea 70%, #764ba2 100%);
-      color: #fff;
-      font-weight: bold;
-      font-size: 1rem;
-      border: none;
-      border-radius: 7px;
-      padding: 12px 34px;
-      margin: 7px 10px;
-      cursor: pointer;
-      box-shadow: 0 2px 8px rgba(80,60,120,0.10);
-      transition: transform 0.08s;
-    }
-    button:active {
-      transform: scale(0.97);
-    }
-    .manager-comment {
-      background: #f5faff;
-      border-left: 4px solid #3498db;
-      padding: 4px 8px;
-      color: #2d3748;
-    }
-    .progress-box {
-      margin: 20px 0 35px 0;
-      padding: 17px 18px;
-      background: #f4f7fb;
-      border-radius: 12px;
-      color: #3a4765;
-      font-size: 1.03rem;
-    }
-    .progress-bar-wrap {
-      background: #e8ecfd;
-      border-radius: 7px;
-      overflow: hidden;
-      margin-top: 10px;
-      height: 20px;
-      width: 100%;
-    }
-    .progress-bar {
-      background: linear-gradient(90deg,#27ae60 70%, #2ecc71 100%);
-      height: 100%;
-      transition: width 0.6s;
-      color: #fff;
-      line-height: 20px;
-      font-weight: 600;
-      text-align: center;
-      font-size: 1rem;
-    }
-    @media (max-width: 900px) {
-      .container { padding: 16px 2vw; }
-      .info-row { flex-direction: column; gap: 10px;}
-    }
-    @media (max-width: 600px) {
-      .container { padding: 7px 0; }
-      .scorecard-table th, .scorecard-table td { font-size: 0.93rem; }
-    }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; margin: 0; }
+    .container { max-width: 1200px; margin: 36px auto 36px auto; background: #fff; border-radius: 18px; box-shadow: 0 10px 32px rgba(80,60,120,0.15); padding: 0; }
+    h1 { text-align: center; color: #2c3e50; margin-top: 0; padding: 32px 0 10px 0;}
+    .tabs { display: flex; border-bottom: 2px solid #d1d5db; background: #f7f7fd;}
+    .tab-btn { flex: 1; padding: 18px 0; text-align: center; border: none; background: none; font-size: 1.1rem; color: #6c6c96; cursor: pointer; font-weight: 600; transition: all .18s;}
+    .tab-btn.active { color: #4b2994; background: #fff; border-bottom: 3px solid #667eea;}
+    .tab-content { display: none; padding: 38px 38px 25px 38px;}
+    .tab-content.active { display: block;}
+    .info-row { display: flex; gap: 30px; margin-bottom: 22px; flex-wrap: wrap; }
+    .info-col { flex: 1; min-width: 200px;}
+    label { font-weight: bold; color: #444; }
+    select, input[type="number"], textarea { font-size: 1rem; padding: 6px; width: 100%; border: 1.5px solid #e1e6ef; border-radius: 5px; background: #f8fafc; margin-top: 2px; }
+    textarea { resize: vertical; min-height: 32px; max-height: 90px;}
+    input[type="number"]:disabled, textarea:disabled { background: #f1f1f6; color: #999;}
+    .btn-row { text-align: center; margin: 28px 0 8px 0;}
+    button { background: linear-gradient(90deg, #667eea 70%, #764ba2 100%); color: #fff; font-weight: bold; font-size: 1rem; border: none; border-radius: 7px; padding: 12px 34px; margin: 7px 10px; cursor: pointer; box-shadow: 0 2px 8px rgba(80,60,120,0.10); transition: transform 0.08s;}
+    button:active { transform: scale(0.97);}
+    .scorecard-table { width: 100%; border-collapse: collapse; margin: 25px 0 10px 0; background: #fafafa;}
+    .scorecard-table th, .scorecard-table td { border: 1px solid #d1d5db; padding: 10px 8px; font-size: 1rem; vertical-align: top;}
+    .scorecard-table th { background: #f2f6fa; color: #34495e; font-weight: bold;}
+    .scorecard-section-header { background: #667eea; color: #fff; font-size: 1.1rem; letter-spacing: 0.05em;}
+    .section-total-row { background: #e4e8f8; font-weight: bold;}
+    .final-total-row { background: #27ae60; color: #fff; font-weight: bold; font-size: 1.12rem;}
+    .legend, .score-summary, .progress-box { margin: 25px 0 5px 0; padding: 15px 18px; border-radius: 10px; font-size: 1rem;}
+    .legend { background: #fdf6e3; color: #856404;}
+    .score-summary { background: #eafaf1; color: #1e824c; }
+    .progress-box { background: #f4f7fb; color: #3a4765; }
+    .progress-bar-wrap { background: #e8ecfd; border-radius: 7px; overflow: hidden; margin-top: 10px; height: 20px; width: 100%;}
+    .progress-bar { background: linear-gradient(90deg,#27ae60 70%, #2ecc71 100%); height: 100%; transition: width 0.6s; color: #fff; line-height: 20px; font-weight: 600; text-align: center; font-size: 1rem;}
+    .reports-table { width: 100%; border-collapse: collapse; background: #fafafa; margin-top: 20px;}
+    .reports-table th, .reports-table td { border: 1px solid #d1d5db; padding: 10px 8px; font-size: 1rem; }
+    .reports-table th { background: #f2f6fa; color: #34495e; }
+    .dashboard-summary { margin: 14px 0 24px 0; background: #f6fefb; border-radius: 8px; padding: 18px 25px;}
+    .dashboard-metric { margin: 8px 0; font-size: 1.1rem;}
+    .dashboard-metric .label { color: #4b2994; font-weight: 600;}
+    .dashboard-metric .value { color: #2c3e50; font-weight: 700;}
+    .empty-msg { text-align:center; color:#8b8ba0; font-size:1.05rem; padding:32px 0;}
+    @media (max-width: 900px) { .container { padding: 0; } .tab-content { padding: 18px 1vw 12px 1vw; } .info-row { flex-direction: column; gap: 10px;} }
+    @media (max-width: 600px) { .tab-content { padding: 7px 0; } .scorecard-table th, .scorecard-table td, .reports-table th, .reports-table td { font-size: 0.93rem; } }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Quarterly Performance Scorecard</h1>
+<div class="container">
+  <h1>Quarterly Performance Scorecard</h1>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showTab('scorecardTab', this)">Scorecard</button>
+    <button class="tab-btn" onclick="showTab('reportsTab', this)">Reports</button>
+    <button class="tab-btn" onclick="showTab('dashboardTab', this)">Dashboard</button>
+  </div>
+  <!-- SCORECARD TAB -->
+  <div class="tab-content active" id="scorecardTab">
     <form id="scorecardForm" autocomplete="off">
       <div class="info-row">
         <div class="info-col">
@@ -225,14 +112,13 @@
           </select>
         </div>
       </div>
-
       <div class="progress-box" id="progressBox" style="display:none;">
         <div id="progressText"></div>
         <div class="progress-bar-wrap" style="margin-bottom:8px;">
           <div class="progress-bar" id="progressBar" style="width:0%"></div>
         </div>
       </div>
-
+      <div id="scorecardLockedMsg" style="display:none;" class="legend"></div>
       <table class="scorecard-table" id="scorecardTable">
         <thead>
           <tr>
@@ -246,454 +132,476 @@
             <th style="width: 20%;">Manager's Comments</th>
           </tr>
         </thead>
-        <tbody id="scorecardBody">
-          <!-- Scorecard rows rendered by JS -->
-        </tbody>
+        <tbody id="scorecardBody"></tbody>
       </table>
-
-      <div class="btn-row">
+      <div class="btn-row" id="scorecardBtns">
         <button type="button" onclick="saveScorecard()">Save</button>
         <button type="reset">Reset</button>
       </div>
     </form>
     <div class="score-summary" id="scoreSummary"></div>
-    <div class="legend">
+    <div class="legend" id="scoreLegend">
       <b>Score Legend:</b><br>
       1.00–1.99 Not met;&nbsp; 2.00–2.99 Partially met;&nbsp; 3.00–3.99 Met;&nbsp; 4.00–4.99 Generally Exceeding;&nbsp; 5.00 Exceeded by far
     </div>
   </div>
-  <script>
-    // --- CONFIGURATION ---
-    const EMPLOYEE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT1iPMxDd4oyG0Jcl25ryb-1CY-x4qwnlaFLwpUOGJ7qEAg3sEEHSTYPzpGA7ZMJ31LDDqppfuxslNB/pub?gid=0&single=true&output=csv";
-
-    // --- SCORECARD TEMPLATE (static for now, could be made dynamic) ---
-    const SCORECARD_SECTIONS = [
-      {
-        title: "Financials",
-        weight: 10,
-        rows: [
-          {
-            dimension: "The individual should employ measures that help in reducing operational costs",
-            measure: "Employing Cost cutting measures to ensure no organisation over spending, specifically on transport, airtime",
-            target: "Spend 2% less on org IT Budget",
-            weight: 10
-          }
-        ]
-      },
-      {
-        title: "Customer Perspective",
-        weight: 20,
-        rows: [
-          {
-            dimension: "The individual should display exemplary service to the customers (Internal or external) whom they work with/assist in day to day operations",
-            measure: "Turnaround time of Service to internal Customers",
-            target: "Avg. response time: 24h (general), 1h (urgent), 6h (consultations)",
-            weight: 10
-          },
-          {
-            dimension: "",
-            measure: "Relationship with Internal ROSE stakeholders",
-            target: "Minimal to no relationship complaints",
-            weight: 10
-          }
-        ]
-      },
-      {
-        title: "Internal Business Processes",
-        weight: 45,
-        rows: [
-          {
-            dimension: "Salesforce and Taroworks Management/Support",
-            measure: "Percentage of reported issues resolved",
-            target: "100% issues resolved",
-            weight: 10
-          },
-          {
-            dimension: "Digital Capacity Building Sessions (Trainers, Staff, Data Team)",
-            measure: "Number of group sessions conducted monthly & percentage upskill in ROSE members",
-            target: "3 sessions/month, 70% upskill",
-            weight: 15
-          },
-          {
-            dimension: "IT Maintenance and Troubleshooting",
-            measure: "Frequency of scheduled maintenance & % device issues resolved",
-            target: "Quarterly, 90% device issues resolved",
-            weight: 15
-          },
-          {
-            dimension: "Data Analysis",
-            measure: "Number of audited monthly reports generated",
-            target: "2 reports biannually",
-            weight: 5
-          }
-        ]
-      },
-      {
-        title: "Learning and Growth",
-        weight: 15,
-        rows: [
-          {
-            dimension: "",
-            measure: "Hours of Career Development",
-            target: "40 hours learning in 6 months",
-            weight: 5
-          },
-          {
-            dimension: "",
-            measure: "Business Continuity Planning",
-            target: "At least 1 trained individual who can relieve duties",
-            weight: 5
-          },
-          {
-            dimension: "",
-            measure: "Innovations and Recommendations",
-            target: "1 innovation/quarter, 3 improvement recommendations",
-            weight: 5
-          }
-        ]
-      },
-      {
-        title: "Work Ethic",
-        weight: 10,
-        rows: [
-          {
-            dimension: "Time management (Punctuality)",
-            measure: "Reports for office meetings and functions on time",
-            target: "",
-            weight: 0.8
-          },
-          {
-            dimension: "",
-            measure: "Meets deadlines",
-            target: "",
-            weight: 0.8
-          },
-          {
-            dimension: "",
-            measure: "Shows up and works agreed-upon hours",
-            target: "",
-            weight: 0.8
-          },
-          {
-            dimension: "Integrity",
-            measure: "Fosters trusting relationships with clients, coworkers and supervisors",
-            target: "",
-            weight: 0.8
-          },
-          {
-            dimension: "",
-            measure: "Supervisors rely on the employee's high moral standards",
-            target: "",
-            weight: 0.8
-          },
-          {
-            dimension: "Productivity",
-            measure: "Does more than the bare minimum to deliver results to customers",
-            target: "",
-            weight: 0.8
-          },
-          {
-            dimension: "",
-            measure: "Cares about the quality of the work, not just the quantity of the work",
-            target: "",
-            weight: 0.8
-          },
-          {
-            dimension: "Professionalism",
-            measure: "Complies with standard office attire",
-            target: "",
-            weight: 0.8
-          },
-          {
-            dimension: "",
-            measure: "Maintains a professional outlook",
-            target: "",
-            weight: 0.8
-          },
-          {
-            dimension: "",
-            measure: "Adheres to Standard Operating Procedures",
-            target: "",
-            weight: 0.8
-          },
-          {
-            dimension: "",
-            measure: "Takes responsibility and ownership of assigned role",
-            target: "",
-            weight: 0.8
-          },
-          {
-            dimension: "Teamwork",
-            measure: "Takes responsibility for other people’s welfare",
-            target: "",
-            weight: 0.8
-          },
-          {
-            dimension: "",
-            measure: "Fair and objective treatment of other staff members",
-            target: "",
-            weight: 0.8
-          }
-        ]
-      }
-    ];
-
-    // --- EMPLOYEE DATA ---
-    let employeeData = [];
-    let uniqueJobTitles = [];
-    let uniqueDivisions = [];
-
-    // --- PROGRESS TRACKING ---
-    function getProgressKey() {
-      // progress tracked by empName|year|month
-      const emp = document.getElementById("employeeName").value || "";
-      const y = document.getElementById("periodYear").value || "";
-      const m = document.getElementById("periodMonth").value || "";
-      return emp + "|" + y + "|" + m;
+  <!-- REPORTS TAB -->
+  <div class="tab-content" id="reportsTab">
+    <h2>Your Weekly Submissions</h2>
+    <div id="reportsTableWrap"></div>
+    <div id="viewReportModal" style="display:none;"></div>
+  </div>
+  <!-- DASHBOARD TAB -->
+  <div class="tab-content" id="dashboardTab">
+    <h2>Performance Dashboard</h2>
+    <div id="dashboardWrap"></div>
+  </div>
+</div>
+<script>
+const EMPLOYEE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT1iPMxDd4oyG0Jcl25ryb-1CY-x4qwnlaFLwpUOGJ7qEAg3sEEHSTYPzpGA7ZMJ31LDDqppfuxslNB/pub?gid=0&single=true&output=csv";
+const SCORECARD_SECTIONS = [
+  { title: "Financials", weight: 10, rows: [
+    { dimension: "The individual should employ measures that help in reducing operational costs", measure: "Employing Cost cutting measures to ensure no organisation over spending, specifically on transport, airtime", target: "Spend 2% less on org IT Budget", weight: 10 }
+  ]},
+  { title: "Customer Perspective", weight: 20, rows: [
+    { dimension: "The individual should display exemplary service to the customers (Internal or external) whom they work with/assist in day to day operations", measure: "Turnaround time of Service to internal Customers", target: "Avg. response time: 24h (general), 1h (urgent), 6h (consultations)", weight: 10 },
+    { dimension: "", measure: "Relationship with Internal ROSE stakeholders", target: "Minimal to no relationship complaints", weight: 10 }
+  ]},
+  { title: "Internal Business Processes", weight: 45, rows: [
+    { dimension: "Salesforce and Taroworks Management/Support", measure: "Percentage of reported issues resolved", target: "100% issues resolved", weight: 10 },
+    { dimension: "Digital Capacity Building Sessions (Trainers, Staff, Data Team)", measure: "Number of group sessions conducted monthly & percentage upskill in ROSE members", target: "3 sessions/month, 70% upskill", weight: 15 },
+    { dimension: "IT Maintenance and Troubleshooting", measure: "Frequency of scheduled maintenance & % device issues resolved", target: "Quarterly, 90% device issues resolved", weight: 15 },
+    { dimension: "Data Analysis", measure: "Number of audited monthly reports generated", target: "2 reports biannually", weight: 5 }
+  ]},
+  { title: "Learning and Growth", weight: 15, rows: [
+    { dimension: "", measure: "Hours of Career Development", target: "40 hours learning in 6 months", weight: 5 },
+    { dimension: "", measure: "Business Continuity Planning", target: "At least 1 trained individual who can relieve duties", weight: 5 },
+    { dimension: "", measure: "Innovations and Recommendations", target: "1 innovation/quarter, 3 improvement recommendations", weight: 5 }
+  ]},
+  { title: "Work Ethic", weight: 10, rows: [
+    { dimension: "Time management (Punctuality)", measure: "Reports for office meetings and functions on time", target: "", weight: 0.8 },
+    { dimension: "", measure: "Meets deadlines", target: "", weight: 0.8 },
+    { dimension: "", measure: "Shows up and works agreed-upon hours", target: "", weight: 0.8 },
+    { dimension: "Integrity", measure: "Fosters trusting relationships with clients, coworkers and supervisors", target: "", weight: 0.8 },
+    { dimension: "", measure: "Supervisors rely on the employee's high moral standards", target: "", weight: 0.8 },
+    { dimension: "Productivity", measure: "Does more than the bare minimum to deliver results to customers", target: "", weight: 0.8 },
+    { dimension: "", measure: "Cares about the quality of the work, not just the quantity of the work", target: "", weight: 0.8 },
+    { dimension: "Professionalism", measure: "Complies with standard office attire", target: "", weight: 0.8 },
+    { dimension: "", measure: "Maintains a professional outlook", target: "", weight: 0.8 },
+    { dimension: "", measure: "Adheres to Standard Operating Procedures", target: "", weight: 0.8 },
+    { dimension: "", measure: "Takes responsibility and ownership of assigned role", target: "", weight: 0.8 },
+    { dimension: "Teamwork", measure: "Takes responsibility for other people’s welfare", target: "", weight: 0.8 },
+    { dimension: "", measure: "Fair and objective treatment of other staff members", target: "", weight: 0.8 }
+  ]}
+];
+let employeeData = [];
+//--- CSV parser
+function parseCSV(text) {
+  const rows = [];
+  let row = [], insideQuote = false, field = '';
+  for (let i = 0, c; i <= text.length; ++i) {
+    c = text[i] || '\n';
+    if (insideQuote) {
+      if (c === '"') { if (text[i+1] === '"') { field += '"'; ++i; } else insideQuote = false; }
+      else field += c;
+    } else {
+      if (c === '"') insideQuote = true;
+      else if (c === ',' || c === '\n') { row.push(field.trim()); field = ''; if (c === '\n') { rows.push(row); row = []; }}
+      else field += c;
     }
-    function getProgress() {
-      const key = getProgressKey();
-      return JSON.parse(localStorage.getItem("scorecardProgress") || "{}")[key] || [];
-    }
-    function setProgress(week) {
-      const key = getProgressKey();
-      let progress = JSON.parse(localStorage.getItem("scorecardProgress") || "{}");
-      if (!progress[key]) progress[key] = [];
-      if (!progress[key].includes(week)) progress[key].push(week);
-      localStorage.setItem("scorecardProgress", JSON.stringify(progress));
-    }
-    function updateProgressBar() {
-      const month = document.getElementById("periodMonth").value;
-      if (!month) { document.getElementById("progressBox").style.display = "none"; return; }
-
-      const weeks = [1,2,3,4,5];
-      const saved = getProgress();
-      const completed = saved.length;
-      document.getElementById("progressBox").style.display = "";
-      document.getElementById("progressText").textContent =
-        `Progress for this month: ${completed} of ${weeks.length} weeks completed. Weeks filled: ${saved.join(", ") || "None"}`;
-      document.getElementById("progressBar").style.width = (completed / weeks.length * 100) + "%";
-      document.getElementById("progressBar").textContent = completed === weeks.length ? "Complete" : `${completed}/${weeks.length}`;
-    }
-
-    // --- CSV PARSER (for Google Sheets) ---
-    function parseCSV(text) {
-      // Handles quoted fields, commas, etc.
-      const rows = [];
-      let row = [], insideQuote = false, field = '';
-      for (let i = 0, c; i <= text.length; ++i) {
-        c = text[i] || '\n';
-        if (insideQuote) {
-          if (c === '"') {
-            if (text[i+1] === '"') { field += '"'; ++i; }
-            else insideQuote = false;
-          } else field += c;
-        } else {
-          if (c === '"') insideQuote = true;
-          else if (c === ',' || c === '\n') {
-            row.push(field.trim());
-            field = '';
-            if (c === '\n') { rows.push(row); row = []; }
-          } else field += c;
-        }
-      }
-      return rows.filter(r=>r.length>1);
-    }
-
-    // --- POPULATE EMPLOYEE DROPDOWN ---
-    function populateEmployeeDropdown() {
-      const select = document.getElementById("employeeName");
-      select.innerHTML = '<option value="">Select</option>' +
-        employeeData.map(emp => `<option value="${emp.Name}">${emp.Name}</option>`).join('');
-    }
-
-    // --- POPULATE JOB TITLE/DIVISION BASED ON EMPLOYEE ---
-    function handleEmployeeChange() {
-      const name = document.getElementById("employeeName").value;
-      const emp = employeeData.find(e => e.Name === name);
-      // Populate job titles
-      const jt = document.getElementById("employeeJob");
-      if (emp) {
-        jt.innerHTML = `<option value="${emp.Title}">${emp.Title}</option>`;
-        jt.value = emp.Title;
-        jt.disabled = false;
-        const div = document.getElementById("division");
-        div.innerHTML = `<option value="${emp.DPT}">${emp.DPT}</option>`;
-        div.value = emp.DPT;
-        div.disabled = false;
-      } else {
-        jt.innerHTML = '<option value="">Select Employee First</option>';
-        jt.disabled = true;
-        document.getElementById("division").innerHTML = '<option value="">Select Employee First</option>';
-        document.getElementById("division").disabled = true;
-      }
-    }
-
-    // --- SCORECARD RENDERING ---
-    function renderScorecardRows() {
-      const tbody = document.getElementById("scorecardBody");
-      let idx = 0;
-      let html = "";
-      SCORECARD_SECTIONS.forEach(section => {
-        html += `<tr class="scorecard-section-header"><td colspan="8">${section.title}</td></tr>`;
-        section.rows.forEach(row => {
-          html += `<tr data-section="${section.title}" data-row="${idx}">
-            <td>${row.dimension || ""}</td>
-            <td>${row.measure}</td>
-            <td>${row.target}</td>
-            <td><textarea name="actual" spellcheck="true"></textarea></td>
-            <td><input type="number" min="1" max="5" step="0.1" name="rating" required></td>
-            <td><input type="number" name="weight" value="${row.weight}" disabled></td>
-            <td><input type="number" name="weighted" step="0.001" disabled></td>
-            <td><textarea name="managerComment" disabled></textarea></td>
-          </tr>`;
-          idx++;
-        });
-        html += `<tr class="section-total-row"><td colspan="5">${section.title} Subtotal</td><td>${section.weight}%</td><td class="sectionSubtotal" data-section="${section.title}"></td><td></td></tr>`;
-      });
-      html += `<tr class="final-total-row"><td colspan="6">TOTAL SCORE</td><td id="finalTotal"></td><td></td></tr>`;
-      tbody.innerHTML = html;
-      attachScorecardListeners();
-      updateCalculations();
-    }
-
-    function calcWeighted(rating, weight) {
-      if (isNaN(rating) || isNaN(weight)) return '';
-      return +(rating * (weight / 100)).toFixed(3);
-    }
-
-    // --- CALCULATE & UPDATE WEIGHTED & TOTALS ---
-    function updateCalculations() {
-      const tbody = document.getElementById("scorecardBody");
-      const rows = Array.from(tbody.querySelectorAll('tr')).filter(tr => tr.querySelector('input[name="rating"]'));
-      let sectionSum = {}, sectionCount = {}, finalTotal = 0;
-      // Calculate weighted averages per row
-      rows.forEach(tr => {
-        const rating = parseFloat(tr.querySelector('input[name="rating"]').value) || 0;
-        const weight = parseFloat(tr.querySelector('input[name="weight"]').value) || 0;
-        const weighted = calcWeighted(rating, weight);
-        tr.querySelector('input[name="weighted"]').value = weighted || '';
-        const section = tr.getAttribute("data-section");
-        if (!sectionSum[section]) sectionSum[section] = 0;
-        sectionSum[section] += weighted || 0;
-      });
-      // Set subtotals per section
-      tbody.querySelectorAll('.sectionSubtotal').forEach(td => {
-        const section = td.getAttribute("data-section");
-        td.textContent = sectionSum[section] ? sectionSum[section].toFixed(3) : '';
-        finalTotal += sectionSum[section] || 0;
-      });
-      // Set final total
-      document.getElementById('finalTotal').textContent = finalTotal ? finalTotal.toFixed(3) : '';
-      // Score summary
-      let category = '';
-      if (finalTotal >= 5) category = "Exceeded by far";
-      else if (finalTotal >= 4) category = "Generally Exceeding";
-      else if (finalTotal >= 3) category = "Met";
-      else if (finalTotal >= 2) category = "Partially met";
-      else if (finalTotal > 0) category = "Not met";
-      document.getElementById('scoreSummary').textContent = finalTotal ? `Your overall score for this week: ${finalTotal.toFixed(2)}. Category: ${category}.` : '';
-    }
-
-    function attachScorecardListeners() {
-      const tbody = document.getElementById("scorecardBody");
-      tbody.querySelectorAll('input[name="rating"]').forEach(input => {
-        input.addEventListener('input', updateCalculations);
-      });
-    }
-
-    // --- SAVE SCORECARD (and progress) ---
-    function saveScorecard() {
-      const emp = document.getElementById("employeeName").value;
-      const job = document.getElementById("employeeJob").value;
-      const div = document.getElementById("division").value;
-      const year = document.getElementById("periodYear").value;
-      const month = document.getElementById("periodMonth").value;
-      const week = document.getElementById("periodWeek").value;
-      if (!(emp && job && div && year && month && week)) {
-        alert("Please complete all header fields.");
-        return;
-      }
-      const tbody = document.getElementById("scorecardBody");
-      const rows = Array.from(tbody.querySelectorAll('tr')).filter(tr => tr.querySelector('input[name="rating"]'));
-      const dataRows = rows.map(tr => ({
-        dimension: tr.children[0].textContent,
-        measure: tr.children[1].textContent,
-        target: tr.children[2].textContent,
-        actual: tr.querySelector('textarea[name="actual"]').value,
-        rating: tr.querySelector('input[name="rating"]').value,
-        weight: tr.querySelector('input[name="weight"]').value,
-        weighted: tr.querySelector('input[name="weighted"]').value,
-        managerComment: tr.querySelector('textarea[name="managerComment"]').value
+  }
+  return rows.filter(r=>r.length>1);
+}
+//--- Employee dropdowns
+async function initializeEmployeeDropdowns() {
+  try {
+    const resp = await fetch(EMPLOYEE_CSV_URL);
+    const text = await resp.text();
+    const arr = parseCSV(text);
+    let headerIdx = 0;
+    while (headerIdx < arr.length && !arr[headerIdx].some(h => h.trim().toLowerCase() === "name")) ++headerIdx;
+    if (headerIdx >= arr.length) throw "No header row with 'Name' found";
+    const headers = arr[headerIdx];
+    const nameCol = headers.findIndex(h => h.trim().toLowerCase() === "name");
+    const titleCol = headers.findIndex(h => h.trim().toLowerCase() === "title");
+    const dptCol = headers.findIndex(h => h.trim().toLowerCase() === "dpt");
+    employeeData = arr.slice(headerIdx+1)
+      .filter(row => row[nameCol])
+      .map(row => ({
+        Name: row[nameCol],
+        Title: row[titleCol] || "",
+        DPT: row[dptCol] || ""
       }));
-      const scoreData = {
-        employee: emp,
-        job,
-        division: div,
-        year,
-        month,
-        week,
-        rows: dataRows,
-        total: document.getElementById("finalTotal").textContent,
-        summary: document.getElementById("scoreSummary").textContent
-      };
-      // Save to localStorage (simulate backend)
-      let allScores = JSON.parse(localStorage.getItem("weeklyScores") || "[]");
-      // Remove existing for this emp/week/month
-      allScores = allScores.filter(s => !(s.employee===emp && s.year===year && s.month===month && s.week===week));
-      allScores.push(scoreData);
-      localStorage.setItem("weeklyScores", JSON.stringify(allScores));
-      setProgress(week);
-      updateProgressBar();
-      alert("Scorecard saved for this week (locally).");
+    populateEmployeeDropdown();
+  } catch (e) {
+    document.getElementById("employeeName").innerHTML = `<option value="">Could not load</option>`;
+  }
+}
+//--- Populate employee dropdown
+function populateEmployeeDropdown() {
+  const select = document.getElementById("employeeName");
+  select.innerHTML = '<option value="">Select</option>' +
+    employeeData.map(emp => `<option value="${emp.Name}">${emp.Name}</option>`).join('');
+}
+//--- Populate Job/Division on employee select
+function handleEmployeeChange() {
+  const name = document.getElementById("employeeName").value;
+  const emp = employeeData.find(e => e.Name === name);
+  const jt = document.getElementById("employeeJob");
+  if (emp) {
+    jt.innerHTML = `<option value="${emp.Title}">${emp.Title}</option>`;
+    jt.value = emp.Title;
+    jt.disabled = false;
+    const div = document.getElementById("division");
+    div.innerHTML = `<option value="${emp.DPT}">${emp.DPT}</option>`;
+    div.value = emp.DPT;
+    div.disabled = false;
+  } else {
+    jt.innerHTML = '<option value="">Select Employee First</option>'; jt.disabled = true;
+    document.getElementById("division").innerHTML = '<option value="">Select Employee First</option>'; document.getElementById("division").disabled = true;
+  }
+}
+//--- Scorecard rendering
+function renderScorecardRows() {
+  const tbody = document.getElementById("scorecardBody");
+  let idx = 0; let html = "";
+  SCORECARD_SECTIONS.forEach(section => {
+    html += `<tr class="scorecard-section-header"><td colspan="8">${section.title}</td></tr>`;
+    section.rows.forEach(row => {
+      html += `<tr data-section="${section.title}" data-row="${idx}">
+        <td>${row.dimension || ""}</td>
+        <td>${row.measure}</td>
+        <td>${row.target}</td>
+        <td><textarea name="actual" spellcheck="true"></textarea></td>
+        <td><input type="number" min="1" max="5" step="0.1" name="rating" required></td>
+        <td><input type="number" name="weight" value="${row.weight}" disabled></td>
+        <td><input type="number" name="weighted" step="0.001" disabled></td>
+        <td><textarea name="managerComment" disabled></textarea></td>
+      </tr>`;
+      idx++;
+    });
+    html += `<tr class="section-total-row"><td colspan="5">${section.title} Subtotal</td><td>${section.weight}%</td><td class="sectionSubtotal" data-section="${section.title}"></td><td></td></tr>`;
+  });
+  html += `<tr class="final-total-row"><td colspan="6">TOTAL SCORE</td><td id="finalTotal"></td><td></td></tr>`;
+  tbody.innerHTML = html;
+  attachScorecardListeners();
+  updateCalculations();
+}
+//--- Weighted and totals
+function calcWeighted(rating, weight) {
+  if (isNaN(rating) || isNaN(weight)) return '';
+  return +(rating * (weight / 100)).toFixed(3);
+}
+function updateCalculations() {
+  const tbody = document.getElementById("scorecardBody");
+  const rows = Array.from(tbody.querySelectorAll('tr')).filter(tr => tr.querySelector('input[name="rating"]'));
+  let sectionSum = {}, finalTotal = 0;
+  rows.forEach(tr => {
+    const rating = parseFloat(tr.querySelector('input[name="rating"]').value) || 0;
+    const weight = parseFloat(tr.querySelector('input[name="weight"]').value) || 0;
+    const weighted = calcWeighted(rating, weight);
+    tr.querySelector('input[name="weighted"]').value = weighted || '';
+    const section = tr.getAttribute("data-section");
+    if (!sectionSum[section]) sectionSum[section] = 0;
+    sectionSum[section] += weighted || 0;
+  });
+  tbody.querySelectorAll('.sectionSubtotal').forEach(td => {
+    const section = td.getAttribute("data-section");
+    td.textContent = sectionSum[section] ? sectionSum[section].toFixed(3) : '';
+    finalTotal += sectionSum[section] || 0;
+  });
+  document.getElementById('finalTotal').textContent = finalTotal ? finalTotal.toFixed(3) : '';
+  let category = '';
+  if (finalTotal >= 5) category = "Exceeded by far";
+  else if (finalTotal >= 4) category = "Generally Exceeding";
+  else if (finalTotal >= 3) category = "Met";
+  else if (finalTotal >= 2) category = "Partially met";
+  else if (finalTotal > 0) category = "Not met";
+  document.getElementById('scoreSummary').textContent = finalTotal ? `Your overall score for this week: ${finalTotal.toFixed(2)}. Category: ${category}.` : '';
+}
+function attachScorecardListeners() {
+  const tbody = document.getElementById("scorecardBody");
+  tbody.querySelectorAll('input[name="rating"]').forEach(input => {
+    input.addEventListener('input', updateCalculations);
+  });
+}
+//--- Progress
+function getProgressKey() {
+  const emp = document.getElementById("employeeName").value || "";
+  const y = document.getElementById("periodYear").value || "";
+  const m = document.getElementById("periodMonth").value || "";
+  return emp + "|" + y + "|" + m;
+}
+function getProgress() {
+  const key = getProgressKey();
+  return JSON.parse(localStorage.getItem("scorecardProgress") || "{}")[key] || [];
+}
+function setProgress(week) {
+  const key = getProgressKey();
+  let progress = JSON.parse(localStorage.getItem("scorecardProgress") || "{}");
+  if (!progress[key]) progress[key] = [];
+  if (!progress[key].includes(week)) progress[key].push(week);
+  localStorage.setItem("scorecardProgress", JSON.stringify(progress));
+}
+function updateProgressBar() {
+  const month = document.getElementById("periodMonth").value;
+  if (!month) { document.getElementById("progressBox").style.display = "none"; return; }
+  const weeks = [1,2,3,4,5];
+  const saved = getProgress();
+  const completed = saved.length;
+  document.getElementById("progressBox").style.display = "";
+  document.getElementById("progressText").textContent =
+    `Progress for this month: ${completed} of ${weeks.length} weeks completed. Weeks filled: ${saved.join(", ") || "None"}`;
+  document.getElementById("progressBar").style.width = (completed / weeks.length * 100) + "%";
+  document.getElementById("progressBar").textContent = completed === weeks.length ? "Complete" : `${completed}/${weeks.length}`;
+}
+//--- Scorecard locking
+function checkIfScorecardLocked() {
+  const emp = document.getElementById("employeeName").value;
+  const job = document.getElementById("employeeJob").value;
+  const div = document.getElementById("division").value;
+  const year = document.getElementById("periodYear").value;
+  const month = document.getElementById("periodMonth").value;
+  const week = document.getElementById("periodWeek").value;
+  if (!(emp && job && div && year && month && week)) {
+    setScorecardEditable(true); return;
+  }
+  let allScores = JSON.parse(localStorage.getItem("weeklyScores") || "[]");
+  const found = allScores.find(s => s.employee===emp && s.year===year && s.month===month && s.week===week);
+  if (found) {
+    setScorecardEditable(false, found);
+  } else {
+    setScorecardEditable(true);
+  }
+}
+function setScorecardEditable(editable, data) {
+  const tbody = document.getElementById("scorecardBody");
+  tbody.querySelectorAll('textarea[name="actual"]').forEach(el => el.disabled = !editable);
+  tbody.querySelectorAll('input[name="rating"]').forEach(el => el.disabled = !editable);
+  document.getElementById("scorecardBtns").style.display = editable ? "" : "none";
+  document.getElementById("scorecardLockedMsg").style.display = editable ? "none" : "";
+  if (!editable && data) {
+    // Fill all fields with data, lock
+    const rows = Array.from(tbody.querySelectorAll('tr')).filter(tr => tr.querySelector('input[name="rating"]'));
+    rows.forEach((tr,i) => {
+      tr.querySelector('textarea[name="actual"]').value = data.rows[i]?.actual || '';
+      tr.querySelector('input[name="rating"]').value = data.rows[i]?.rating || '';
+      tr.querySelector('input[name="weighted"]').value = data.rows[i]?.weighted || '';
+      tr.querySelector('textarea[name="managerComment"]').value = data.rows[i]?.managerComment || '';
+    });
+    updateCalculations();
+    document.getElementById("scorecardLockedMsg").innerHTML =
+      "You have already submitted your scorecard for this week. <br>View your entry in the Reports tab.";
+  } else if (editable) {
+    // Reset fields
+    renderScorecardRows();
+    document.getElementById("scorecardLockedMsg").innerHTML = "";
+  }
+}
+//--- Save
+function saveScorecard() {
+  const emp = document.getElementById("employeeName").value;
+  const job = document.getElementById("employeeJob").value;
+  const div = document.getElementById("division").value;
+  const year = document.getElementById("periodYear").value;
+  const month = document.getElementById("periodMonth").value;
+  const week = document.getElementById("periodWeek").value;
+  if (!(emp && job && div && year && month && week)) {
+    alert("Please complete all header fields."); return;
+  }
+  // Do not allow overwrite
+  let allScores = JSON.parse(localStorage.getItem("weeklyScores") || "[]");
+  const exists = allScores.find(s => s.employee===emp && s.year===year && s.month===month && s.week===week);
+  if (exists) { alert("This week's scorecard has already been submitted."); return; }
+  // Gather
+  const tbody = document.getElementById("scorecardBody");
+  const rows = Array.from(tbody.querySelectorAll('tr')).filter(tr => tr.querySelector('input[name="rating"]'));
+  const dataRows = rows.map(tr => ({
+    dimension: tr.children[0].textContent,
+    measure: tr.children[1].textContent,
+    target: tr.children[2].textContent,
+    actual: tr.querySelector('textarea[name="actual"]').value,
+    rating: tr.querySelector('input[name="rating"]').value,
+    weight: tr.querySelector('input[name="weight"]').value,
+    weighted: tr.querySelector('input[name="weighted"]').value,
+    managerComment: tr.querySelector('textarea[name="managerComment"]').value
+  }));
+  const scoreData = {
+    employee: emp, job, division: div, year, month, week,
+    rows: dataRows,
+    total: document.getElementById("finalTotal").textContent,
+    summary: document.getElementById("scoreSummary").textContent,
+    submittedAt: new Date().toISOString()
+  };
+  allScores.push(scoreData);
+  localStorage.setItem("weeklyScores", JSON.stringify(allScores));
+  setProgress(week);
+  updateProgressBar();
+  setScorecardEditable(false, scoreData);
+  alert("Scorecard saved for this week.");
+  populateReportsTable();
+  populateDashboard();
+}
+//--- Tab navigation
+function showTab(tabId, btn) {
+  document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (tabId==='reportsTab') populateReportsTable();
+  if (tabId==='dashboardTab') populateDashboard();
+}
+//--- Reports Tab
+function populateReportsTable() {
+  const wrap = document.getElementById('reportsTableWrap');
+  const emp = document.getElementById("employeeName").value;
+  if (!emp) { wrap.innerHTML = '<div class="empty-msg">Select your name in the Scorecard tab to view your reports.</div>'; return; }
+  let allScores = JSON.parse(localStorage.getItem("weeklyScores") || "[]");
+  let theirs = allScores.filter(s => s.employee === emp);
+  if (!theirs.length) { wrap.innerHTML = '<div class="empty-msg">No submissions found yet.</div>'; return; }
+  theirs.sort((a,b) => (a.year+a.month+a.week).localeCompare(b.year+b.month+b.week));
+  let html = `<table class="reports-table"><thead>
+    <tr><th>Year</th><th>Month</th><th>Week</th><th>Total Score</th><th>Submitted</th><th>View</th></tr>
+    </thead><tbody>`;
+  theirs.forEach((s,i) => {
+    html += `<tr>
+      <td>${s.year}</td>
+      <td>${monthNumToName(s.month)}</td>
+      <td>${s.week}</td>
+      <td>${s.total}</td>
+      <td>${dateShort(s.submittedAt)}</td>
+      <td><button onclick="viewReport(${i})">View</button></td>
+    </tr>`;
+  });
+  html += "</tbody></table>";
+  wrap.innerHTML = html;
+  wrap._theirs = theirs;
+}
+//--- View individual week report
+function viewReport(idx) {
+  const wrap = document.getElementById('reportsTableWrap');
+  const theirs = wrap._theirs;
+  const s = theirs[idx];
+  let html = `<div style="background:#fff;border-radius:10px;box-shadow:0 2px 20px #6662;max-width:800px;margin:40px auto 0 auto;padding:24px 22px;">
+    <div style="font-weight:bold;font-size:1.13rem;margin-bottom:8px;">Scorecard for ${s.employee}, ${monthNumToName(s.month)} ${s.year}, Week ${s.week}</div>
+    <div style="color:#333;font-size:1rem;margin-bottom:18px;">Division: <b>${s.division}</b> &mdash; Job: <b>${s.job}</b></div>
+    <table class="scorecard-table"><thead>
+      <tr>
+        <th>Dimension</th><th>Performance Measure</th><th>Target</th>
+        <th>Actual</th><th>Rating</th><th>Weight</th><th>Weighted</th><th>Manager's Comments</th>
+      </tr></thead><tbody>`;
+  s.rows.forEach(r => {
+    html += `<tr>
+      <td>${r.dimension}</td><td>${r.measure}</td><td>${r.target}</td>
+      <td>${r.actual}</td><td>${r.rating}</td><td>${r.weight}</td><td>${r.weighted}</td><td>${r.managerComment}</td>
+    </tr>`;
+  });
+  html += `</tbody></table>
+    <div style="margin-top:18px;font-size:1.02rem;"><b>Total Score:</b> ${s.total}<br><b>Summary:</b> ${s.summary}</div>
+    <div style="text-align:center;margin-top:22px;"><button onclick="closeModal()">Close</button></div>
+  </div>`;
+  const modal = document.getElementById('viewReportModal');
+  modal.innerHTML = html; modal.style.display = "";
+  modal.onclick = function(e) { if (e.target===modal) closeModal(); }
+}
+function closeModal() {
+  document.getElementById('viewReportModal').style.display = "none";
+}
+//--- Dashboard Tab
+function populateDashboard() {
+  const emp = document.getElementById("employeeName").value;
+  const wrap = document.getElementById("dashboardWrap");
+  if (!emp) { wrap.innerHTML = '<div class="empty-msg">Select your name in the Scorecard tab for your dashboard.</div>'; return; }
+  let allScores = JSON.parse(localStorage.getItem("weeklyScores") || "[]");
+  let theirs = allScores.filter(s => s.employee === emp);
+  if (!theirs.length) { wrap.innerHTML = '<div class="empty-msg">No submissions found yet.</div>'; return; }
+  // Organize by year/month/week
+  let byMonth = {}, byQuarter = {};
+  theirs.forEach(s => {
+    const ym = s.year + "-" + s.month;
+    if (!byMonth[ym]) byMonth[ym] = [];
+    byMonth[ym].push(s);
+    const q = getQuarter(s.month);
+    const yq = s.year + "-Q" + q;
+    if (!byQuarter[yq]) byQuarter[yq] = [];
+    byQuarter[yq].push(s);
+  });
+  let html = `<div class="dashboard-summary"><div style="font-size:1.15rem;font-weight:bold;margin-bottom:5px;">Monthly Performance</div>`;
+  let months = Object.keys(byMonth).sort();
+  months.forEach(ym => {
+    const label = monthNumToName(ym.split('-')[1]) + " " + ym.split('-')[0];
+    let arr = byMonth[ym];
+    if (arr.length < 4) {
+      html += `<div class="dashboard-metric"><span class="label">${label}:</span> <span class="value">Incomplete (${arr.length}/4 weeks submitted)</span></div>`;
+    } else {
+      let avg = arr.map(s=>+s.total).reduce((a,b)=>a+b,0) / arr.length;
+      html += `<div class="dashboard-metric"><span class="label">${label}:</span> <span class="value">${avg.toFixed(2)}</span></div>`;
     }
-
-    // --- INITIALIZATION ---
-    async function initializeEmployeeDropdowns() {
-      try {
-        const resp = await fetch(EMPLOYEE_CSV_URL);
-        const text = await resp.text();
-        const arr = parseCSV(text);
-        // Find header row
-        let headerIdx = 0;
-        while (headerIdx < arr.length && !arr[headerIdx].some(h => h.trim().toLowerCase() === "name")) ++headerIdx;
-        if (headerIdx >= arr.length) throw "No header row with 'Name' found";
-        const headers = arr[headerIdx];
-        const nameCol = headers.findIndex(h => h.trim().toLowerCase() === "name");
-        const titleCol = headers.findIndex(h => h.trim().toLowerCase() === "title");
-        const dptCol = headers.findIndex(h => h.trim().toLowerCase() === "dpt");
-        employeeData = arr.slice(headerIdx+1)
-          .filter(row => row[nameCol])
-          .map(row => ({
-            Name: row[nameCol],
-            Title: row[titleCol] || "",
-            DPT: row[dptCol] || ""
-          }));
-        populateEmployeeDropdown();
-      } catch (e) {
-        document.getElementById("employeeName").innerHTML = `<option value="">Could not load</option>`;
-      }
+  });
+  html += `</div><div class="dashboard-summary"><div style="font-size:1.15rem;font-weight:bold;margin-bottom:5px;">Quarterly Performance</div>`;
+  let quarters = Object.keys(byQuarter).sort();
+  quarters.forEach(yq => {
+    let arr = byQuarter[yq];
+    let months = new Set(arr.map(s=>s.month));
+    if (months.size < 3) {
+      html += `<div class="dashboard-metric"><span class="label">${yq}:</span> <span class="value">Incomplete (${months.size}/3 months submitted)</span></div>`;
+    } else {
+      let avg = arr.map(s=>+s.total).reduce((a,b)=>a+b,0) / arr.length;
+      html += `<div class="dashboard-metric"><span class="label">${yq}:</span> <span class="value">${avg.toFixed(2)}</span></div>`;
     }
-
-    // --- EVENT HANDLERS ---
-    document.getElementById("employeeName").addEventListener("change", handleEmployeeChange);
-    document.getElementById("periodMonth").addEventListener("change", updateProgressBar);
-
-    // For week, update progress bar on change
-    document.getElementById("periodWeek").addEventListener("change", updateProgressBar);
-
-    // --- ONLOAD ---
-    window.onload = function() {
-      initializeEmployeeDropdowns();
-      renderScorecardRows();
-      updateProgressBar();
-      document.getElementById("scorecardForm").addEventListener("reset", function() {
-        setTimeout(function() {
-          renderScorecardRows();
-          updateProgressBar();
-        }, 50);
-      });
-    }
-  </script>
+  });
+  html += '</div>';
+  // Overall performance per quarter (best quarter)
+  if (quarters.length) {
+    html += `<div class="dashboard-summary"><div style="font-size:1.14rem;font-weight:bold;margin-bottom:6px;">Overall Best Quarter</div>`;
+    let best = quarters.map(yq => {
+      let arr = byQuarter[yq];
+      return {yq, avg: arr.map(s=>+s.total).reduce((a,b)=>a+b,0) / arr.length};
+    }).sort((a,b) => b.avg - a.avg)[0];
+    html += `<div class="dashboard-metric"><span class="label">${best.yq}:</span> <span class="value">${best.avg.toFixed(2)}</span></div></div>`;
+  }
+  wrap.innerHTML = html;
+}
+//--- Utility
+function monthNumToName(num) {
+  return ["","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][parseInt(num,10)];
+}
+function dateShort(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return d.toLocaleDateString() + " " + d.toLocaleTimeString().slice(0,5);
+}
+function getQuarter(month) {
+  month = parseInt(month,10);
+  return Math.floor((month-1)/3) + 1;
+}
+//--- Event handlers
+document.getElementById("employeeName").addEventListener("change", function() {
+  handleEmployeeChange();
+  setTimeout(updateProgressBar, 40);
+});
+["periodMonth","periodYear"].forEach(id=>{
+  document.getElementById(id).addEventListener("change",function(){
+    updateProgressBar(); checkIfScorecardLocked();
+  });
+});
+["periodWeek"].forEach(id=>{
+  document.getElementById(id).addEventListener("change", checkIfScorecardLocked);
+});
+document.getElementById("scorecardForm").addEventListener("reset", function() {
+  setTimeout(function() {
+    renderScorecardRows(); updateProgressBar(); checkIfScorecardLocked();
+  }, 60);
+});
+//--- On load
+window.onload = function() {
+  initializeEmployeeDropdowns();
+  renderScorecardRows();
+  updateProgressBar();
+  checkIfScorecardLocked();
+};
+//--- Modal close on Escape
+document.addEventListener('keydown',function(e){if(e.key==="Escape")closeModal();});
+</script>
 </body>
 </html>
