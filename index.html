@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>Quarterly Performance Scorecard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Google Identity Services -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; margin: 0;}
@@ -65,30 +66,25 @@
   </div>
   <!-- SCORECARD TAB -->
   <div class="tab-content active" id="scorecardTab">
-    <form id="scorecardForm" autocomplete="off">
+    <form id="scorecardForm" autocomplete="off" onsubmit="event.preventDefault(); saveScorecard();">
       <div class="info-row">
         <div class="info-col">
           <label for="employeeName">Employee's Name:</label><br>
-          <select id="employeeName" required>
-            <option value="">Loading...</option>
-          </select>
+          <input type="text" id="employeeName" required>
         </div>
         <div class="info-col">
           <label for="employeeJob">Job Title:</label><br>
-          <select id="employeeJob" required>
-            <option value="">Select Employee First</option>
-          </select>
+          <input type="text" id="employeeJob" required>
         </div>
         <div class="info-col">
           <label for="division">Division:</label><br>
-          <select id="division" required>
-            <option value="">Select Employee First</option>
-          </select>
+          <input type="text" id="division" required>
         </div>
         <div class="info-col">
           <label for="periodYear">Year:</label><br>
           <select id="periodYear">
             <option value="2025">2025</option>
+            <option value="2024">2024</option>
           </select>
         </div>
         <div class="info-col">
@@ -121,13 +117,6 @@
           </select>
         </div>
       </div>
-      <div class="progress-box" id="progressBox" style="display:none;">
-        <div id="progressText"></div>
-        <div class="progress-bar-wrap" style="margin-bottom:8px;">
-          <div class="progress-bar" id="progressBar" style="width:0%"></div>
-        </div>
-      </div>
-      <div id="scorecardLockedMsg" style="display:none;" class="legend"></div>
       <table class="scorecard-table" id="scorecardTable">
         <thead>
           <tr>
@@ -144,8 +133,8 @@
         <tbody id="scorecardBody"></tbody>
       </table>
       <div class="btn-row" id="scorecardBtns">
-        <button type="button" onclick="saveScorecard()">Save</button>
-        <button type="reset">Reset</button>
+        <button type="submit">Save</button>
+        <button type="reset" onclick="resetScorecard()">Reset</button>
       </div>
     </form>
     <div class="score-summary" id="scoreSummary"></div>
@@ -158,7 +147,6 @@
   <div class="tab-content" id="reportsTab">
     <h2>Your Weekly Submissions</h2>
     <div id="reportsTableWrap"></div>
-    <div id="viewReportModal" style="display:none;"></div>
   </div>
   <!-- DASHBOARD TAB -->
   <div class="tab-content" id="dashboardTab">
@@ -167,10 +155,43 @@
   </div>
 </div>
 <script>
-// === GOOGLE SIGN-IN LOGIC ===
+// ===== GOOGLE SIGN-IN LOGIC =====
 let userProfile = null;
+const GOOGLE_CLIENT_ID = "851703142133-3186bsmuthhrklaa1eaddqa9c0tkb46d.apps.googleusercontent.com";
+const APPS_SCRIPT_URL = "https://script.google.com/a/macros/rosewomensfoundation.org/s/AKfycbxCG4nVSp_Ozf6cy8tLcPOH1ruOSGjlwyhf5_q3saGbqzfbozzM81r4lGAi2W0bE599CA/exec";
+
+// Demo scorecard structure
+const SCORECARD_DIMENSIONS = [
+  {
+    dimension: "Financial",
+    measures: [
+      { measure: "Revenue", target: "100,000", weight: 30 },
+      { measure: "Expense Control", target: "Below $50,000", weight: 20 }
+    ]
+  },
+  {
+    dimension: "Customer",
+    measures: [
+      { measure: "Customer Satisfaction", target: "90%+", weight: 15 },
+      { measure: "New Accounts", target: "10", weight: 10 }
+    ]
+  },
+  {
+    dimension: "Internal Process",
+    measures: [
+      { measure: "Process Improvement", target: "2 Projects", weight: 15 }
+    ]
+  },
+  {
+    dimension: "Learning & Growth",
+    measures: [
+      { measure: "Training Hours", target: "20", weight: 10 }
+    ]
+  }
+];
+
+// ========== SIGN-IN & UI =============
 window.onload = function() {
-  // Show Google Sign-In button
   window.handleCredentialResponse = (response) => {
     const data = parseJwt(response.credential);
     userProfile = {
@@ -179,13 +200,12 @@ window.onload = function() {
       picture: data.picture
     };
     updateUserUI();
-    initializeEmployeeDropdowns();
     renderScorecardRows();
-    updateProgressBar();
-    checkIfScorecardLocked();
+    loadUserReports();
+    loadDashboard();
   };
   google.accounts.id.initialize({
-    client_id: "851703142133-3186bsmuthhrklaa1eaddqa9c0tkb46d.apps.googleusercontent.com",
+    client_id: GOOGLE_CLIENT_ID,
     callback: handleCredentialResponse
   });
   google.accounts.id.renderButton(
@@ -194,11 +214,9 @@ window.onload = function() {
   );
   updateUserUI();
   renderScorecardRows();
-  updateProgressBar();
-  checkIfScorecardLocked();
 };
+
 function parseJwt(token) {
-  // Parse a JWT token (Google Sign-In credential)
   const base64Url = token.split('.')[1];
   const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
   const jsonPayload = decodeURIComponent(
@@ -231,11 +249,248 @@ function signOut() {
   userProfile = null;
   updateUserUI();
 }
-// === REST OF APP LOGIC (unchanged but now filter by userProfile.email for reports/dashboard/save) ===
-// ... (Paste the rest of your app code here, replacing all localStorage filters by user email) ...
-// For brevity, reuse the previous JS code, but make sure:
-// - When saving a record, add `userEmail: userProfile.email`
-// - When showing reports/dashboard, filter only for `userEmail: userProfile.email`
+
+// ========== TABS ==============
+function showTab(tabId, btn) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (tabId === 'reportsTab') loadUserReports();
+  if (tabId === 'dashboardTab') loadDashboard();
+}
+
+// ========== SCORECARD TABLE BUILDING ============
+function renderScorecardRows() {
+  const tbody = document.getElementById("scorecardBody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+  let idx = 0;
+  SCORECARD_DIMENSIONS.forEach(dim => {
+    const dimRow = document.createElement("tr");
+    dimRow.className = "scorecard-section-header";
+    dimRow.innerHTML = `<td colspan="8">${dim.dimension}</td>`;
+    tbody.appendChild(dimRow);
+    dim.measures.forEach(m => {
+      idx++;
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${dim.dimension}</td>
+        <td>${m.measure}</td>
+        <td>${m.target}</td>
+        <td><input type="text" id="actual_${idx}" style="width:100%"></td>
+        <td><input type="number" id="rating_${idx}" min="1" max="5" step="0.01" required style="width:70px"></td>
+        <td><input type="number" id="weight_${idx}" value="${m.weight}" min="0" max="100" step="1" required style="width:65px"></td>
+        <td><input type="text" id="weighted_${idx}" disabled style="width:80px; background:#f5f5fd;"></td>
+        <td><textarea id="comment_${idx}" style="width:98%;"></textarea></td>
+      `;
+      tbody.appendChild(row);
+    });
+  });
+
+  // Add input event listeners for auto-calculation
+  const n = getScoreInputsCount();
+  for (let i = 1; i <= n; ++i) {
+    document.getElementById(`rating_${i}`).addEventListener('input', () => updateWeighted(i));
+    document.getElementById(`weight_${i}`).addEventListener('input', () => updateWeighted(i));
+  }
+}
+
+// ========== SCORECARD CALCULATION ==============
+function getScoreInputsCount() {
+  let count = 0;
+  SCORECARD_DIMENSIONS.forEach(dim => count += dim.measures.length);
+  return count;
+}
+function updateWeighted(idx) {
+  const rating = parseFloat(document.getElementById(`rating_${idx}`).value) || 0;
+  const weight = parseFloat(document.getElementById(`weight_${idx}`).value) || 0;
+  const weighted = ((rating * weight) / 100).toFixed(2);
+  document.getElementById(`weighted_${idx}`).value = isNaN(weighted) ? "" : weighted;
+  updateScoreSummary();
+}
+function updateScoreSummary() {
+  const n = getScoreInputsCount();
+  let totalWeighted = 0, totalWeight = 0;
+  for (let i = 1; i <= n; ++i) {
+    const weighted = parseFloat(document.getElementById(`weighted_${i}`).value) || 0;
+    const weight = parseFloat(document.getElementById(`weight_${i}`).value) || 0;
+    totalWeighted += weighted;
+    totalWeight += weight;
+  }
+  let finalScore = totalWeighted;
+  let summary = `<b>Total Weighted Score:</b> ${finalScore.toFixed(2)}<br>`;
+  summary += `<b>Total Weight:</b> ${totalWeight}`;
+  document.getElementById("scoreSummary").innerHTML = summary;
+}
+
+function resetScorecard() {
+  renderScorecardRows();
+  document.getElementById("scoreSummary").innerHTML = "";
+}
+
+// ========== FORM DATA GATHERING ==============
+function getScorecardFields() {
+  const n = getScoreInputsCount();
+  const fields = [];
+  let idx = 0;
+  SCORECARD_DIMENSIONS.forEach(dim => {
+    dim.measures.forEach(m => {
+      idx++;
+      fields.push({
+        dimension: dim.dimension,
+        measure: m.measure,
+        target: m.target,
+        actual: document.getElementById(`actual_${idx}`).value,
+        rating: document.getElementById(`rating_${idx}`).value,
+        weight: document.getElementById(`weight_${idx}`).value,
+        weighted: document.getElementById(`weighted_${idx}`).value,
+        comment: document.getElementById(`comment_${idx}`).value
+      });
+    });
+  });
+  return fields;
+}
+
+// ========== SAVE SCORECARD ==========
+function saveScorecard() {
+  if (!userProfile) {
+    alert("You must be signed in to submit a scorecard.");
+    return;
+  }
+  // Validate required fields
+  if (!document.getElementById("employeeName").value.trim() ||
+      !document.getElementById("employeeJob").value.trim() ||
+      !document.getElementById("division").value.trim() ||
+      !document.getElementById("periodMonth").value ||
+      !document.getElementById("periodWeek").value) {
+    alert("Please fill out all required fields.");
+    return;
+  }
+  const n = getScoreInputsCount();
+  for (let i = 1; i <= n; ++i) {
+    if (!document.getElementById(`rating_${i}`).value.trim()) {
+      alert("Please fill in all Ratings.");
+      return;
+    }
+    if (!document.getElementById(`weight_${i}`).value.trim()) {
+      alert("Please fill in all Weights.");
+      return;
+    }
+  }
+
+  const data = {
+    userEmail: userProfile.email,
+    name: document.getElementById("employeeName").value,
+    job: document.getElementById("employeeJob").value,
+    division: document.getElementById("division").value,
+    year: document.getElementById("periodYear").value,
+    month: document.getElementById("periodMonth").value,
+    week: document.getElementById("periodWeek").value,
+    scores: getScorecardFields()
+  };
+
+  fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    body: JSON.stringify(data),
+    headers: { 'Content-Type': 'application/json' }
+  })
+  .then(r => r.json())
+  .then(resp => {
+    if (resp.result === "success") {
+      alert("Scorecard saved!");
+      resetScorecard();
+      loadUserReports();
+      loadDashboard();
+    } else {
+      alert("Error: " + resp.message);
+    }
+  })
+  .catch(err => alert("Error: " + err.message));
+}
+
+// ========== LOAD REPORTS ==========
+function loadUserReports() {
+  if (!userProfile) return;
+  fetch(APPS_SCRIPT_URL + '?email=' + encodeURIComponent(userProfile.email))
+    .then(r => r.json())
+    .then(records => renderReportsTable(records))
+    .catch(() => renderReportsTable([]));
+}
+
+function renderReportsTable(records) {
+  const wrap = document.getElementById("reportsTableWrap");
+  if (!records || records.length === 0) {
+    wrap.innerHTML = `<div class="empty-msg">No submissions yet.</div>`;
+    return;
+  }
+  let html = `<table class="reports-table"><thead><tr>
+    <th>Timestamp</th><th>Year</th><th>Month</th><th>Week</th><th>Division</th><th>Job</th>
+    <th>Weighted Score</th>
+  </tr></thead><tbody>`;
+  records.forEach(rec => {
+    // Try to extract total score from saved scores array
+    let weightedScore = '';
+    if (rec.scores) {
+      try {
+        let scoresArr = Array.isArray(rec.scores) ? rec.scores : JSON.parse(rec.scores);
+        weightedScore = scoresArr.reduce((sum, s) => sum + (parseFloat(s.weighted) || 0), 0).toFixed(2);
+      } catch {}
+    }
+    html += `<tr>
+      <td>${rec.Timestamp || rec.timestamp || ""}</td>
+      <td>${rec.year || ""}</td>
+      <td>${rec.month || ""}</td>
+      <td>${rec.week || ""}</td>
+      <td>${rec.division || ""}</td>
+      <td>${rec.job || ""}</td>
+      <td>${weightedScore}</td>
+    </tr>`;
+  });
+  html += `</tbody></table>`;
+  wrap.innerHTML = html;
+}
+
+// ========== DASHBOARD ==========
+function loadDashboard() {
+  if (!userProfile) return;
+  fetch(APPS_SCRIPT_URL + '?email=' + encodeURIComponent(userProfile.email))
+    .then(r => r.json())
+    .then(records => renderDashboard(records))
+    .catch(() => renderDashboard([]));
+}
+
+function renderDashboard(records) {
+  const wrap = document.getElementById("dashboardWrap");
+  if (!records || records.length === 0) {
+    wrap.innerHTML = `<div class="empty-msg">No data yet.</div>`;
+    return;
+  }
+  // Example metrics: average score, best score, number of submissions
+  let total = 0, count = 0, best = 0, scores = [];
+  records.forEach(rec => {
+    if (rec.scores) {
+      try {
+        let arr = Array.isArray(rec.scores) ? rec.scores : JSON.parse(rec.scores);
+        let score = arr.reduce((sum, s) => sum + (parseFloat(s.weighted) || 0), 0);
+        if (!isNaN(score)) {
+          scores.push(score);
+          total += score;
+          if (score > best) best = score;
+          count++;
+        }
+      } catch {}
+    }
+  });
+  let avg = count > 0 ? (total / count).toFixed(2) : "0";
+  let html = `<div class="dashboard-summary">
+    <div class="dashboard-metric"><span class="label">Submissions:</span> <span class="value">${count}</span></div>
+    <div class="dashboard-metric"><span class="label">Average Weighted Score:</span> <span class="value">${avg}</span></div>
+    <div class="dashboard-metric"><span class="label">Best Score:</span> <span class="value">${best.toFixed(2)}</span></div>
+  </div>`;
+  // Optionally, add a chart or breakdown here using scores array
+  wrap.innerHTML = html;
+}
 </script>
 </body>
 </html>
