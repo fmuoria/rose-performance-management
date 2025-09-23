@@ -258,9 +258,6 @@
         </div>
         <!-- Data Entry Tab -->
         <div id="data-entry" class="tab-content active">
-            <!-- (All form fields as in previous answers) -->
-            <!-- ... (copy the full block for all tabs here, as previously provided) ... -->
-            <!-- For brevity, only the structure is shown in this file block -->
             <div class="employee-info">
                 <div class="form-group">
                     <label for="employeeName">Employee Name</label>
@@ -285,22 +282,362 @@
                     </select>
                 </div>
             </div>
-            <!-- (Add all metrics sections from previous code here) -->
-            <!-- Financial, Customer, Process, Learning, Ethic sections, and Save/Calculate buttons -->
-            <!-- ... -->
+            <!-- Financial Performance -->
+            <div class="metrics-section">
+                <h3>💰 Financial Performance (Weight: 10%)</h3>
+                <div class="metric-item">
+                    <h4>Cost Reduction Measures</h4>
+                    <p>Target: Spend 2% less on organizational IT Budget</p>
+                    <div class="metric-inputs">
+                        <div class="form-group">
+                            <label>Actual Cost Reduction (%)</label>
+                            <input type="number" id="costReduction" min="0" max="100" placeholder="Enter percentage">
+                        </div>
+                        <div class="form-group">
+                            <label>Supporting Evidence</label>
+                            <textarea id="costEvidence" rows="3" placeholder="Describe cost-saving initiatives implemented"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Customer Perspective -->
+            <div class="metrics-section">
+                <h3>👥 Customer Perspective (Weight: 20%)</h3>
+                <div class="metric-item">
+                    <h4>Service Turnaround Time</h4>
+                    <p>Target: 24h general, 1h urgent, 6h consultations</p>
+                    <div class="metric-inputs">
+                        <div class="form-group">
+                            <label>General Issues Avg Response (hours)</label>
+                            <input type="number" id="generalResponse" min="0" placeholder="Average hours">
+                        </div>
+                        <div class="form-group">
+                            <label>Urgent Issues Avg Response (hours)</label>
+                            <input type="number" id="urgentResponse" min="0" placeholder="Average hours">
+                        </div>
+                        <div class="form-group">
+                            <label>Tickets Resolved This Week</label>
+                            <input type="number" id="ticketsResolved" min="0" placeholder="Number of tickets">
+                        </div>
+                    </div>
+                </div>
+                <div class="metric-item">
+                    <h4>Stakeholder Relationships</h4>
+                    <div class="metric-inputs">
+                        <div class="form-group">
+                            <label>Relationship Quality (1-5)</label>
+                            <select id="relationshipQuality">
+                                <option value="">Select Rating</option>
+                                <option value="1">1 - Poor</option>
+                                <option value="2">2 - Below Average</option>
+                                <option value="3">3 - Average</option>
+                                <option value="4">4 - Good</option>
+                                <option value="5">5 - Excellent</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Complaints Received</label>
+                            <input type="number" id="complaints" min="0" placeholder="Number of complaints">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Internal Business Processes -->
+            <div class="metrics-section">
+                <h3>⚙️ Internal Business Processes (Weight: 45%)</h3>
+                <div class="metric-item">
+                    <h4>Salesforce & Taroworks Support</h4>
+                    <div class="metric-inputs">
+                        <div class="form-group">
+                            <label>Issues Reported</label>
+                            <input type="number" id="issuesReported" min="0" placeholder="Total issues">
+                        </div>
+                        <div class="form-group">
+                            <label>Issues Resolved</label>
+                            <input type="number" id="issuesResolved" min="0" placeholder="Issues resolved">
+                        </div>
+                    </div>
+                </div>
+                <div class="metric-item">
+                    <h4>Digital Capacity Building</h4>
+                    <div class="metric-inputs">
+                        <div class="form-group">
+                            <label>Training Sessions Conducted</label>
+                            <input type="number" id="trainingSessions" min="0" placeholder="Number of sessions">
+                        </div>
+                        <div class="form-group">
+                            <label>Staff Members Trained</label>
+                            <input type="number" id="staffTrained" min="0" placeholder="Number of staff">
+                        </div>
+                        <div class="form-group">
+                            <label>Digital Skill Improvement (%)</label>
+                            <input type="number" id="skillImprovement" min="0" max="100" placeholder="Improvement percentage">
+                        </div>
+                    </div>
+                </div>
+                <div class="metric-item">
+                    <h4>IT Maintenance</h4>
+                    <div class="metric-inputs">
+                        <div class="form-group">
+                            <label>Maintenance Sessions Completed</label>
+                            <input type="number" id="maintenanceSessions" min="0" placeholder="Number of sessions">
+                        </div>
+                        <div class="form-group">
+                            <label>Device Issues Resolved (%)</label>
+                            <input type="number" id="deviceIssues" min="0" max="100" placeholder="Resolution percentage">
+                        </div>
+                    </div>
+                </div>
+                <div class="metric-item">
+                    <h4>Data Analysis</h4>
+                    <div class="metric-inputs">
+                        <div class="form-group">
+                            <label>Reports Generated</label>
+                            <input type="number" id="reportsGenerated" min="0" placeholder="Number of reports">
+                        </div>
+                        <div class="form-group">
+                            <label>Data Quality Score (1-5)</label>
+                            <select id="dataQuality">
+                                <option value="">Select Rating</option>
+                                <option value="1">1 - Poor</option>
+                                <option value="2">2 - Below Average</option>
+                                <option value="3">3 - Average</option>
+                                <option value="4">4 - Good</option>
+                                <option value="5">5 - Excellent</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Learning and Growth -->
+            <div class="metrics-section">
+                <h3>📚 Learning and Growth (Weight: 15%)</h3>
+                <div class="metric-item">
+                    <h4>Career Development</h4>
+                    <div class="metric-inputs">
+                        <div class="form-group">
+                            <label>Learning Hours This Week</label>
+                            <input type="number" id="learningHours" min="0" placeholder="Hours spent learning">
+                        </div>
+                        <div class="form-group">
+                            <label>Skills/Topics Studied</label>
+                            <textarea id="skillsStudied" rows="3" placeholder="List skills or topics studied"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="metric-item">
+                    <h4>Innovation & Recommendations</h4>
+                    <div class="metric-inputs">
+                        <div class="form-group">
+                            <label>Innovations Proposed</label>
+                            <input type="number" id="innovations" min="0" placeholder="Number of innovations">
+                        </div>
+                        <div class="form-group">
+                            <label>Process Improvements Suggested</label>
+                            <input type="number" id="improvements" min="0" placeholder="Number of improvements">
+                        </div>
+                        <div class="form-group">
+                            <label>Innovation Details</label>
+                            <textarea id="innovationDetails" rows="3" placeholder="Describe innovations or improvements"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Work Ethic -->
+            <div class="metrics-section">
+                <h3>🏆 Work Ethic (Weight: 10%)</h3>
+                <div class="metric-item">
+                    <h4>Time Management & Professionalism</h4>
+                    <div class="metric-inputs">
+                        <div class="form-group">
+                            <label>Punctuality Score (1-5)</label>
+                            <select id="punctuality">
+                                <option value="">Select Rating</option>
+                                <option value="1">1 - Poor</option>
+                                <option value="2">2 - Below Average</option>
+                                <option value="3">3 - Average</option>
+                                <option value="4">4 - Good</option>
+                                <option value="5">5 - Excellent</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Deadline Adherence (1-5)</label>
+                            <select id="deadlines">
+                                <option value="">Select Rating</option>
+                                <option value="1">1 - Poor</option>
+                                <option value="2">2 - Below Average</option>
+                                <option value="3">3 - Average</option>
+                                <option value="4">4 - Good</option>
+                                <option value="5">5 - Excellent</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Teamwork Quality (1-5)</label>
+                            <select id="teamwork">
+                                <option value="">Select Rating</option>
+                                <option value="1">1 - Poor</option>
+                                <option value="2">2 - Below Average</option>
+                                <option value="3">3 - Average</option>
+                                <option value="4">4 - Good</option>
+                                <option value="5">5 - Excellent</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style="text-align: center; margin: 30px 0;">
+                <button class="btn btn-success" onclick="saveWeeklyData()">💾 Save Weekly Data</button>
+                <button class="btn btn-warning" onclick="calculateScore()">🧮 Calculate Performance Score</button>
+            </div>
         </div>
+        <!-- Dashboard Tab -->
         <div id="dashboard" class="tab-content">
-            <!-- Dashboard content as in previous code -->
+            <div class="performance-summary">
+                <h2>📊 Performance Dashboard</h2>
+                <div class="score-display">
+                    <div class="score-number" id="overallScore">0.00</div>
+                    <div class="score-category" id="scoreCategory">Not Calculated</div>
+                </div>
+                <div class="progress-bars">
+                    <div class="progress-item">
+                        <div class="progress-label">
+                            <span>Financial Performance</span>
+                            <span id="financialScore">0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="financialProgress"></div>
+                        </div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-label">
+                            <span>Customer Perspective</span>
+                            <span id="customerScore">0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="customerProgress"></div>
+                        </div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-label">
+                            <span>Internal Processes</span>
+                            <span id="processScore">0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="processProgress"></div>
+                        </div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-label">
+                            <span>Learning & Growth</span>
+                            <span id="learningScore">0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="learningProgress"></div>
+                        </div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-label">
+                            <span>Work Ethic</span>
+                            <span id="ethicScore">0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="ethicProgress"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="recommendations" id="recommendationsSection" style="display: none;">
+                    <h4>💡 Areas for Improvement</h4>
+                    <ul id="recommendationsList"></ul>
+                </div>
+            </div>
         </div>
+        <!-- Reports Tab -->
         <div id="reports" class="tab-content">
-            <!-- Reports content as in previous code -->
+            <h2>📋 Performance Reports</h2>
+            <div style="margin: 20px 0;">
+                <button class="btn" onclick="generateWeeklyReport()">📄 Generate Weekly Report</button>
+                <button class="btn" onclick="generateQuarterlyReport()">📊 Generate Quarterly Report</button>
+                <button class="btn" onclick="exportToSheets()">📈 Export to Google Sheets</button>
+            </div>
+            <table class="data-table" id="reportsTable">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Employee</th>
+                        <th>Period</th>
+                        <th>Overall Score</th>
+                        <th>Category</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="reportsTableBody">
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 30px; color: #6c757d;">
+                            No reports generated yet. Start by saving weekly data.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
+        <!-- Settings Tab -->
         <div id="settings" class="tab-content">
-            <!-- Settings content as in previous code -->
+            <h2>⚙️ System Settings</h2>
+            <div class="metrics-section">
+                <h3>🔧 Performance Thresholds</h3>
+                <div class="metric-inputs">
+                    <div class="form-group">
+                        <label>Exceeded Threshold (≥)</label>
+                        <input type="number" id="exceededThreshold" value="4.5" min="4" max="5" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label>Generally Exceeding (≥)</label>
+                        <input type="number" id="exceedingThreshold" value="4.0" min="3.5" max="4.5" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label>Met Expectations (≥)</label>
+                        <input type="number" id="metThreshold" value="3.0" min="2.5" max="3.5" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label>Partially Met (≥)</label>
+                        <input type="number" id="partialThreshold" value="2.0" min="1.5" max="2.5" step="0.1">
+                    </div>
+                </div>
+            </div>
+            <div class="metrics-section">
+                <h3>🔗 Integration Settings</h3>
+                <div class="metric-inputs">
+                    <div class="form-group">
+                        <label>Google Sheets URL</label>
+                        <input type="url" id="sheetsUrl" placeholder="Enter Google Sheets URL">
+                    </div>
+                    <div class="form-group">
+                        <label>Salesforce Org URL</label>
+                        <input type="url" id="salesforceUrl" placeholder="Enter Salesforce URL">
+                    </div>
+                    <div class="form-group">
+                        <label>API Key</label>
+                        <input type="password" id="apiKey" placeholder="Enter integration API key">
+                    </div>
+                    <div class="form-group">
+                        <label>Auto-sync Frequency</label>
+                        <select id="syncFrequency">
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="manual">Manual Only</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div style="text-align: center; margin: 30px 0;">
+                <button class="btn btn-success" onclick="saveSettings()">💾 Save Settings</button>
+                <button class="btn btn-warning" onclick="resetData()">🔄 Reset All Data</button>
+            </div>
         </div>
     </div>
     <script>
-        // Global variables to store data
+        // JavaScript as in previous answer (already expanded)
+        // (See previous code blocks for full script)
+        // For brevity: use the complete JavaScript provided above
         let performanceData = JSON.parse(localStorage.getItem('performanceData')) || [];
         let currentWeekData = {};
         let settings = JSON.parse(localStorage.getItem('settings')) || {
