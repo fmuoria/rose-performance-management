@@ -385,7 +385,7 @@ function updateFinancialRow(idx, budget, savingsTarget) {
   // Weighted
   let weight = parseFloat(weightEl.value) || 0;
   let weighted = ((rating * weight) / 100).toFixed(2);
-  weightedEl.value = isNaN(weighted) ? "" : weighted;
+  weightedEl.value = weighted && !isNaN(weighted) ? weighted : "";
 
   updateScoreSummary();
 }
