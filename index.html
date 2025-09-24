@@ -161,8 +161,9 @@
 <script>
 // ===== GOOGLE SIGN-IN LOGIC =====
 let userProfile = null;
-// YOUR NEW GOOGLE APPS SCRIPT URL:
-const APPS_SCRIPT_URL = "https://script.google.com/macros/library/d/1KXiPaZlfODVdYmqdttMEzqkXWtyX6OiTrpLPHw5SI4U3KAeYXWqjxc7z/1";
+
+// Update this to your actual Google Apps Script endpoint:
+const APPS_SCRIPT_URL = "https://script.google.com/a/macros/rosewomensfoundation.org/s/AKfycbxCG4nVSp_Ozf6cy8tLcPOH1ruOSGjlwyhf5_q3saGbqzfbozzM81r4lGAi2W0bE599CA/exec";
 
 const GOOGLE_CLIENT_ID = "851703142133-3186bsmuthhrklaa1eaddqa9c0tkb46d.apps.googleusercontent.com";
 
@@ -360,18 +361,21 @@ function getScorecardFields() {
 }
 
 // ========== AUTO-FILL USER DETAILS ==========
+// UPDATED FUNCTION
 function autofillUserDetails() {
   if (!userProfile) return;
   fetch(APPS_SCRIPT_URL + '?action=lookupUser&email=' + encodeURIComponent(userProfile.email))
     .then(r => r.json())
     .then(data => {
-      if (data) {
-        if (data.name) document.getElementById("employeeName").value = data.name;
-        if (data.title) document.getElementById("employeeJob").value = data.title;
-        if (data.division) document.getElementById("division").value = data.division;
-        if (data.level) document.getElementById("level").value = data.level;
+      if (Array.isArray(data) && data.length > 0) {
+        const user = data[0];
+        document.getElementById("employeeName").value = user["Full Name"] || "";
+        document.getElementById("employeeJob").value = user["Title"] || "";
+        document.getElementById("division").value = user["Division"] || "";
+        document.getElementById("level").value = user["Level"] || "";
       }
-    });
+    })
+    .catch(err => { /* Optionally handle error */ });
 }
 
 // ========== SAVE SCORECARD ==========
