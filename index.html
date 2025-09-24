@@ -18,9 +18,9 @@
     .info-row { display: flex; gap: 30px; margin-bottom: 22px; flex-wrap: wrap; }
     .info-col { flex: 1; min-width: 200px;}
     label { font-weight: bold; color: #444; }
-    select, input[type="number"], textarea { font-size: 1rem; padding: 6px; width: 100%; border: 1.5px solid #e1e6ef; border-radius: 5px; background: #f8fafc; margin-top: 2px; }
+    select, input[type="number"], input[type="text"], textarea { font-size: 1rem; padding: 6px; width: 100%; border: 1.5px solid #e1e6ef; border-radius: 5px; background: #f8fafc; margin-top: 2px; }
     textarea { resize: vertical; min-height: 32px; max-height: 90px;}
-    input[type="number"]:disabled, textarea:disabled { background: #f1f1f6; color: #999;}
+    input[type="number"]:disabled, input[type="text"]:disabled, textarea:disabled { background: #f1f1f6; color: #999;}
     .btn-row { text-align: center; margin: 28px 0 8px 0;}
     button { background: linear-gradient(90deg, #667eea 70%, #764ba2 100%); color: #fff; font-weight: bold; font-size: 1rem; border: none; border-radius: 7px; padding: 12px 34px; margin: 7px 10px; cursor: pointer; box-shadow: 0 2px 8px rgba(80,60,120,0.10); transition: transform 0.08s;}
     button:active { transform: scale(0.97);}
@@ -124,11 +124,12 @@
       <table class="scorecard-table" id="scorecardTable">
         <thead>
           <tr>
-            <th style="width: 20%;">Dimension</th>
-            <th style="width: 24%;">Performance Measure</th>
-            <th style="width: 15%;">Target</th>
-            <th style="width: 18%;">Actual<br><span style="font-weight:normal;">(employee input)</span></th>
-            <th style="width: 8%;">Rating<br>(1-5)</th>
+            <th style="width: 17%;">Dimension</th>
+            <th style="width: 21%;">Performance Measure</th>
+            <th style="width: 13%;">Target</th>
+            <th style="width: 15%;">Actual<br><span style="font-weight:normal;">(employee input)</span></th>
+            <th style="width: 10%;">% Used/Savings</th>
+            <th style="width: 7%;">Rating<br>(1-5)</th>
             <th style="width: 7%;">Weight<br>(%)</th>
             <th style="width: 10%;">Weighted<br>Average</th>
             <th style="width: 20%;">Manager's Comments</th>
@@ -144,7 +145,7 @@
     <div class="score-summary" id="scoreSummary"></div>
     <div class="legend" id="scoreLegend">
       <b>Score Legend:</b><br>
-      1.00–1.99 Not met;&nbsp; 2.00–2.99 Partially met;&nbsp; 3.00–3.99 Met;&nbsp; 4.00–4.99 Generally Exceeding;&nbsp; 5.00 Exceeded by far
+      1.00–2.99 Below Target;&nbsp; 3.00 Target Met;&nbsp; 3.1–4.99 Exceeds Target;&nbsp; 5.00 Far Exceeds Target
     </div>
   </div>
   <!-- REPORTS TAB -->
@@ -167,13 +168,16 @@ const APPS_SCRIPT_URL = "https://script.google.com/a/macros/rosewomensfoundation
 
 const GOOGLE_CLIENT_ID = "851703142133-3186bsmuthhrklaa1eaddqa9c0tkb46d.apps.googleusercontent.com";
 
-// Demo scorecard structure
+// Scorecard structure (Financial uses new logic)
+const FINANCIAL_BUDGET = 100000; // <-- Set budget here
+const FINANCIAL_SAVINGS_TARGET_PCT = 0.15; // 15%
+const FINANCIAL_SAVINGS_TARGET = FINANCIAL_BUDGET * (1 - FINANCIAL_SAVINGS_TARGET_PCT); // e.g. 85,000
+
 const SCORECARD_DIMENSIONS = [
   {
     dimension: "Financial",
     measures: [
-      { measure: "Revenue", target: "100,000", weight: 30 },
-      { measure: "Expense Control", target: "Below $50,000", weight: 20 }
+      { measure: "Budget Savings", type: "financial", budget: FINANCIAL_BUDGET, savingsTargetPct: FINANCIAL_SAVINGS_TARGET_PCT }
     ]
   },
   {
@@ -210,7 +214,7 @@ window.onload = function() {
     renderScorecardRows();
     loadUserReports();
     loadDashboard();
-    autofillUserDetails(); // <-- Auto-fill after login
+    autofillUserDetails();
   };
   google.accounts.id.initialize({
     client_id: GOOGLE_CLIENT_ID,
@@ -277,39 +281,122 @@ function renderScorecardRows() {
   SCORECARD_DIMENSIONS.forEach(dim => {
     const dimRow = document.createElement("tr");
     dimRow.className = "scorecard-section-header";
-    dimRow.innerHTML = `<td colspan="8">${dim.dimension}</td>`;
+    dimRow.innerHTML = `<td colspan="9">${dim.dimension}</td>`;
     tbody.appendChild(dimRow);
+
     dim.measures.forEach(m => {
       idx++;
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${dim.dimension}</td>
-        <td>${m.measure}</td>
-        <td>${m.target}</td>
-        <td><input type="text" id="actual_${idx}" style="width:100%"></td>
-        <td><input type="number" id="rating_${idx}" min="1" max="5" step="0.01" required style="width:70px"></td>
-        <td><input type="number" id="weight_${idx}" value="${m.weight}" min="0" max="100" step="1" required style="width:65px"></td>
-        <td><input type="text" id="weighted_${idx}" disabled style="width:80px; background:#f5f5fd;"></td>
-        <td><textarea id="comment_${idx}" style="width:98%;"></textarea></td>
-      `;
-      tbody.appendChild(row);
+      if (m.type === "financial") {
+        // Financial dimension logic
+        const budget = m.budget;
+        const savingsTargetPct = m.savingsTargetPct;
+        const savingsTarget = budget * (1 - savingsTargetPct);
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${dim.dimension}</td>
+          <td>
+            <b>${m.measure}</b><br>
+            <span style="color:#6c6c96;font-size:0.97em;">
+              Budget: <span id="budget_${idx}">${budget.toLocaleString()}</span><br>
+              Savings Target: <span id="savings_target_${idx}">${savingsTarget.toLocaleString()}</span>
+            </span>
+          </td>
+          <td>
+            <b>Budget:</b> ${budget.toLocaleString()}<br>
+            <b>Savings Target:</b> ${savingsTarget.toLocaleString()}<br>
+            <span style="font-size:0.95em;color:#888;">(Spend ≤ ${savingsTarget.toLocaleString()} for max score)</span>
+          </td>
+          <td>
+            <input type="number" id="actual_spent_${idx}" min="0" max="${budget*2}" placeholder="Enter amount spent" style="width:100%">
+          </td>
+          <td>
+            <input type="text" id="pct_used_${idx}" disabled style="width:80px;background:#eef;">
+          </td>
+          <td>
+            <input type="number" id="rating_${idx}" min="1" max="5" step="0.1" disabled style="width:70px;background:#eef;">
+          </td>
+          <td>
+            <input type="number" id="weight_${idx}" value="30" min="0" max="100" step="1" required style="width:65px">
+          </td>
+          <td>
+            <input type="text" id="weighted_${idx}" disabled style="width:80px; background:#f5f5fd;">
+          </td>
+          <td>
+            <textarea id="comment_${idx}" style="width:98%;"></textarea>
+          </td>
+        `;
+        tbody.appendChild(row);
+
+        // Input event for financial calculation
+        document.querySelector(`#actual_spent_${idx}`).addEventListener('input', () => updateFinancialRow(idx, budget, savingsTarget));
+        document.querySelector(`#weight_${idx}`).addEventListener('input', () => updateFinancialRow(idx, budget, savingsTarget));
+      } else {
+        // Normal dimension logic
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${dim.dimension}</td>
+          <td>${m.measure}</td>
+          <td>${m.target}</td>
+          <td><input type="text" id="actual_${idx}" style="width:100%"></td>
+          <td></td>
+          <td><input type="number" id="rating_${idx}" min="1" max="5" step="0.1" required style="width:70px"></td>
+          <td><input type="number" id="weight_${idx}" value="${m.weight}" min="0" max="100" step="1" required style="width:65px"></td>
+          <td><input type="text" id="weighted_${idx}" disabled style="width:80px; background:#f5f5fd;"></td>
+          <td><textarea id="comment_${idx}" style="width:98%;"></textarea></td>
+        `;
+        tbody.appendChild(row);
+
+        document.getElementById(`rating_${idx}`).addEventListener('input', () => updateWeighted(idx));
+        document.getElementById(`weight_${idx}`).addEventListener('input', () => updateWeighted(idx));
+      }
     });
   });
-
-  // Add input event listeners for auto-calculation
-  const n = getScoreInputsCount();
-  for (let i = 1; i <= n; ++i) {
-    document.getElementById(`rating_${i}`).addEventListener('input', () => updateWeighted(i));
-    document.getElementById(`weight_${i}`).addEventListener('input', () => updateWeighted(i));
-  }
+  updateScoreSummary();
 }
 
-// ========== SCORECARD CALCULATION ==============
+// ========== FINANCIAL CALCULATION LOGIC ==========
+function calcFinancialRating(budget, savingsTarget, actualSpent) {
+  let rating = 3.0;
+  if (actualSpent < budget) {
+    rating = 3.0 + 2.0 * ((budget - actualSpent) / (budget - savingsTarget));
+  } else if (actualSpent > budget) {
+    rating = 3.0 - 2.0 * ((actualSpent - budget) / budget);
+  }
+  rating = Math.max(1.0, Math.min(5.0, rating));
+  return Number(rating.toFixed(1));
+}
+
+function updateFinancialRow(idx, budget, savingsTarget) {
+  const actualSpentEl = document.getElementById(`actual_spent_${idx}`);
+  const pctUsedEl = document.getElementById(`pct_used_${idx}`);
+  const ratingEl = document.getElementById(`rating_${idx}`);
+  const weightEl = document.getElementById(`weight_${idx}`);
+  const weightedEl = document.getElementById(`weighted_${idx}`);
+
+  let actualSpent = parseFloat(actualSpentEl.value) || 0;
+  let pctUsed = budget > 0 ? (actualSpent / budget * 100) : 0;
+  pctUsedEl.value = pctUsed ? pctUsed.toFixed(1) + '%' : '';
+
+  // Calculate rating using new logic
+  let rating = calcFinancialRating(budget, savingsTarget, actualSpent);
+  ratingEl.value = rating;
+
+  // Weighted
+  let weight = parseFloat(weightEl.value) || 0;
+  let weighted = ((rating * weight) / 100).toFixed(2);
+  weightedEl.value = isNaN(weighted) ? "" : weighted;
+
+  updateScoreSummary();
+}
+
 function getScoreInputsCount() {
   let count = 0;
   SCORECARD_DIMENSIONS.forEach(dim => count += dim.measures.length);
   return count;
 }
+
+// ========== SCORECARD CALCULATION ==============
 function updateWeighted(idx) {
   const rating = parseFloat(document.getElementById(`rating_${idx}`).value) || 0;
   const weight = parseFloat(document.getElementById(`weight_${idx}`).value) || 0;
@@ -317,12 +404,13 @@ function updateWeighted(idx) {
   document.getElementById(`weighted_${idx}`).value = isNaN(weighted) ? "" : weighted;
   updateScoreSummary();
 }
+
 function updateScoreSummary() {
   const n = getScoreInputsCount();
   let totalWeighted = 0, totalWeight = 0;
   for (let i = 1; i <= n; ++i) {
-    const weighted = parseFloat(document.getElementById(`weighted_${i}`).value) || 0;
-    const weight = parseFloat(document.getElementById(`weight_${i}`).value) || 0;
+    const weighted = parseFloat(document.getElementById(`weighted_${i}`)?.value) || 0;
+    const weight = parseFloat(document.getElementById(`weight_${i}`)?.value) || 0;
     totalWeighted += weighted;
     totalWeight += weight;
   }
@@ -345,23 +433,37 @@ function getScorecardFields() {
   SCORECARD_DIMENSIONS.forEach(dim => {
     dim.measures.forEach(m => {
       idx++;
-      fields.push({
-        dimension: dim.dimension,
-        measure: m.measure,
-        target: m.target,
-        actual: document.getElementById(`actual_${idx}`).value,
-        rating: document.getElementById(`rating_${idx}`).value,
-        weight: document.getElementById(`weight_${idx}`).value,
-        weighted: document.getElementById(`weighted_${idx}`).value,
-        comment: document.getElementById(`comment_${idx}`).value
-      });
+      if (m.type === "financial") {
+        fields.push({
+          dimension: dim.dimension,
+          measure: m.measure,
+          budget: m.budget,
+          savingsTarget: m.budget * (1 - m.savingsTargetPct),
+          actualSpent: document.getElementById(`actual_spent_${idx}`).value,
+          pctUsed: document.getElementById(`pct_used_${idx}`).value,
+          rating: document.getElementById(`rating_${idx}`).value,
+          weight: document.getElementById(`weight_${idx}`).value,
+          weighted: document.getElementById(`weighted_${idx}`).value,
+          comment: document.getElementById(`comment_${idx}`).value
+        });
+      } else {
+        fields.push({
+          dimension: dim.dimension,
+          measure: m.measure,
+          target: m.target,
+          actual: document.getElementById(`actual_${idx}`).value,
+          rating: document.getElementById(`rating_${idx}`).value,
+          weight: document.getElementById(`weight_${idx}`).value,
+          weighted: document.getElementById(`weighted_${idx}`).value,
+          comment: document.getElementById(`comment_${idx}`).value
+        });
+      }
     });
   });
   return fields;
 }
 
 // ========== AUTO-FILL USER DETAILS ==========
-// UPDATED FUNCTION
 function autofillUserDetails() {
   if (!userProfile) return;
   fetch(APPS_SCRIPT_URL + '?action=lookupUser&email=' + encodeURIComponent(userProfile.email))
