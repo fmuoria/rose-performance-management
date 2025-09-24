@@ -81,6 +81,10 @@
           <input type="text" id="division" required>
         </div>
         <div class="info-col">
+          <label for="level">Level:</label><br>
+          <input type="text" id="level" disabled>
+        </div>
+        <div class="info-col">
           <label for="periodYear">Year:</label><br>
           <select id="periodYear">
             <option value="2025">2025</option>
@@ -157,8 +161,10 @@
 <script>
 // ===== GOOGLE SIGN-IN LOGIC =====
 let userProfile = null;
-const GOOGLE_CLIENT_ID = "851703142133-3186bsmuthhrklaa1eaddqa9c0tkb46d.apps.googleusercontent.com";
+// YOUR NEW GOOGLE APPS SCRIPT URL:
 const APPS_SCRIPT_URL = "https://script.google.com/macros/library/d/1KXiPaZlfODVdYmqdttMEzqkXWtyX6OiTrpLPHw5SI4U3KAeYXWqjxc7z/1";
+
+const GOOGLE_CLIENT_ID = "851703142133-3186bsmuthhrklaa1eaddqa9c0tkb46d.apps.googleusercontent.com";
 
 // Demo scorecard structure
 const SCORECARD_DIMENSIONS = [
@@ -203,6 +209,7 @@ window.onload = function() {
     renderScorecardRows();
     loadUserReports();
     loadDashboard();
+    autofillUserDetails(); // <-- Auto-fill after login
   };
   google.accounts.id.initialize({
     client_id: GOOGLE_CLIENT_ID,
@@ -352,6 +359,21 @@ function getScorecardFields() {
   return fields;
 }
 
+// ========== AUTO-FILL USER DETAILS ==========
+function autofillUserDetails() {
+  if (!userProfile) return;
+  fetch(APPS_SCRIPT_URL + '?action=lookupUser&email=' + encodeURIComponent(userProfile.email))
+    .then(r => r.json())
+    .then(data => {
+      if (data) {
+        if (data.name) document.getElementById("employeeName").value = data.name;
+        if (data.title) document.getElementById("employeeJob").value = data.title;
+        if (data.division) document.getElementById("division").value = data.division;
+        if (data.level) document.getElementById("level").value = data.level;
+      }
+    });
+}
+
 // ========== SAVE SCORECARD ==========
 function saveScorecard() {
   if (!userProfile) {
@@ -384,6 +406,7 @@ function saveScorecard() {
     name: document.getElementById("employeeName").value,
     job: document.getElementById("employeeJob").value,
     division: document.getElementById("division").value,
+    level: document.getElementById("level").value,
     year: document.getElementById("periodYear").value,
     month: document.getElementById("periodMonth").value,
     week: document.getElementById("periodWeek").value,
@@ -425,7 +448,7 @@ function renderReportsTable(records) {
     return;
   }
   let html = `<table class="reports-table"><thead><tr>
-    <th>Timestamp</th><th>Year</th><th>Month</th><th>Week</th><th>Division</th><th>Job</th>
+    <th>Timestamp</th><th>Year</th><th>Month</th><th>Week</th><th>Division</th><th>Job</th><th>Level</th>
     <th>Weighted Score</th>
   </tr></thead><tbody>`;
   records.forEach(rec => {
@@ -444,6 +467,7 @@ function renderReportsTable(records) {
       <td>${rec.week || ""}</td>
       <td>${rec.division || ""}</td>
       <td>${rec.job || ""}</td>
+      <td>${rec.level || ""}</td>
       <td>${weightedScore}</td>
     </tr>`;
   });
