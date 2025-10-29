@@ -624,34 +624,53 @@ function renderReportsTable(records) {
     wrap.innerHTML = `<div class="empty-msg">No submissions yet.</div>`;
     return;
   }
+  
   let html = `<table class="reports-table"><thead><tr>
     <th>Timestamp</th><th>Year</th><th>Month</th><th>Week</th><th>Division</th><th>Job</th><th>Level</th>
     <th>Weighted Score</th>
   </tr></thead><tbody>`;
+  
   records.forEach(rec => {
-    // Try to extract total score from saved scores array
+    console.log("Processing record:", rec); // Debug log
+    
+    // Try to extract total weighted score from saved scores array
     let weightedScore = '';
-    if (rec.scores) {
+    if (rec.Scores || rec.scores) {
       try {
-        let scoresArr = Array.isArray(rec.scores) ? rec.scores : JSON.parse(rec.scores);
-        weightedScore = scoresArr.reduce((sum, s) => sum + (parseFloat(s.weighted) || 0), 0).toFixed(2);
-      } catch {}
+        let scoresData = rec.Scores || rec.scores;
+        let scoresArr = typeof scoresData === 'string' ? JSON.parse(scoresData) : scoresData;
+        
+        if (Array.isArray(scoresArr)) {
+          weightedScore = scoresArr.reduce((sum, s) => {
+            return sum + (parseFloat(s.weighted) || 0);
+          }, 0).toFixed(2);
+        }
+      } catch (e) {
+        console.error("Error parsing scores:", e);
+      }
     }
+    
+    // Format timestamp
+    let timestamp = rec.Timestamp || rec.timestamp || "";
+    if (timestamp && typeof timestamp === 'object' && timestamp.toLocaleString) {
+      timestamp = timestamp.toLocaleString();
+    }
+    
     html += `<tr>
-      <td>${rec.Timestamp || rec.timestamp || ""}</td>
-      <td>${rec.year || ""}</td>
-      <td>${rec.month || ""}</td>
-      <td>${rec.week || ""}</td>
-      <td>${rec.division || ""}</td>
-      <td>${rec.job || ""}</td>
-      <td>${rec.level || ""}</td>
-      <td>${weightedScore}</td>
+      <td>${timestamp}</td>
+      <td>${rec.Year || rec.year || ""}</td>
+      <td>${rec.Month || rec.month || ""}</td>
+      <td>${rec.Week || rec.week || ""}</td>
+      <td>${rec.Division || rec.division || ""}</td>
+      <td>${rec.Job || rec.job || ""}</td>
+      <td>${rec.Level || rec.level || ""}</td>
+      <td><strong>${weightedScore}</strong></td>
     </tr>`;
   });
+  
   html += `</tbody></table>`;
   wrap.innerHTML = html;
 }
-
 // ========== DASHBOARD ==========
 function loadDashboard() {
   if (!userProfile) return;
@@ -673,29 +692,56 @@ function renderDashboard(records) {
     wrap.innerHTML = `<div class="empty-msg">No data yet.</div>`;
     return;
   }
-  // Example metrics: average score, best score, number of submissions
+  
+  // Calculate metrics: average score, best score, number of submissions
   let total = 0, count = 0, best = 0, scores = [];
+  
   records.forEach(rec => {
-    if (rec.scores) {
+    let scoresData = rec.Scores || rec.scores;
+    if (scoresData) {
       try {
-        let arr = Array.isArray(rec.scores) ? rec.scores : JSON.parse(rec.scores);
-        let score = arr.reduce((sum, s) => sum + (parseFloat(s.weighted) || 0), 0);
-        if (!isNaN(score)) {
-          scores.push(score);
-          total += score;
-          if (score > best) best = score;
-          count++;
+        let arr = typeof scoresData === 'string' ? JSON.parse(scoresData) : scoresData;
+        
+        if (Array.isArray(arr)) {
+          let score = arr.reduce((sum, s) => sum + (parseFloat(s.weighted) || 0), 0);
+          if (!isNaN(score)) {
+            scores.push(score);
+            total += score;
+            if (score > best) best = score;
+            count++;
+          }
         }
-      } catch {}
+      } catch (e) {
+        console.error("Error parsing scores:", e);
+      }
     }
   });
-  let avg = count > 0 ? (total / count).toFixed(2) : "0";
+  
+  let avg = count > 0 ? (total / count).toFixed(2) : "0.00";
+  
   let html = `<div class="dashboard-summary">
-    <div class="dashboard-metric"><span class="label">Submissions:</span> <span class="value">${count}</span></div>
-    <div class="dashboard-metric"><span class="label">Average Weighted Score:</span> <span class="value">${avg}</span></div>
-    <div class="dashboard-metric"><span class="label">Best Score:</span> <span class="value">${best.toFixed(2)}</span></div>
+    <div class="dashboard-metric">
+      <span class="label">Total Submissions:</span> 
+      <span class="value">${count}</span>
+    </div>
+    <div class="dashboard-metric">
+      <span class="label">Average Weighted Score:</span> 
+      <span class="value">${avg}</span>
+    </div>
+    <div class="dashboard-metric">
+      <span class="label">Best Score:</span> 
+      <span class="value">${best.toFixed(2)}</span>
+    </div>
   </div>`;
-  // Optionally, add a chart or breakdown here using scores array
+  
+  // Add a breakdown by dimension if we have data
+  if (scores.length > 0) {
+    html += `<div class="dashboard-chart">
+      <h3>Score Trend</h3>
+      <p>Recent scores: ${scores.slice(-5).map(s => s.toFixed(2)).join(', ')}</p>
+    </div>`;
+  }
+  
   wrap.innerHTML = html;
 }
 </script>
