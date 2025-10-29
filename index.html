@@ -334,7 +334,7 @@
         </div>
         <div class="info-col">
           <label for="periodMonth">Month:</label><br>
-          <select id="periodMonth" required>
+          <select id="periodMonth" required onchange="loadEmployeeTargets()">
             <option value="">Select</option>
             <option value="01">January</option>
             <option value="02">February</option>
@@ -549,21 +549,24 @@ function getUserRole() {
   const url = APPS_SCRIPT_URL + '?action=getUserRole&email=' + encodeURIComponent(userProfile.email) + '&callback=handleUserRole';
   
   window.handleUserRole = function(data) {
-    console.log('User role data:', data);
-    userRole = data.role || 'Employee';
-    
-    updateUserUI();
-    renderTabs();
-    renderScorecardRows();
-    autofillUserDetails();
-    loadUserReports();
-    loadDashboard();
-    
-    // Load team data for managers/admins
-    if (userRole === 'Manager' || userRole === 'Admin') {
-      loadTeamMembers();
-    }
-  };
+  console.log('User role data:', data);
+  userRole = data.role || 'Employee';
+  
+  updateUserUI();
+  renderTabs();
+  renderScorecardRows();
+  autofillUserDetails();
+  loadUserReports();
+  loadDashboard();
+  
+  // Load team data for managers/admins
+  if (userRole === 'Manager' || userRole === 'Admin') {
+    loadTeamMembers();
+  }
+  
+  // For employees, load targets when month is selected
+  // (will be triggered by onchange event on month dropdown)
+};
   
   const script = document.createElement('script');
   script.src = url;
@@ -976,6 +979,150 @@ function renderScorecardRows() {
   });
   updateScoreSummary();
 }
+  // ========== LOAD EMPLOYEE TARGETS ==========
+function loadEmployeeTargets() {
+  if (!userProfile || !userRole) return;
+  
+  // Only load targets for employees and managers (not for own scorecard)
+  const year = document.getElementById("periodYear")?.value || new Date().getFullYear();
+  const month = document.getElementById("periodMonth")?.value;
+  
+  if (!month) {
+    console.log("No month selected yet");
+    return;
+  }
+  
+  // Calculate quarter from month
+  const quarter = "Q" + Math.ceil(parseInt(month) / 3);
+  
+  console.log(`Loading targets for ${userProfile.email}, Year: ${year}, Quarter: ${quarter}`);
+  
+  const url = APPS_SCRIPT_URL + '?action=getTargets&email=' + encodeURIComponent(userProfile.email) + 
+              '&year=' + year + '&quarter=' + quarter + '&callback=handleEmployeeTargets';
+  
+  window.handleEmployeeTargets = function(targets) {
+    console.log('Loaded targets:', targets);
+    
+    if (!targets || targets.length === 0) {
+      // No targets set - show warning for employees
+      if (userRole === 'Employee') {
+        alert('Your manager has not set targets for this quarter yet. Please contact your manager before submitting your scorecard.');
+        disableScorecard();
+      }
+      return;
+    }
+    
+    // Apply targets to scorecard
+    applyTargetsToScorecard(targets);
+    enableScorecard();
+  };
+  
+  const script = document.createElement('script');
+  script.src = url;
+  document.body.appendChild(script);
+}
+
+function applyTargetsToScorecard(targets) {
+  console.log('Applying targets to scorecard:', targets);
+  
+  // Clear existing scorecard
+  renderScorecardRows();
+  
+  // Group targets by dimension
+  const targetsByDimension = {};
+  targets.forEach(target => {
+    const dim = target.Dimension || target.dimension || '';
+    if (!targetsByDimension[dim]) {
+      targetsByDimension[dim] = [];
+    }
+    targetsByDimension[dim].push(target);
+  });
+  
+  // Rebuild scorecard with targets
+  const tbody = document.getElementById("scorecardBody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+  
+  let idx = 0;
+  
+  // Build scorecard from targets instead of default dimensions
+  Object.keys(targetsByDimension).forEach(dimensionName => {
+    // Add dimension header
+    const dimRow = document.createElement("tr");
+    dimRow.className = "scorecard-section-header";
+    dimRow.innerHTML = `<td colspan="10">${dimensionName}</td>`;
+    tbody.appendChild(dimRow);
+    
+    // Add measures for this dimension
+    targetsByDimension[dimensionName].forEach(target => {
+      idx++;
+      const currentIdx = idx;
+      
+      const measure = target.Measure || target.measure || '';
+      const targetValue = target['Target Value'] || target.targetValue || '';
+      const weight = target.Weight || target.weight || '';
+      const frequency = target.Frequency || target.frequency || '';
+      
+      // Check if this is a financial measure
+      const isFinancial = dimensionName === 'Financial';
+      
+      if (isFinancial) {
+        // Financial row
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${dimensionName}</td>
+          <td><b>${measure}</b></td>
+          <td><input type="number" id="target_budget_${currentIdx}" value="${targetValue}" disabled style="width:100%;background:#eef;"></td>
+          <td><input type="number" id="actual_spent_${currentIdx}" min="0" placeholder="Enter amount spent" style="width:100%"></td>
+          <td><input type="text" id="pct_used_${currentIdx}" disabled style="width:80px;background:#eef;"></td>
+          <td><input type="number" id="rating_${currentIdx}" min="1" max="5" step="0.1" disabled style="width:70px;background:#eef;"></td>
+          <td><input type="number" id="weight_${currentIdx}" value="${weight}" disabled style="width:65px;background:#eef;"></td>
+          <td><input type="text" id="weighted_${currentIdx}" disabled style="width:80px; background:#f5f5fd;"></td>
+          <td><textarea id="comment_${currentIdx}" style="width:98%;"></textarea></td>
+          <td><input type="url" id="evidence_${currentIdx}" placeholder="https://drive.google.com/..." style="width:100%; padding: 6px; font-size: 0.95em;"></td>
+        `;
+        tbody.appendChild(row);
+        
+        document.getElementById(`actual_spent_${currentIdx}`).addEventListener('input', () => updateFinancialRow(currentIdx));
+      } else {
+        // Non-financial row
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${dimensionName}</td>
+          <td>${measure}</td>
+          <td><input type="number" id="target_${currentIdx}" value="${targetValue}" disabled style="width:100%;background:#eef;"></td>
+          <td><input type="number" id="actual_${currentIdx}" placeholder="Enter actual" style="width:100%"></td>
+          <td></td>
+          <td><input type="number" id="rating_${currentIdx}" min="1" max="5" step="0.1" disabled style="width:70px;background:#eef;"></td>
+          <td><input type="number" id="weight_${currentIdx}" value="${weight}" disabled style="width:65px;background:#eef;"></td>
+          <td><input type="text" id="weighted_${currentIdx}" disabled style="width:80px; background:#f5f5fd;"></td>
+          <td><textarea id="comment_${currentIdx}" style="width:98%;"></textarea></td>
+          <td><input type="url" id="evidence_${currentIdx}" placeholder="https://drive.google.com/..." style="width:100%; padding: 6px; font-size: 0.95em;"></td>
+        `;
+        tbody.appendChild(row);
+        
+        document.getElementById(`actual_${currentIdx}`).addEventListener('input', () => updateNonFinancialRow(currentIdx));
+      }
+    });
+  });
+  
+  updateScoreSummary();
+}
+
+function disableScorecard() {
+  const tbody = document.getElementById("scorecardBody");
+  if (tbody) tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:30px;color:#e53e3e;font-size:1.1em;"><strong>⚠️ Scorecard Disabled</strong><br><br>Your manager has not set quarterly targets yet. Please contact your manager to set up your performance targets before you can submit your scorecard.</td></tr>`;
+  
+  const submitBtn = document.querySelector('#scorecardForm button[type="submit"]');
+  if (submitBtn) submitBtn.disabled = true;
+  
+  document.getElementById("scoreSummary").innerHTML = '';
+}
+
+function enableScorecard() {
+  const submitBtn = document.querySelector('#scorecardForm button[type="submit"]');
+  if (submitBtn) submitBtn.disabled = false;
+}
 
 function calcFinancialRating(targetBudget, actualSpent) {
   if (targetBudget === 0 || actualSpent === 0) return 0;
@@ -1052,9 +1199,8 @@ function updateNonFinancialRow(idx) {
 }
 
 function getScoreInputsCount() {
-  let count = 0;
-  SCORECARD_DIMENSIONS.forEach(dim => count += dim.measures.length);
-  return count;
+  const rows = document.querySelectorAll('#scorecardBody tr:not(.scorecard-section-header)');
+  return rows.length;
 }
 
 function updateScoreSummary() {
