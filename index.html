@@ -10,8 +10,8 @@
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; margin: 0;}
     .container { max-width: 1200px; margin: 36px auto 36px auto; background: #fff; border-radius: 18px; box-shadow: 0 10px 32px rgba(80,60,120,0.15); padding: 0;}
     h1 { text-align: center; color: #2c3e50; margin-top: 0; padding: 32px 0 10px 0;}
-    .tabs { display: flex; border-bottom: 2px solid #d1d5db; background: #f7f7fd;}
-    .tab-btn { flex: 1; padding: 18px 0; text-align: center; border: none; background: none; font-size: 1.1rem; color: #6c6c96; cursor: pointer; font-weight: 600; transition: all .18s;}
+    .tabs { display: flex; border-bottom: 2px solid #d1d5db; background: #f7f7fd; overflow-x: auto;}
+    .tab-btn { flex: 1; padding: 18px 0; text-align: center; border: none; background: none; font-size: 1.1rem; color: #6c6c96; cursor: pointer; font-weight: 600; transition: all .18s; min-width: 120px;}
     .tab-btn.active { color: #4b2994; background: #fff; border-bottom: 3px solid #667eea;}
     .tab-content { display: none; padding: 38px 38px 25px 38px;}
     .tab-content.active { display: block;}
@@ -27,11 +27,7 @@
     .scorecard-table { width: 100%; border-collapse: collapse; margin: 25px 0 10px 0; background: #fafafa;}
     .scorecard-table th, .scorecard-table td { border: 1px solid #d1d5db; padding: 10px 8px; font-size: 1rem; vertical-align: top;}
     .scorecard-table th { background: #f2f6fa; color: #34495e; font-weight: bold;}
-   .scorecard-table th:nth-child(10),
-.scorecard-table td:nth-child(10) {
-  min-width: 150px;
-  max-width: 200px;
-}
+    .scorecard-table th:nth-child(10), .scorecard-table td:nth-child(10) { min-width: 150px; max-width: 200px;}
     .scorecard-section-header { background: #667eea; color: #fff; font-size: 1.1rem; letter-spacing: 0.05em;}
     .section-total-row { background: #e4e8f8; font-weight: bold;}
     .final-total-row { background: #27ae60; color: #fff; font-weight: bold; font-size: 1.12rem;}
@@ -53,6 +49,24 @@
     .signin-bar .user { font-size: 1.08rem; color: #523b6a; }
     .signin-bar .signout-btn { background: #e33; color: #fff; font-weight: bold; border: none; border-radius: 6px; padding: 8px 18px; margin-left: 12px; cursor: pointer; }
     #g_id_signin { display:inline-block; vertical-align:middle;}
+    
+    /* Team Card Styles */
+    .team-card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin: 10px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1);}
+    .team-card h4 { margin: 0 0 10px 0; color: #2d3748;}
+    .team-card p { margin: 5px 0; color: #4a5568; font-size: 0.95em;}
+    .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; margin-top: 20px;}
+    
+    /* Targets Form */
+    .targets-form { background: #f7fafc; padding: 20px; border-radius: 8px; margin: 20px 0;}
+    .target-row { display: flex; gap: 10px; margin-bottom: 15px; align-items: center; flex-wrap: wrap;}
+    .target-row input, .target-row select { flex: 1; min-width: 120px;}
+    .target-row button { flex: 0; padding: 8px 12px; margin: 0;}
+    
+    /* Role Badge */
+    .role-badge { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; font-weight: 600; margin-left: 8px;}
+    .role-badge.admin { background: #f56565; color: white;}
+    .role-badge.manager { background: #667eea; color: white;}
+    .role-badge.employee { background: #48bb78; color: white;}
 
     /* Modal Styles */
     .scorecard-modal {
@@ -195,229 +209,88 @@
     .btn-close-modal:hover {
       background: #cbd5e0;
     }
-   /* Modal Styles */
-.scorecard-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  animation: fadeIn 0.3s;
-}
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
+    /* Dashboard Styles */
+    .dashboard-container {
+      display: grid;
+      gap: 20px;
+    }
 
-.modal-content {
-  background: white;
-  border-radius: 12px;
-  max-width: 1000px;
-  width: 90%;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-}
+    .dashboard-card {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      border: 1px solid #e2e8f0;
+    }
 
-.modal-header {
-  padding: 20px 30px;
-  border-bottom: 2px solid #e2e8f0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border-radius: 12px 12px 0 0;
-}
+    .dashboard-card h3 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      color: #2d3748;
+      font-size: 1.2em;
+    }
 
-.modal-header h2 {
-  margin: 0;
-  font-size: 1.5em;
-}
+    .overall-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
 
-.modal-close {
-  background: none;
-  border: none;
-  font-size: 2em;
-  color: white;
-  cursor: pointer;
-  line-height: 1;
-  padding: 0;
-  width: 30px;
-  height: 30px;
-}
+    .overall-card h3 {
+      color: white;
+    }
 
-.modal-close:hover {
-  opacity: 0.7;
-}
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+    }
 
-.modal-body {
-  padding: 30px;
-}
+    .metric-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+    }
 
-.detail-info {
-  background: #f7fafc;
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-}
+    .metric-label {
+      font-size: 0.9em;
+      opacity: 0.9;
+      margin-bottom: 8px;
+    }
 
-.detail-info p {
-  margin: 8px 0;
-  font-size: 0.95em;
-}
+    .metric-value {
+      font-size: 1.8em;
+      font-weight: bold;
+    }
 
-.details-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 15px;
-}
+    .summary-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
 
-.details-table th,
-.details-table td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid #e2e8f0;
-}
+    .summary-table th,
+    .summary-table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+    }
 
-.details-table th {
-  background: #f7fafc;
-  font-weight: 600;
-  color: #2d3748;
-}
+    .summary-table th {
+      background: #f7fafc;
+      color: #2d3748;
+      font-weight: 600;
+    }
 
-.details-table tbody tr:hover {
-  background: #f7fafc;
-}
-
-.details-table tfoot {
-  background: #edf2f7;
-  font-weight: bold;
-}
-
-.modal-footer {
-  padding: 20px 30px;
-  border-top: 2px solid #e2e8f0;
-  text-align: right;
-}
-
-.btn-view {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.9em;
-  font-weight: 500;
-}
-
-.btn-view:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
-}
-
-.btn-close-modal {
-  background: #e2e8f0;
-  color: #2d3748;
-  border: none;
-  padding: 10px 24px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 500;
-}
-
-.btn-close-modal:hover {
-  background: #cbd5e0;
-}
-
-/* Dashboard Styles */
-.dashboard-container {
-  display: grid;
-  gap: 20px;
-}
-
-.dashboard-card {
-  background: white;
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e2e8f0;
-}
-
-.dashboard-card h3 {
-  margin-top: 0;
-  margin-bottom: 15px;
-  color: #2d3748;
-  font-size: 1.2em;
-}
-
-.overall-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-}
-
-.overall-card h3 {
-  color: white;
-}
-
-.metric-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 15px;
-}
-
-.metric-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 15px;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
-}
-
-.metric-label {
-  font-size: 0.9em;
-  opacity: 0.9;
-  margin-bottom: 8px;
-}
-
-.metric-value {
-  font-size: 1.8em;
-  font-weight: bold;
-}
-
-.summary-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
-}
-
-.summary-table th,
-.summary-table td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.summary-table th {
-  background: #f7fafc;
-  color: #2d3748;
-  font-weight: 600;
-}
-
-.summary-table tbody tr:hover {
-  background: #f7fafc;
-}
+    .summary-table tbody tr:hover {
+      background: #f7fafc;
+    }
 
     @media (max-width: 900px) { .container { padding: 0; } .tab-content { padding: 18px 1vw 12px 1vw; } .info-row { flex-direction: column; gap: 10px;} }
-    @media (max-width: 600px) { .tab-content { padding: 7px 0; } .scorecard-table th, .scorecard-table td, .reports-table th, .reports-table td { font-size: 0.93rem; } }
+    @media (max-width: 600px) { .tab-content { padding: 7px 0; } .scorecard-table th, .scorecard-table td, .reports-table th, .reports-table td { font-size: 0.93rem; } .tabs { font-size: 0.9rem;} .tab-btn { min-width: 90px; padding: 12px 5px;}}
   </style>
 </head>
 <body>
@@ -427,11 +300,10 @@
     <div id="g_id_signin"></div>
   </div>
   <h1>Quarterly Performance Scorecard</h1>
-  <div class="tabs">
-    <button class="tab-btn active" onclick="showTab('scorecardTab', this)">Scorecard</button>
-    <button class="tab-btn" onclick="showTab('reportsTab', this)">Reports</button>
-    <button class="tab-btn" onclick="showTab('dashboardTab', this)">Dashboard</button>
+  <div class="tabs" id="tabsContainer">
+    <!-- Tabs will be dynamically generated based on role -->
   </div>
+  
   <!-- SCORECARD TAB -->
   <div class="tab-content active" id="scorecardTab">
     <form id="scorecardForm" autocomplete="off" onsubmit="event.preventDefault(); saveScorecard();">
@@ -456,6 +328,7 @@
           <label for="periodYear">Year:</label><br>
           <select id="periodYear">
             <option value="2025">2025</option>
+            <option value="2026">2026</option>
             <option value="2024">2024</option>
           </select>
         </div>
@@ -492,15 +365,15 @@
       <table class="scorecard-table" id="scorecardTable">
         <thead>
           <tr>
-            <th style="width: 17%;">Dimension</th>
-            <th style="width: 21%;">Performance Measure</th>
-            <th style="width: 13%;">Target</th>
-            <th style="width: 15%;">Actual<br><span style="font-weight:normal;">(employee input)</span></th>
-            <th style="width: 10%;">% Used/Savings</th>
-            <th style="width: 7%;">Rating<br>(1-5)</th>
-            <th style="width: 7%;">Weight<br>(%)</th>
-            <th style="width: 10%;">Weighted<br>Average</th>
-            <th style="width: 20%;">Manager's Comments</th>
+            <th>Dimension</th>
+            <th>Performance Measure</th>
+            <th>Target</th>
+            <th>Actual<br><span style="font-weight:normal;">(employee input)</span></th>
+            <th>% Used/Savings</th>
+            <th>Rating<br>(1-5)</th>
+            <th>Weight<br>(%)</th>
+            <th>Weighted<br>Average</th>
+            <th>Manager's Comments</th>
             <th>Evidence Link</th>
           </tr>
         </thead>
@@ -517,55 +390,118 @@
       1.00–2.99 Below Target;&nbsp; 3.00 Target Met;&nbsp; 3.1–4.99 Exceeds Target;&nbsp; 5.00 Far Exceeds Target
     </div>
   </div>
+  
   <!-- REPORTS TAB -->
   <div class="tab-content" id="reportsTab">
     <h2>Your Weekly Submissions</h2>
     <div id="reportsTableWrap"></div>
   </div>
+  
   <!-- DASHBOARD TAB -->
   <div class="tab-content" id="dashboardTab">
     <h2>Performance Dashboard</h2>
     <div id="dashboardWrap"></div>
   </div>
+  
+  <!-- MY TEAM TAB (Manager/Admin only) -->
+  <div class="tab-content" id="myTeamTab">
+    <h2>My Team</h2>
+    <div id="teamMembersWrap"></div>
+  </div>
+  
+  <!-- SET TARGETS TAB (Manager/Admin only) -->
+  <div class="tab-content" id="setTargetsTab">
+    <h2>Set Quarterly Targets</h2>
+    <div class="info-row" style="margin-bottom: 20px;">
+      <div class="info-col">
+        <label for="targetEmployeeSelect">Select Team Member:</label>
+        <select id="targetEmployeeSelect" onchange="loadEmployeeCurrentTargets()">
+          <option value="">-- Select Team Member --</option>
+        </select>
+      </div>
+      <div class="info-col">
+        <label for="targetYear">Year:</label>
+        <select id="targetYear">
+          <option value="2025">2025</option>
+          <option value="2026">2026</option>
+        </select>
+      </div>
+      <div class="info-col">
+        <label for="targetQuarter">Quarter:</label>
+        <select id="targetQuarter">
+          <option value="Q1">Q1 (Jan-Mar)</option>
+          <option value="Q2">Q2 (Apr-Jun)</option>
+          <option value="Q3">Q3 (Jul-Sep)</option>
+          <option value="Q4">Q4 (Oct-Dec)</option>
+        </select>
+      </div>
+    </div>
+    <div id="targetsFormWrap"></div>
+  </div>
+  
+  <!-- TEAM REPORTS TAB (Manager/Admin only) -->
+  <div class="tab-content" id="teamReportsTab">
+    <h2>Team Member Reports</h2>
+    <div class="info-row" style="margin-bottom: 20px;">
+      <div class="info-col" style="max-width: 400px;">
+        <label for="teamReportSelect">Select Team Member:</label>
+        <select id="teamReportSelect" onchange="loadTeamMemberReports()">
+          <option value="">-- Select Team Member --</option>
+        </select>
+      </div>
+    </div>
+    <div id="teamReportsWrap"></div>
+  </div>
+  
+  <!-- TEAM DASHBOARD TAB (Manager/Admin only) -->
+  <div class="tab-content" id="teamDashboardTab">
+    <h2>Team Performance Dashboard</h2>
+    <div class="info-row" style="margin-bottom: 20px;">
+      <div class="info-col" style="max-width: 400px;">
+        <label for="teamDashboardSelect">Select Team Member:</label>
+        <select id="teamDashboardSelect" onchange="loadTeamMemberDashboard()">
+          <option value="">-- Select Team Member --</option>
+        </select>
+      </div>
+    </div>
+    <div id="teamDashboardWrap"></div>
+  </div>
 </div>
+
 <script>
-// ===== GOOGLE SIGN-IN LOGIC =====
+// ===== GLOBAL VARIABLES =====
 let userProfile = null;
+let userRole = null; // 'Admin', 'Manager', or 'Employee'
+let teamMembers = [];
 
-// Update this to your actual Google Apps Script endpoint:
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzF9u325VOjHzVuZKU3xR8EMtKzq4jdIxVJqxzFSFOUnhgyvldSAaCTP-e-34krIaEu_Q/exec";
-
 const GOOGLE_CLIENT_ID = "851703142133-3186bsmuthhrklaa1eaddqa9c0tkb46d.apps.googleusercontent.com";
 
-// Scorecard structure (Financial uses new logic)
-const FINANCIAL_BUDGET = 100000; // <-- Set budget here
-const FINANCIAL_SAVINGS_TARGET_PCT = 0.15; // 15%
-const FINANCIAL_SAVINGS_TARGET = FINANCIAL_BUDGET * (1 - FINANCIAL_SAVINGS_TARGET_PCT); // e.g. 85,000
-
+// Default scorecard dimensions (can be overridden by targets)
 const SCORECARD_DIMENSIONS = [
   {
     dimension: "Financial",
     measures: [
-      { measure: "Budget Savings", type: "financial", budget: FINANCIAL_BUDGET, savingsTargetPct: FINANCIAL_SAVINGS_TARGET_PCT }
+      { measure: "Budget Savings", type: "financial", weight: 30 }
     ]
   },
   {
     dimension: "Customer",
     measures: [
-      { measure: "Customer Satisfaction", target: "90%+", weight: 15 },
-      { measure: "New Accounts", target: "10", weight: 10 }
+      { measure: "Customer Satisfaction", weight: 15 },
+      { measure: "New Accounts", weight: 10 }
     ]
   },
   {
     dimension: "Internal Process",
     measures: [
-      { measure: "Process Improvement", target: "2 Projects", weight: 15 }
+      { measure: "Process Improvement", weight: 15 }
     ]
   },
   {
     dimension: "Learning & Growth",
     measures: [
-      { measure: "Training Hours", target: "20", weight: 10 }
+      { measure: "Training Hours", weight: 10 }
     ]
   }
 ];
@@ -579,20 +515,21 @@ window.onload = function() {
       name: data.name,
       picture: data.picture
     };
-    updateUserUI();
-    renderScorecardRows();
-    loadUserReports();
-    loadDashboard();
-    autofillUserDetails();
+    
+    // Get user role from backend
+    getUserRole();
   };
+  
   google.accounts.id.initialize({
     client_id: GOOGLE_CLIENT_ID,
     callback: handleCredentialResponse
   });
+  
   google.accounts.id.renderButton(
     document.getElementById("g_id_signin"),
     { theme: "outline", size: "large", width: 220 }
   );
+  
   updateUserUI();
   renderScorecardRows();
 };
@@ -607,28 +544,82 @@ function parseJwt(token) {
   );
   return JSON.parse(jsonPayload);
 }
+
+function getUserRole() {
+  const url = APPS_SCRIPT_URL + '?action=getUserRole&email=' + encodeURIComponent(userProfile.email) + '&callback=handleUserRole';
+  
+  window.handleUserRole = function(data) {
+    console.log('User role data:', data);
+    userRole = data.role || 'Employee';
+    
+    updateUserUI();
+    renderTabs();
+    renderScorecardRows();
+    autofillUserDetails();
+    loadUserReports();
+    loadDashboard();
+    
+    // Load team data for managers/admins
+    if (userRole === 'Manager' || userRole === 'Admin') {
+      loadTeamMembers();
+    }
+  };
+  
+  const script = document.createElement('script');
+  script.src = url;
+  document.body.appendChild(script);
+}
+
+function renderTabs() {
+  const tabsContainer = document.getElementById('tabsContainer');
+  let tabs = `
+    <button class="tab-btn active" onclick="showTab('scorecardTab', this)">Scorecard</button>
+    <button class="tab-btn" onclick="showTab('reportsTab', this)">Reports</button>
+    <button class="tab-btn" onclick="showTab('dashboardTab', this)">Dashboard</button>
+  `;
+  
+  if (userRole === 'Manager' || userRole === 'Admin') {
+    tabs += `
+      <button class="tab-btn" onclick="showTab('myTeamTab', this)">My Team</button>
+      <button class="tab-btn" onclick="showTab('setTargetsTab', this)">Set Targets</button>
+      <button class="tab-btn" onclick="showTab('teamReportsTab', this)">Team Reports</button>
+      <button class="tab-btn" onclick="showTab('teamDashboardTab', this)">Team Dashboard</button>
+    `;
+  }
+  
+  tabsContainer.innerHTML = tabs;
+}
+
 function updateUserUI() {
   const userStatus = document.getElementById("userStatus");
-  if (userProfile) {
+  if (userProfile && userRole) {
+    const roleBadgeClass = userRole.toLowerCase();
     userStatus.innerHTML = `
       <span class="user">
         <img src="${userProfile.picture}" alt="User" style="width:34px;vertical-align:middle;border-radius:50%;margin-right:8px;">
-        Welcome, <b>${userProfile.name}</b> (${userProfile.email})
+        Welcome, <b>${userProfile.name}</b> 
+        <span class="role-badge ${roleBadgeClass}">${userRole}</span>
       </span>
       <button class="signout-btn" onclick="signOut()">Sign out</button>
     `;
     document.getElementById("g_id_signin").style.display = "none";
     document.querySelectorAll('.tab-content, .tabs').forEach(el => el.style.display = "");
+  } else if (userProfile) {
+    userStatus.innerHTML = `<span style="font-size:1.07rem;">Loading your profile...</span>`;
   } else {
     userStatus.innerHTML = `<span style="font-size:1.07rem;">Please sign in with your Google account to use the scorecard.</span>`;
     document.getElementById("g_id_signin").style.display = "";
     document.querySelectorAll('.tab-content, .tabs').forEach(el => el.style.display = "none");
   }
 }
+
 function signOut() {
   google.accounts.id.disableAutoSelect();
   userProfile = null;
+  userRole = null;
+  teamMembers = [];
   updateUserUI();
+  location.reload();
 }
 
 // ========== TABS ==============
@@ -637,8 +628,292 @@ function showTab(tabId, btn) {
   document.getElementById(tabId).classList.add('active');
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
+  
   if (tabId === 'reportsTab') loadUserReports();
   if (tabId === 'dashboardTab') loadDashboard();
+  if (tabId === 'myTeamTab') displayTeamMembers();
+  if (tabId === 'setTargetsTab') loadSetTargetsTab();
+  if (tabId === 'teamReportsTab') loadTeamReportsTab();
+  if (tabId === 'teamDashboardTab') loadTeamDashboardTab();
+}
+
+// ========== TEAM MANAGEMENT (MANAGER/ADMIN) ==========
+function loadTeamMembers() {
+  const url = APPS_SCRIPT_URL + '?action=getTeamMembers&email=' + encodeURIComponent(userProfile.email) + '&callback=handleTeamMembers';
+  
+  window.handleTeamMembers = function(data) {
+    console.log('Team members:', data);
+    teamMembers = data || [];
+    displayTeamMembers();
+    populateTeamSelects();
+  };
+  
+  const script = document.createElement('script');
+  script.src = url;
+  document.body.appendChild(script);
+}
+
+function displayTeamMembers() {
+  const wrap = document.getElementById('teamMembersWrap');
+  if (!wrap) return;
+  
+  if (teamMembers.length === 0) {
+    wrap.innerHTML = `<div class="empty-msg">No team members found.</div>`;
+    return;
+  }
+  
+  let html = '<div class="team-grid">';
+  teamMembers.forEach(member => {
+    const roleBadgeClass = (member.role || 'Employee').toLowerCase();
+    html += `
+      <div class="team-card">
+        <h4>${member.name}</h4>
+        <p><strong>Email:</strong> ${member.email}</p>
+        <p><strong>Title:</strong> ${member.title}</p>
+        <p><strong>Division:</strong> ${member.division}</p>
+        <p><strong>Role:</strong> <span class="role-badge ${roleBadgeClass}">${member.role || 'Employee'}</span></p>
+      </div>
+    `;
+  });
+  html += '</div>';
+  
+  wrap.innerHTML = html;
+}
+
+function populateTeamSelects() {
+  const selects = ['targetEmployeeSelect', 'teamReportSelect', 'teamDashboardSelect'];
+  
+  selects.forEach(selectId => {
+    const select = document.getElementById(selectId);
+    if (!select) return;
+    
+    const currentValue = select.value;
+    select.innerHTML = '<option value="">-- Select Team Member --</option>';
+    
+    teamMembers.forEach(member => {
+      const option = document.createElement('option');
+      option.value = member.email;
+      option.textContent = `${member.name} (${member.title})`;
+      select.appendChild(option);
+    });
+    
+    if (currentValue) select.value = currentValue;
+  });
+}
+
+// ========== SET TARGETS (MANAGER/ADMIN) ==========
+function loadSetTargetsTab() {
+  const wrap = document.getElementById('targetsFormWrap');
+  if (!wrap) return;
+  
+  const selectedEmployee = document.getElementById('targetEmployeeSelect').value;
+  
+  if (!selectedEmployee) {
+    wrap.innerHTML = `<div class="empty-msg">Please select a team member to set targets.</div>`;
+    return;
+  }
+  
+  wrap.innerHTML = `
+    <div class="targets-form">
+      <h3>Set Performance Targets</h3>
+      <div id="targetsList"></div>
+      <button onclick="addTargetRow()" style="margin-top: 15px;">+ Add Target</button>
+      <button onclick="saveTargets()" style="margin-top: 15px; background: #48bb78;">Save All Targets</button>
+    </div>
+  `;
+  
+  addTargetRow();
+}
+
+let targetRowCount = 0;
+
+function addTargetRow() {
+  const targetsList = document.getElementById('targetsList');
+  if (!targetsList) return;
+  
+  targetRowCount++;
+  const rowId = `targetRow_${targetRowCount}`;
+  
+  const row = document.createElement('div');
+  row.className = 'target-row';
+  row.id = rowId;
+  row.innerHTML = `
+    <select class="target-dimension">
+      <option value="">Dimension</option>
+      <option value="Financial">Financial</option>
+      <option value="Customer">Customer</option>
+      <option value="Internal Process">Internal Process</option>
+      <option value="Learning & Growth">Learning & Growth</option>
+    </select>
+    <input type="text" class="target-measure" placeholder="Measure (e.g., Budget Savings)" style="flex: 2;">
+    <input type="number" class="target-value" placeholder="Target Value" style="flex: 1;">
+    <input type="number" class="target-weight" placeholder="Weight %" min="0" max="100" style="flex: 1;">
+    <select class="target-frequency">
+      <option value="Weekly">Weekly</option>
+      <option value="Monthly">Monthly</option>
+      <option value="Quarterly">Quarterly</option>
+    </select>
+    <button onclick="document.getElementById('${rowId}').remove()" style="background: #f56565; padding: 8px 12px;">Remove</button>
+  `;
+  
+  targetsList.appendChild(row);
+}
+
+function loadEmployeeCurrentTargets() {
+  const selectedEmployee = document.getElementById('targetEmployeeSelect').value;
+  if (!selectedEmployee) return;
+  
+  loadSetTargetsTab();
+  
+  // Load existing targets
+  const year = document.getElementById('targetYear').value;
+  const quarter = document.getElementById('targetQuarter').value;
+  
+  const url = APPS_SCRIPT_URL + '?action=getTargets&email=' + encodeURIComponent(selectedEmployee) + 
+              '&year=' + year + '&quarter=' + quarter + '&callback=handleExistingTargets';
+  
+  window.handleExistingTargets = function(targets) {
+    console.log('Existing targets:', targets);
+    if (targets && targets.length > 0) {
+      const targetsList = document.getElementById('targetsList');
+      targetsList.innerHTML = '';
+      
+      targets.forEach(target => {
+        addTargetRow();
+        const rows = targetsList.querySelectorAll('.target-row');
+        const lastRow = rows[rows.length - 1];
+        
+        lastRow.querySelector('.target-dimension').value = target.Dimension || target.dimension || '';
+        lastRow.querySelector('.target-measure').value = target.Measure || target.measure || '';
+        lastRow.querySelector('.target-value').value = target['Target Value'] || target.targetValue || '';
+        lastRow.querySelector('.target-weight').value = target.Weight || target.weight || '';
+        lastRow.querySelector('.target-frequency').value = target.Frequency || target.frequency || 'Weekly';
+      });
+    }
+  };
+  
+  const script = document.createElement('script');
+  script.src = url;
+  document.body.appendChild(script);
+}
+
+function saveTargets() {
+  const selectedEmployee = document.getElementById('targetEmployeeSelect').value;
+  const year = document.getElementById('targetYear').value;
+  const quarter = document.getElementById('targetQuarter').value;
+  
+  if (!selectedEmployee) {
+    alert('Please select a team member.');
+    return;
+  }
+  
+  const targetRows = document.querySelectorAll('.target-row');
+  const targets = [];
+  
+  targetRows.forEach(row => {
+    const dimension = row.querySelector('.target-dimension').value;
+    const measure = row.querySelector('.target-measure').value;
+    const targetValue = row.querySelector('.target-value').value;
+    const weight = row.querySelector('.target-weight').value;
+    const frequency = row.querySelector('.target-frequency').value;
+    
+    if (dimension && measure && targetValue && weight) {
+      targets.push({
+        dimension: dimension,
+        measure: measure,
+        targetValue: targetValue,
+        weight: weight,
+        frequency: frequency
+      });
+    }
+  });
+  
+  if (targets.length === 0) {
+    alert('Please add at least one target.');
+    return;
+  }
+  
+  const data = {
+    managerEmail: userProfile.email,
+    employeeEmail: selectedEmployee,
+    year: year,
+    quarter: quarter,
+    targets: targets
+  };
+  
+  console.log('Saving targets:', data);
+  
+  const jsonData = JSON.stringify(data);
+  const chunkSize = 1500;
+  const chunks = [];
+  for (let i = 0; i < jsonData.length; i += chunkSize) {
+    chunks.push(jsonData.substring(i, i + chunkSize));
+  }
+  
+  let url = APPS_SCRIPT_URL + '?action=saveTargets&callback=handleSaveTargetsResponse';
+  chunks.forEach((chunk, index) => {
+    url += '&chunk' + index + '=' + encodeURIComponent(chunk);
+  });
+  
+  window.handleSaveTargetsResponse = function(resp) {
+    console.log('Save targets response:', resp);
+    if (resp.result === 'success') {
+      alert('Targets saved successfully!');
+      loadEmployeeCurrentTargets();
+    } else {
+      alert('Error saving targets: ' + (resp.message || 'Unknown error'));
+    }
+  };
+  
+  const script = document.createElement('script');
+  script.src = url;
+  document.body.appendChild(script);
+}
+
+// ========== TEAM REPORTS (MANAGER/ADMIN) ==========
+function loadTeamReportsTab() {
+  populateTeamSelects();
+}
+
+function loadTeamMemberReports() {
+  const selectedEmail = document.getElementById('teamReportSelect').value;
+  if (!selectedEmail) {
+    document.getElementById('teamReportsWrap').innerHTML = '<div class="empty-msg">Please select a team member.</div>';
+    return;
+  }
+  
+  const url = APPS_SCRIPT_URL + '?action=getEmployeeScores&employeeEmail=' + encodeURIComponent(selectedEmail) + '&callback=handleTeamMemberReports';
+  
+  window.handleTeamMemberReports = function(records) {
+    renderReportsTable(records, 'teamReportsWrap');
+  };
+  
+  const script = document.createElement('script');
+  script.src = url;
+  document.body.appendChild(script);
+}
+
+// ========== TEAM DASHBOARD (MANAGER/ADMIN) ==========
+function loadTeamDashboardTab() {
+  populateTeamSelects();
+}
+
+function loadTeamMemberDashboard() {
+  const selectedEmail = document.getElementById('teamDashboardSelect').value;
+  if (!selectedEmail) {
+    document.getElementById('teamDashboardWrap').innerHTML = '<div class="empty-msg">Please select a team member.</div>';
+    return;
+  }
+  
+  const url = APPS_SCRIPT_URL + '?action=getEmployeeScores&employeeEmail=' + encodeURIComponent(selectedEmail) + '&callback=handleTeamMemberDashboard';
+  
+  window.handleTeamMemberDashboard = function(records) {
+    renderDashboard(records, 'teamDashboardWrap');
+  };
+  
+  const script = document.createElement('script');
+  script.src = url;
+  document.body.appendChild(script);
 }
 
 // ========== SCORECARD TABLE BUILDING ============
@@ -647,6 +922,7 @@ function renderScorecardRows() {
   if (!tbody) return;
   tbody.innerHTML = "";
   let idx = 0;
+  
   SCORECARD_DIMENSIONS.forEach(dim => {
     const dimRow = document.createElement("tr");
     dimRow.className = "scorecard-section-header";
@@ -655,10 +931,9 @@ function renderScorecardRows() {
 
     dim.measures.forEach(m => {
       idx++;
-      const currentIdx = idx; // Capture the current index
+      const currentIdx = idx;
       
       if (m.type === "financial") {
-        // Financial dimension logic - now with editable target
         const row = document.createElement("tr");
         row.innerHTML = `
           <td>${dim.dimension}</td>
@@ -667,19 +942,17 @@ function renderScorecardRows() {
           <td><input type="number" id="actual_spent_${currentIdx}" min="0" placeholder="Enter amount spent" style="width:100%"></td>
           <td><input type="text" id="pct_used_${currentIdx}" disabled style="width:80px;background:#eef;"></td>
           <td><input type="number" id="rating_${currentIdx}" min="1" max="5" step="0.1" disabled style="width:70px;background:#eef;"></td>
-          <td><input type="number" id="weight_${currentIdx}" value="30" min="0" max="100" step="1" required style="width:65px"></td>
+          <td><input type="number" id="weight_${currentIdx}" value="${m.weight || 30}" min="0" max="100" step="1" required style="width:65px"></td>
           <td><input type="text" id="weighted_${currentIdx}" disabled style="width:80px; background:#f5f5fd;"></td>
           <td><textarea id="comment_${currentIdx}" style="width:98%;"></textarea></td>
           <td><input type="url" id="evidence_${currentIdx}" placeholder="https://drive.google.com/..." style="width:100%; padding: 6px; font-size: 0.95em;"></td>
         `;
         tbody.appendChild(row);
 
-        // Add event listeners for financial calculation
         document.getElementById(`target_budget_${currentIdx}`).addEventListener('input', () => updateFinancialRow(currentIdx));
         document.getElementById(`actual_spent_${currentIdx}`).addEventListener('input', () => updateFinancialRow(currentIdx));
         document.getElementById(`weight_${currentIdx}`).addEventListener('input', () => updateFinancialRow(currentIdx));
       } else {
-        // Non-financial dimension logic with automatic rating calculation
         const row = document.createElement("tr");
         row.innerHTML = `
           <td>${dim.dimension}</td>
@@ -688,14 +961,13 @@ function renderScorecardRows() {
           <td><input type="number" id="actual_${currentIdx}" placeholder="Enter actual" style="width:100%"></td>
           <td></td>
           <td><input type="number" id="rating_${currentIdx}" min="1" max="5" step="0.1" disabled style="width:70px;background:#eef;"></td>
-          <td><input type="number" id="weight_${currentIdx}" value="${m.weight}" min="0" max="100" step="1" required style="width:65px"></td>
+          <td><input type="number" id="weight_${currentIdx}" value="${m.weight || 10}" min="0" max="100" step="1" required style="width:65px"></td>
           <td><input type="text" id="weighted_${currentIdx}" disabled style="width:80px; background:#f5f5fd;"></td>
           <td><textarea id="comment_${currentIdx}" style="width:98%;"></textarea></td>
           <td><input type="url" id="evidence_${currentIdx}" placeholder="https://drive.google.com/..." style="width:100%; padding: 6px; font-size: 0.95em;"></td>
         `;
         tbody.appendChild(row);
 
-        // Add event listeners using the captured index
         document.getElementById(`target_${currentIdx}`).addEventListener('input', () => updateNonFinancialRow(currentIdx));
         document.getElementById(`actual_${currentIdx}`).addEventListener('input', () => updateNonFinancialRow(currentIdx));
         document.getElementById(`weight_${currentIdx}`).addEventListener('input', () => updateNonFinancialRow(currentIdx));
@@ -705,21 +977,17 @@ function renderScorecardRows() {
   updateScoreSummary();
 }
 
-// ========== UPDATED FINANCIAL CALCULATION LOGIC ==========
 function calcFinancialRating(targetBudget, actualSpent) {
   if (targetBudget === 0 || actualSpent === 0) return 0;
   
-  let rating = 3.0; // Base rating if actual equals target
+  let rating = 3.0;
   
   if (actualSpent < targetBudget) {
-    // Spent less than target (saved money) - rating increases
     rating = 3.0 + 2.0 * ((targetBudget - actualSpent) / targetBudget);
   } else if (actualSpent > targetBudget) {
-    // Spent more than target (overspent) - rating decreases
     rating = 3.0 - 2.0 * ((actualSpent - targetBudget) / targetBudget);
   }
   
-  // Clamp rating between 1.0 and 5.0
   rating = Math.max(1.0, Math.min(5.0, rating));
   return Number(rating.toFixed(1));
 }
@@ -736,36 +1004,29 @@ function updateFinancialRow(idx) {
   const actualSpent = parseFloat(actualSpentEl.value) || 0;
   const weight = parseFloat(weightEl.value) || 0;
 
-  // Calculate % used
   let pctUsed = targetBudget > 0 ? (actualSpent / targetBudget * 100) : 0;
   pctUsedEl.value = pctUsed ? pctUsed.toFixed(1) + '%' : '';
 
-  // Calculate rating
   const rating = calcFinancialRating(targetBudget, actualSpent);
   ratingEl.value = rating;
 
-  // Calculate weighted average
   const weighted = ((rating * weight) / 100).toFixed(2);
   weightedEl.value = isNaN(weighted) ? "" : weighted;
 
   updateScoreSummary();
 }
 
-// ========== NEW: NON-FINANCIAL CALCULATION LOGIC ==========
 function calcNonFinancialRating(target, actual) {
   if (target === 0 || actual === 0) return 0;
   
-  let rating = 3.0; // Base rating if actual equals target
+  let rating = 3.0;
   
   if (actual >= target) {
-    // Exceeds or meets target
     rating = 3.0 + 2.0 * ((actual - target) / target);
   } else {
-    // Below target
     rating = 3.0 - 2.0 * ((target - actual) / target);
   }
   
-  // Clamp rating between 1.0 and 5.0
   rating = Math.max(1.0, Math.min(5.0, rating));
   return Number(rating.toFixed(1));
 }
@@ -781,11 +1042,9 @@ function updateNonFinancialRow(idx) {
   const actual = parseFloat(actualEl.value) || 0;
   const weight = parseFloat(weightEl.value) || 0;
 
-  // Calculate rating
   const rating = calcNonFinancialRating(target, actual);
   ratingEl.value = rating;
 
-  // Calculate weighted average
   const weighted = ((rating * weight) / 100).toFixed(2);
   weightedEl.value = isNaN(weighted) ? "" : weighted;
 
@@ -796,15 +1055,6 @@ function getScoreInputsCount() {
   let count = 0;
   SCORECARD_DIMENSIONS.forEach(dim => count += dim.measures.length);
   return count;
-}
-
-// ========== SCORECARD CALCULATION (UNCHANGED) ==============
-function updateWeighted(idx) {
-  const rating = parseFloat(document.getElementById(`rating_${idx}`).value) || 0;
-  const weight = parseFloat(document.getElementById(`weight_${idx}`).value) || 0;
-  const weighted = ((rating * weight) / 100).toFixed(2);
-  document.getElementById(`weighted_${idx}`).value = isNaN(weighted) ? "" : weighted;
-  updateScoreSummary();
 }
 
 function updateScoreSummary() {
@@ -827,13 +1077,11 @@ function resetScorecard() {
   document.getElementById("scoreSummary").innerHTML = "";
 }
 
-// ========== FORM DATA GATHERING (UPDATED) ==============
 function getScorecardFields() {
   const results = [];
   const n = getScoreInputsCount();
   
   for (let i = 1; i <= n; ++i) {
-    // Get the dimension from the rendered table
     const rows = document.querySelectorAll('#scorecardBody tr:not(.scorecard-section-header)');
     const row = rows[i - 1];
     if (!row) continue;
@@ -847,7 +1095,6 @@ function getScorecardFields() {
     
     let obj = { dimension: dim, measure: measure, comment: comment, evidence: evidence };
     
-    // Financial dimension
     if (dim === "Financial") {
       obj.targetBudget = document.getElementById(`target_budget_${i}`)?.value || "";
       obj.actualSpent = document.getElementById(`actual_spent_${i}`)?.value || "";
@@ -867,13 +1114,11 @@ function getScorecardFields() {
   return results;
 }
 
-// ========== AUTO-FILL USER DETAILS ==========
 function autofillUserDetails() {
   if (!userProfile) return;
   
   console.log('Fetching user details for:', userProfile.email);
   
-  // Use JSONP to bypass CORS for GET requests
   const url = APPS_SCRIPT_URL + '?action=lookupUser&email=' + encodeURIComponent(userProfile.email) + '&callback=handleUserData';
   
   window.handleUserData = function(data) {
@@ -889,20 +1134,17 @@ function autofillUserDetails() {
     }
   };
   
-  // Create script tag to load JSONP
   const script = document.createElement('script');
   script.src = url;
   document.body.appendChild(script);
 }
 
-// ========== SAVE SCORECARD ==========
 function saveScorecard() {
   if (!userProfile) {
     alert("You must be signed in to submit a scorecard.");
     return;
   }
   
-  // Validate required fields
   if (!document.getElementById("employeeName").value.trim() ||
       !document.getElementById("employeeJob").value.trim() ||
       !document.getElementById("division").value.trim() ||
@@ -916,7 +1158,6 @@ function saveScorecard() {
   const month = document.getElementById("periodMonth").value;
   const week = document.getElementById("periodWeek").value;
   
-  // Check for duplicates
   const isDuplicate = window.currentReports && window.currentReports.some(rec => {
     return (rec.Year || rec.year) == year && 
            (rec.Month || rec.month) == month && 
@@ -930,21 +1171,20 @@ function saveScorecard() {
   
   const n = getScoreInputsCount();
 
-// Validate weights add up to 100%
-let totalWeight = 0;
-for (let i = 1; i <= n; ++i) {
-  const weightValue = document.getElementById(`weight_${i}`)?.value;
-  if (!weightValue || weightValue.trim() === "") {
-    alert("Please fill in all Weights.");
+  let totalWeight = 0;
+  for (let i = 1; i <= n; ++i) {
+    const weightValue = document.getElementById(`weight_${i}`)?.value;
+    if (!weightValue || weightValue.trim() === "") {
+      alert("Please fill in all Weights.");
+      return;
+    }
+    totalWeight += parseFloat(weightValue) || 0;
+  }
+
+  if (Math.abs(totalWeight - 100) > 0.01) {
+    alert(`Weight percentages must add up to 100%.\n\nCurrent total: ${totalWeight.toFixed(2)}%\n\nPlease adjust the weights before submitting.`);
     return;
   }
-  totalWeight += parseFloat(weightValue) || 0;
-}
-
-if (Math.abs(totalWeight - 100) > 0.01) {
-  alert(`Weight percentages must add up to 100%.\n\nCurrent total: ${totalWeight.toFixed(2)}%\n\nPlease adjust the weights before submitting.`);
-  return;
-}
 
   const data = {
     userEmail: userProfile.email,
@@ -960,17 +1200,13 @@ if (Math.abs(totalWeight - 100) > 0.01) {
 
   console.log("Sending data:", data);
 
-  // Convert data to JSON string
   const jsonData = JSON.stringify(data);
-  
-  // Chunk the data into smaller pieces to avoid URL length limits
   const chunkSize = 1500;
   const chunks = [];
   for (let i = 0; i < jsonData.length; i += chunkSize) {
     chunks.push(jsonData.substring(i, i + chunkSize));
   }
   
-  // Build URL with chunked data
   let url = APPS_SCRIPT_URL + '?action=saveScorecard&callback=handleSaveResponse';
   chunks.forEach((chunk, index) => {
     url += '&chunk' + index + '=' + encodeURIComponent(chunk);
@@ -989,7 +1225,6 @@ if (Math.abs(totalWeight - 100) > 0.01) {
     }
   };
   
-  // Create script tag to load JSONP
   const script = document.createElement('script');
   script.src = url;
   script.onerror = function() {
@@ -997,14 +1232,14 @@ if (Math.abs(totalWeight - 100) > 0.01) {
   };
   document.body.appendChild(script);
 }
-// ========== LOAD REPORTS ==========
+
 function loadUserReports() {
   if (!userProfile) return;
   
   const url = APPS_SCRIPT_URL + '?email=' + encodeURIComponent(userProfile.email) + '&callback=handleReportsData';
   
   window.handleReportsData = function(records) {
-    renderReportsTable(records);
+    renderReportsTable(records, 'reportsTableWrap');
   };
   
   const script = document.createElement('script');
@@ -1012,8 +1247,11 @@ function loadUserReports() {
   document.body.appendChild(script);
 }
 
-function renderReportsTable(records) {
-  const wrap = document.getElementById("reportsTableWrap");
+function renderReportsTable(records, wrapId) {
+  wrapId = wrapId || 'reportsTableWrap';
+  const wrap = document.getElementById(wrapId);
+  if (!wrap) return;
+  
   if (!records || records.length === 0) {
     wrap.innerHTML = `<div class="empty-msg">No submissions yet.</div>`;
     return;
@@ -1025,9 +1263,6 @@ function renderReportsTable(records) {
   </tr></thead><tbody>`;
   
   records.forEach((rec, index) => {
-    console.log("Processing record:", rec);
-    
-    // Try to extract total weighted score from saved scores array
     let weightedScore = '';
     if (rec.Scores || rec.scores) {
       try {
@@ -1044,7 +1279,6 @@ function renderReportsTable(records) {
       }
     }
     
-    // Format timestamp
     let timestamp = rec.Timestamp || rec.timestamp || "";
     if (timestamp && typeof timestamp === 'object' && timestamp.toLocaleString) {
       timestamp = timestamp.toLocaleString();
@@ -1059,26 +1293,27 @@ function renderReportsTable(records) {
       <td>${rec.Job || rec.job || ""}</td>
       <td>${rec.Level || rec.level || ""}</td>
       <td><strong>${weightedScore}</strong></td>
-      <td><button class="btn-view" onclick="viewScorecardDetails(${index})">View Details</button></td>
+      <td><button class="btn-view" onclick="viewScorecardDetails(${index}, '${wrapId}')">View Details</button></td>
     </tr>`;
   });
   
   html += `</tbody></table>`;
   wrap.innerHTML = html;
   
-  // Store records globally so viewScorecardDetails can access them
-  window.currentReports = records;
+  if (wrapId === 'reportsTableWrap') {
+    window.currentReports = records;
+  } else {
+    window.teamCurrentReports = records;
+  }
 }
 
-// ========== VIEW SCORECARD DETAILS ==========
-function viewScorecardDetails(index) {
-  const record = window.currentReports[index];
+function viewScorecardDetails(index, wrapId) {
+  const record = (wrapId === 'reportsTableWrap') ? window.currentReports[index] : window.teamCurrentReports[index];
   if (!record) {
     alert("Could not load scorecard details.");
     return;
   }
   
-  // Parse scores
   let scoresData = record.Scores || record.scores;
   let scoresArr = [];
   try {
@@ -1088,7 +1323,6 @@ function viewScorecardDetails(index) {
     return;
   }
   
-  // Create modal/popup with details
   const modal = document.createElement('div');
   modal.className = 'scorecard-modal';
   modal.innerHTML = `
@@ -1120,7 +1354,7 @@ function viewScorecardDetails(index) {
               <th>Weighted Score</th>
               <th>Comment</th>
               <th>Evidence</th>
-            </tr>
+                        </tr>
           </thead>
           <tbody>
             ${scoresArr.map(score => `
@@ -1155,15 +1389,15 @@ function viewScorecardDetails(index) {
   
   document.body.appendChild(modal);
 }
-  
-// ========== DASHBOARD ==========
-function loadDashboard() {
+
+function loadDashboard(wrapId) {
   if (!userProfile) return;
   
+  wrapId = wrapId || 'dashboardWrap';
   const url = APPS_SCRIPT_URL + '?email=' + encodeURIComponent(userProfile.email) + '&callback=handleDashboardData';
   
   window.handleDashboardData = function(records) {
-    renderDashboard(records);
+    renderDashboard(records, wrapId);
   };
   
   const script = document.createElement('script');
@@ -1171,14 +1405,16 @@ function loadDashboard() {
   document.body.appendChild(script);
 }
 
-function renderDashboard(records) {
-  const wrap = document.getElementById("dashboardWrap");
+function renderDashboard(records, wrapId) {
+  wrapId = wrapId || 'dashboardWrap';
+  const wrap = document.getElementById(wrapId);
+  if (!wrap) return;
+  
   if (!records || records.length === 0) {
     wrap.innerHTML = `<div class="empty-msg">No data yet.</div>`;
     return;
   }
   
-  // Organize data by year, quarter, and month
   const dataByYear = {};
   const dataByQuarter = {};
   const dataByMonth = {};
@@ -1198,16 +1434,13 @@ function renderDashboard(records) {
         const month = rec.Month || rec.month || '1';
         const quarter = Math.ceil(parseInt(month) / 3);
         
-        // By Year
         if (!dataByYear[year]) dataByYear[year] = [];
         dataByYear[year].push(score);
         
-        // By Quarter
         const qKey = `${year}-Q${quarter}`;
         if (!dataByQuarter[qKey]) dataByQuarter[qKey] = [];
         dataByQuarter[qKey].push(score);
         
-        // By Month
         const mKey = `${year}-${String(month).padStart(2, '0')}`;
         if (!dataByMonth[mKey]) dataByMonth[mKey] = [];
         dataByMonth[mKey].push(score);
@@ -1217,12 +1450,10 @@ function renderDashboard(records) {
     }
   });
   
-  // Calculate averages
   const calculateAvg = (arr) => arr.length > 0 ? (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(2) : '0.00';
   
   let html = `<div class="dashboard-container">`;
   
-  // Overall Summary
   const allScores = Object.values(dataByYear).flat();
   html += `<div class="dashboard-card overall-card">
     <h3>📊 Overall Performance</h3>
@@ -1246,7 +1477,6 @@ function renderDashboard(records) {
     </div>
   </div>`;
   
-  // Yearly Summary
   html += `<div class="dashboard-card">
     <h3>📅 Yearly Summary</h3>
     <table class="summary-table">
@@ -1272,7 +1502,6 @@ function renderDashboard(records) {
   
   html += `</tbody></table></div>`;
   
-  // Quarterly Summary
   html += `<div class="dashboard-card">
     <h3>📆 Quarterly Summary</h3>
     <table class="summary-table">
@@ -1298,7 +1527,6 @@ function renderDashboard(records) {
   
   html += `</tbody></table></div>`;
   
-  // Monthly Summary
   html += `<div class="dashboard-card">
     <h3>📈 Monthly Summary</h3>
     <table class="summary-table">
