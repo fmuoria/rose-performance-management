@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- Google Identity Services -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <style>
+ <style>
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; margin: 0;}
     .container { max-width: 1200px; margin: 36px auto 36px auto; background: #fff; border-radius: 18px; box-shadow: 0 10px 32px rgba(80,60,120,0.15); padding: 0;}
     h1 { text-align: center; color: #2c3e50; margin-top: 0; padding: 32px 0 10px 0;}
@@ -48,6 +48,149 @@
     .signin-bar .user { font-size: 1.08rem; color: #523b6a; }
     .signin-bar .signout-btn { background: #e33; color: #fff; font-weight: bold; border: none; border-radius: 6px; padding: 8px 18px; margin-left: 12px; cursor: pointer; }
     #g_id_signin { display:inline-block; vertical-align:middle;}
+
+    /* Modal Styles */
+    .scorecard-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      animation: fadeIn 0.3s;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 12px;
+      max-width: 1000px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .modal-header {
+      padding: 20px 30px;
+      border-bottom: 2px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 12px 12px 0 0;
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      font-size: 1.5em;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 2em;
+      color: white;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0;
+      width: 30px;
+      height: 30px;
+    }
+
+    .modal-close:hover {
+      opacity: 0.7;
+    }
+
+    .modal-body {
+      padding: 30px;
+    }
+
+    .detail-info {
+      background: #f7fafc;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .detail-info p {
+      margin: 8px 0;
+      font-size: 0.95em;
+    }
+
+    .details-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    .details-table th,
+    .details-table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .details-table th {
+      background: #f7fafc;
+      font-weight: 600;
+      color: #2d3748;
+    }
+
+    .details-table tbody tr:hover {
+      background: #f7fafc;
+    }
+
+    .details-table tfoot {
+      background: #edf2f7;
+      font-weight: bold;
+    }
+
+    .modal-footer {
+      padding: 20px 30px;
+      border-top: 2px solid #e2e8f0;
+      text-align: right;
+    }
+
+    .btn-view {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9em;
+      font-weight: 500;
+    }
+
+    .btn-view:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .btn-close-modal {
+      background: #e2e8f0;
+      color: #2d3748;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .btn-close-modal:hover {
+      background: #cbd5e0;
+    }
+
     @media (max-width: 900px) { .container { padding: 0; } .tab-content { padding: 18px 1vw 12px 1vw; } .info-row { flex-direction: column; gap: 10px;} }
     @media (max-width: 600px) { .tab-content { padding: 7px 0; } .scorecard-table th, .scorecard-table td, .reports-table th, .reports-table td { font-size: 0.93rem; } }
   </style>
@@ -627,11 +770,11 @@ function renderReportsTable(records) {
   
   let html = `<table class="reports-table"><thead><tr>
     <th>Timestamp</th><th>Year</th><th>Month</th><th>Week</th><th>Division</th><th>Job</th><th>Level</th>
-    <th>Weighted Score</th>
+    <th>Weighted Score</th><th>Actions</th>
   </tr></thead><tbody>`;
   
-  records.forEach(rec => {
-    console.log("Processing record:", rec); // Debug log
+  records.forEach((rec, index) => {
+    console.log("Processing record:", rec);
     
     // Try to extract total weighted score from saved scores array
     let weightedScore = '';
@@ -665,12 +808,101 @@ function renderReportsTable(records) {
       <td>${rec.Job || rec.job || ""}</td>
       <td>${rec.Level || rec.level || ""}</td>
       <td><strong>${weightedScore}</strong></td>
+      <td><button class="btn-view" onclick="viewScorecardDetails(${index})">View Details</button></td>
     </tr>`;
   });
   
   html += `</tbody></table>`;
   wrap.innerHTML = html;
+  
+  // Store records globally so viewScorecardDetails can access them
+  window.currentReports = records;
 }
+
+// ========== VIEW SCORECARD DETAILS ==========
+function viewScorecardDetails(index) {
+  const record = window.currentReports[index];
+  if (!record) {
+    alert("Could not load scorecard details.");
+    return;
+  }
+  
+  // Parse scores
+  let scoresData = record.Scores || record.scores;
+  let scoresArr = [];
+  try {
+    scoresArr = typeof scoresData === 'string' ? JSON.parse(scoresData) : scoresData;
+  } catch (e) {
+    alert("Error loading scorecard data.");
+    return;
+  }
+  
+  // Create modal/popup with details
+  const modal = document.createElement('div');
+  modal.className = 'scorecard-modal';
+  modal.innerHTML = `
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Scorecard Details</h2>
+        <button class="modal-close" onclick="this.closest('.scorecard-modal').remove()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-info">
+          <p><strong>Employee:</strong> ${record.Name || record.name || ''}</p>
+          <p><strong>Job Title:</strong> ${record.Job || record.job || ''}</p>
+          <p><strong>Division:</strong> ${record.Division || record.division || ''}</p>
+          <p><strong>Level:</strong> ${record.Level || record.level || ''}</p>
+          <p><strong>Period:</strong> Year ${record.Year || record.year}, Month ${record.Month || record.month}, Week ${record.Week || record.week}</p>
+          <p><strong>Submitted:</strong> ${record.Timestamp || record.timestamp || ''}</p>
+        </div>
+        
+        <h3>Performance Breakdown</h3>
+        <table class="details-table">
+          <thead>
+            <tr>
+              <th>Dimension</th>
+              <th>Measure</th>
+              <th>Target</th>
+              <th>Actual</th>
+              <th>Rating</th>
+              <th>Weight (%)</th>
+              <th>Weighted Score</th>
+              <th>Comment</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${scoresArr.map(score => `
+              <tr>
+                <td><strong>${score.dimension}</strong></td>
+                <td>${score.measure}</td>
+                <td>${score.target || score.targetBudget || ''}</td>
+                <td>${score.actual || score.actualSpent || ''}</td>
+                <td>${score.rating}</td>
+                <td>${score.weight}%</td>
+                <td><strong>${score.weighted}</strong></td>
+                <td>${score.comment || '-'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="6" style="text-align: right;"><strong>Total Weighted Score:</strong></td>
+              <td colspan="2"><strong style="font-size: 1.2em; color: #5a67d8;">
+                ${scoresArr.reduce((sum, s) => sum + (parseFloat(s.weighted) || 0), 0).toFixed(2)}
+              </strong></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button onclick="this.closest('.scorecard-modal').remove()" class="btn-close-modal">Close</button>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+}
+  
 // ========== DASHBOARD ==========
 function loadDashboard() {
   if (!userProfile) return;
