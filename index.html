@@ -564,18 +564,13 @@ function saveScorecard() {
     scores: getScorecardFields()
   };
 
-  console.log("Sending data:", data); // For debugging
+  console.log("Sending data:", data);
 
-  fetch(APPS_SCRIPT_URL, {
-    method: 'POST',
-    body: JSON.stringify(data),
-    headers: { 'Content-Type': 'application/json' }
-  })
-  .then(r => {
-    console.log("Response status:", r.status);
-    return r.json();
-  })
-  .then(resp => {
+  // Use JSONP to bypass CORS for save
+  const dataString = encodeURIComponent(JSON.stringify(data));
+  const url = APPS_SCRIPT_URL + '?action=saveScorecard&data=' + dataString + '&callback=handleSaveResponse';
+  
+  window.handleSaveResponse = function(resp) {
     console.log("Response data:", resp);
     if (resp.result === "success") {
       alert("Scorecard saved successfully!");
@@ -586,13 +581,16 @@ function saveScorecard() {
       alert("Error saving scorecard: " + (resp.message || "Unknown error"));
       console.error("Server error:", resp);
     }
-  })
-  .catch(err => {
-    console.error("Fetch error:", err);
-    alert("Error: " + err.message);
-  });
+  };
+  
+  // Create script tag to load JSONP
+  const script = document.createElement('script');
+  script.src = url;
+  script.onerror = function() {
+    alert("Error: Failed to save scorecard. Please try again.");
+  };
+  document.body.appendChild(script);
 }
-
 // ========== LOAD REPORTS ==========
 function loadUserReports() {
   if (!userProfile) return;
