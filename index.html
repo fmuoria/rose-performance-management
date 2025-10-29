@@ -827,8 +827,15 @@ function getScorecardFields() {
   const n = getScoreInputsCount();
   
   for (let i = 1; i <= n; ++i) {
-    const dim = document.getElementById(`dimension_${i}`)?.value || "";
-    const measure = document.getElementById(`measure_${i}`)?.value || "";
+    // Get the dimension from the rendered table
+    const rows = document.querySelectorAll('#scorecardBody tr:not(.scorecard-section-header)');
+    const row = rows[i - 1];
+    if (!row) continue;
+    
+    const cells = row.cells;
+    const dim = cells[0]?.textContent || "";
+    const measure = cells[1]?.textContent || "";
+    
     const comment = document.getElementById(`comment_${i}`)?.value || "";
     const evidence = document.getElementById(`evidence_${i}`)?.value || "";
     
@@ -836,9 +843,9 @@ function getScorecardFields() {
     
     // Financial dimension
     if (dim === "Financial") {
-      obj.targetBudget = document.getElementById(`targetBudget_${i}`)?.value || "";
-      obj.actualSpent = document.getElementById(`actualSpent_${i}`)?.value || "";
-      obj.pctUsed = document.getElementById(`pctUsed_${i}`)?.value || "";
+      obj.targetBudget = document.getElementById(`target_budget_${i}`)?.value || "";
+      obj.actualSpent = document.getElementById(`actual_spent_${i}`)?.value || "";
+      obj.pctUsed = document.getElementById(`pct_used_${i}`)?.value || "";
     } else {
       obj.target = document.getElementById(`target_${i}`)?.value || "";
       obj.actual = document.getElementById(`actual_${i}`)?.value || "";
