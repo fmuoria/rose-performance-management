@@ -644,7 +644,7 @@ function renderScorecardRows() {
   SCORECARD_DIMENSIONS.forEach(dim => {
     const dimRow = document.createElement("tr");
     dimRow.className = "scorecard-section-header";
-    dimRow.innerHTML = `<td colspan="9">${dim.dimension}</td>`;
+    dimRow.innerHTML = `<td colspan="10">${dim.dimension}</td>`;
     tbody.appendChild(dimRow);
 
     dim.measures.forEach(m => {
@@ -652,7 +652,7 @@ function renderScorecardRows() {
       const currentIdx = idx; // Capture the current index
       
       if (m.type === "financial") {
-        // UPDATED: Financial dimension logic - now with editable target
+        // Financial dimension logic - now with editable target
         const row = document.createElement("tr");
         row.innerHTML = `
           <td>${dim.dimension}</td>
@@ -664,7 +664,7 @@ function renderScorecardRows() {
           <td><input type="number" id="weight_${currentIdx}" value="30" min="0" max="100" step="1" required style="width:65px"></td>
           <td><input type="text" id="weighted_${currentIdx}" disabled style="width:80px; background:#f5f5fd;"></td>
           <td><textarea id="comment_${currentIdx}" style="width:98%;"></textarea></td>
-          <td><input type="url" id="evidence_${i}" placeholder="https://drive.google.com/..." style="width:100%; padding: 6px; font-size: 0.95em;"></td>
+          <td><input type="url" id="evidence_${currentIdx}" placeholder="https://drive.google.com/..." style="width:100%; padding: 6px; font-size: 0.95em;"></td>
         `;
         tbody.appendChild(row);
 
@@ -685,7 +685,7 @@ function renderScorecardRows() {
           <td><input type="number" id="weight_${currentIdx}" value="${m.weight}" min="0" max="100" step="1" required style="width:65px"></td>
           <td><input type="text" id="weighted_${currentIdx}" disabled style="width:80px; background:#f5f5fd;"></td>
           <td><textarea id="comment_${currentIdx}" style="width:98%;"></textarea></td>
-          <td><input type="url" id="evidence_${i}" placeholder="https://drive.google.com/..." style="width:100%; padding: 6px; font-size: 0.95em;"></td>
+          <td><input type="url" id="evidence_${currentIdx}" placeholder="https://drive.google.com/..." style="width:100%; padding: 6px; font-size: 0.95em;"></td>
         `;
         tbody.appendChild(row);
 
