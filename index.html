@@ -492,21 +492,32 @@ function getScorecardFields() {
   return fields;
 }
 
-// ========== AUTO-FILL USER DETAILS (UNCHANGED) ==========
+// ========== AUTO-FILL USER DETAILS ==========
 function autofillUserDetails() {
   if (!userProfile) return;
-  fetch(APPS_SCRIPT_URL + '?action=lookupUser&email=' + encodeURIComponent(userProfile.email))
-    .then(r => r.json())
-    .then(data => {
-      if (Array.isArray(data) && data.length > 0) {
-        const user = data[0];
-        document.getElementById("employeeName").value = user["Full Name"] || "";
-        document.getElementById("employeeJob").value = user["Title"] || "";
-        document.getElementById("division").value = user["Division"] || "";
-        document.getElementById("level").value = user["Level"] || "";
-      }
-    })
-    .catch(err => { /* Optionally handle error */ });
+  
+  console.log('Fetching user details for:', userProfile.email);
+  
+  // Use JSONP to bypass CORS for GET requests
+  const url = APPS_SCRIPT_URL + '?action=lookupUser&email=' + encodeURIComponent(userProfile.email) + '&callback=handleUserData';
+  
+  window.handleUserData = function(data) {
+    console.log('Received data:', data);
+    if (Array.isArray(data) && data.length > 0) {
+      const user = data[0];
+      document.getElementById("employeeName").value = user["Full Name"] || "";
+      document.getElementById("employeeJob").value = user["Title"] || "";
+      document.getElementById("division").value = user["Division"] || "";
+      document.getElementById("level").value = user["Level"] || "";
+    } else {
+      console.log('No user data found for email:', userProfile.email);
+    }
+  };
+  
+  // Create script tag to load JSONP
+  const script = document.createElement('script');
+  script.src = url;
+  document.body.appendChild(script);
 }
 
 // ========== SAVE SCORECARD ==========
@@ -582,13 +593,19 @@ function saveScorecard() {
   });
 }
 
-// ========== LOAD REPORTS (UNCHANGED) ==========
+// ========== LOAD REPORTS ==========
 function loadUserReports() {
   if (!userProfile) return;
-  fetch(APPS_SCRIPT_URL + '?email=' + encodeURIComponent(userProfile.email))
-    .then(r => r.json())
-    .then(records => renderReportsTable(records))
-    .catch(() => renderReportsTable([]));
+  
+  const url = APPS_SCRIPT_URL + '?email=' + encodeURIComponent(userProfile.email) + '&callback=handleReportsData';
+  
+  window.handleReportsData = function(records) {
+    renderReportsTable(records);
+  };
+  
+  const script = document.createElement('script');
+  script.src = url;
+  document.body.appendChild(script);
 }
 
 function renderReportsTable(records) {
@@ -625,13 +642,19 @@ function renderReportsTable(records) {
   wrap.innerHTML = html;
 }
 
-// ========== DASHBOARD (UNCHANGED) ==========
+// ========== DASHBOARD ==========
 function loadDashboard() {
   if (!userProfile) return;
-  fetch(APPS_SCRIPT_URL + '?email=' + encodeURIComponent(userProfile.email))
-    .then(r => r.json())
-    .then(records => renderDashboard(records))
-    .catch(() => renderDashboard([]));
+  
+  const url = APPS_SCRIPT_URL + '?email=' + encodeURIComponent(userProfile.email) + '&callback=handleDashboardData';
+  
+  window.handleDashboardData = function(records) {
+    renderDashboard(records);
+  };
+  
+  const script = document.createElement('script');
+  script.src = url;
+  document.body.appendChild(script);
 }
 
 function renderDashboard(records) {
