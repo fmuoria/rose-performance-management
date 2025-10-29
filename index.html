@@ -190,6 +190,226 @@
     .btn-close-modal:hover {
       background: #cbd5e0;
     }
+   /* Modal Styles */
+.scorecard-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  max-width: 1000px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+  padding: 20px 30px;
+  border-bottom: 2px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 12px 12px 0 0;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.5em;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 2em;
+  color: white;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+}
+
+.modal-close:hover {
+  opacity: 0.7;
+}
+
+.modal-body {
+  padding: 30px;
+}
+
+.detail-info {
+  background: #f7fafc;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.detail-info p {
+  margin: 8px 0;
+  font-size: 0.95em;
+}
+
+.details-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+.details-table th,
+.details-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.details-table th {
+  background: #f7fafc;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.details-table tbody tr:hover {
+  background: #f7fafc;
+}
+
+.details-table tfoot {
+  background: #edf2f7;
+  font-weight: bold;
+}
+
+.modal-footer {
+  padding: 20px 30px;
+  border-top: 2px solid #e2e8f0;
+  text-align: right;
+}
+
+.btn-view {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
+.btn-view:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.btn-close-modal {
+  background: #e2e8f0;
+  color: #2d3748;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.btn-close-modal:hover {
+  background: #cbd5e0;
+}
+
+/* Dashboard Styles */
+.dashboard-container {
+  display: grid;
+  gap: 20px;
+}
+
+.dashboard-card {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
+}
+
+.dashboard-card h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #2d3748;
+  font-size: 1.2em;
+}
+
+.overall-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.overall-card h3 {
+  color: white;
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+}
+
+.metric-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+}
+
+.metric-label {
+  font-size: 0.9em;
+  opacity: 0.9;
+  margin-bottom: 8px;
+}
+
+.metric-value {
+  font-size: 1.8em;
+  font-weight: bold;
+}
+
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.summary-table th,
+.summary-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.summary-table th {
+  background: #f7fafc;
+  color: #2d3748;
+  font-weight: 600;
+}
+
+.summary-table tbody tr:hover {
+  background: #f7fafc;
+}
 
     @media (max-width: 900px) { .container { padding: 0; } .tab-content { padding: 18px 1vw 12px 1vw; } .info-row { flex-direction: column; gap: 10px;} }
     @media (max-width: 600px) { .tab-content { padding: 7px 0; } .scorecard-table th, .scorecard-table td, .reports-table th, .reports-table td { font-size: 0.93rem; } }
@@ -444,6 +664,7 @@ function renderScorecardRows() {
           <td><input type="number" id="weight_${currentIdx}" value="30" min="0" max="100" step="1" required style="width:65px"></td>
           <td><input type="text" id="weighted_${currentIdx}" disabled style="width:80px; background:#f5f5fd;"></td>
           <td><textarea id="comment_${currentIdx}" style="width:98%;"></textarea></td>
+          <td><input type="url" id="evidence_${i}" placeholder="https://drive.google.com/..." style="width:100%; padding: 6px; font-size: 0.95em;"></td>
         `;
         tbody.appendChild(row);
 
@@ -464,6 +685,7 @@ function renderScorecardRows() {
           <td><input type="number" id="weight_${currentIdx}" value="${m.weight}" min="0" max="100" step="1" required style="width:65px"></td>
           <td><input type="text" id="weighted_${currentIdx}" disabled style="width:80px; background:#f5f5fd;"></td>
           <td><textarea id="comment_${currentIdx}" style="width:98%;"></textarea></td>
+          <td><input type="url" id="evidence_${i}" placeholder="https://drive.google.com/..." style="width:100%; padding: 6px; font-size: 0.95em;"></td>
         `;
         tbody.appendChild(row);
 
@@ -601,38 +823,35 @@ function resetScorecard() {
 
 // ========== FORM DATA GATHERING (UPDATED) ==============
 function getScorecardFields() {
-  const fields = [];
-  let idx = 0;
-  SCORECARD_DIMENSIONS.forEach(dim => {
-    dim.measures.forEach(m => {
-      idx++;
-      if (m.type === "financial") {
-        fields.push({
-          dimension: dim.dimension,
-          measure: m.measure,
-          targetBudget: document.getElementById(`target_budget_${idx}`).value,
-          actualSpent: document.getElementById(`actual_spent_${idx}`).value,
-          pctUsed: document.getElementById(`pct_used_${idx}`).value,
-          rating: document.getElementById(`rating_${idx}`).value,
-          weight: document.getElementById(`weight_${idx}`).value,
-          weighted: document.getElementById(`weighted_${idx}`).value,
-          comment: document.getElementById(`comment_${idx}`).value
-        });
-      } else {
-        fields.push({
-          dimension: dim.dimension,
-          measure: m.measure,
-          target: document.getElementById(`target_${idx}`).value,
-          actual: document.getElementById(`actual_${idx}`).value,
-          rating: document.getElementById(`rating_${idx}`).value,
-          weight: document.getElementById(`weight_${idx}`).value,
-          weighted: document.getElementById(`weighted_${idx}`).value,
-          comment: document.getElementById(`comment_${idx}`).value
-        });
-      }
-    });
-  });
-  return fields;
+  const results = [];
+  const n = getScoreInputsCount();
+  
+  for (let i = 1; i <= n; ++i) {
+    const dim = document.getElementById(`dimension_${i}`)?.value || "";
+    const measure = document.getElementById(`measure_${i}`)?.value || "";
+    const comment = document.getElementById(`comment_${i}`)?.value || "";
+    const evidence = document.getElementById(`evidence_${i}`)?.value || "";
+    
+    let obj = { dimension: dim, measure: measure, comment: comment, evidence: evidence };
+    
+    // Financial dimension
+    if (dim === "Financial") {
+      obj.targetBudget = document.getElementById(`targetBudget_${i}`)?.value || "";
+      obj.actualSpent = document.getElementById(`actualSpent_${i}`)?.value || "";
+      obj.pctUsed = document.getElementById(`pctUsed_${i}`)?.value || "";
+    } else {
+      obj.target = document.getElementById(`target_${i}`)?.value || "";
+      obj.actual = document.getElementById(`actual_${i}`)?.value || "";
+    }
+    
+    obj.rating = document.getElementById(`rating_${i}`)?.value || "";
+    obj.weight = document.getElementById(`weight_${i}`)?.value || "";
+    obj.weighted = document.getElementById(`weighted_${i}`)?.value || "";
+    
+    results.push(obj);
+  }
+  
+  return results;
 }
 
 // ========== AUTO-FILL USER DETAILS ==========
@@ -697,18 +916,22 @@ function saveScorecard() {
   }
   
   const n = getScoreInputsCount();
-  for (let i = 1; i <= n; ++i) {
-    const ratingValue = document.getElementById(`rating_${i}`)?.value;
-    const weightValue = document.getElementById(`weight_${i}`)?.value;
-    
-    if (!ratingValue || ratingValue.trim() === "" || parseFloat(ratingValue) === 0) {
-      alert("Please fill in all Ratings (enter target and actual values for automatic calculation).");
-      return;
-    }
-    if (!weightValue || weightValue.trim() === "") {
-      alert("Please fill in all Weights.");
-      return;
-    }
+
+// Validate weights add up to 100%
+let totalWeight = 0;
+for (let i = 1; i <= n; ++i) {
+  const weightValue = document.getElementById(`weight_${i}`)?.value;
+  if (!weightValue || weightValue.trim() === "") {
+    alert("Please fill in all Weights.");
+    return;
+  }
+  totalWeight += parseFloat(weightValue) || 0;
+}
+
+if (Math.abs(totalWeight - 100) > 0.01) {
+  alert(`Weight percentages must add up to 100%.\n\nCurrent total: ${totalWeight.toFixed(2)}%\n\nPlease adjust the weights before submitting.`);
+  return;
+}
   }
 
   const data = {
@@ -884,6 +1107,7 @@ function viewScorecardDetails(index) {
               <th>Weight (%)</th>
               <th>Weighted Score</th>
               <th>Comment</th>
+              <th>Evidence</th>
             </tr>
           </thead>
           <tbody>
@@ -897,13 +1121,14 @@ function viewScorecardDetails(index) {
                 <td>${score.weight}%</td>
                 <td><strong>${score.weighted}</strong></td>
                 <td>${score.comment || '-'}</td>
+                <td>${score.evidence ? `<a href="${score.evidence}" target="_blank" style="color: #667eea; text-decoration: underline;">View Evidence</a>` : '-'}</td>
               </tr>
             `).join('')}
           </tbody>
           <tfoot>
             <tr>
               <td colspan="6" style="text-align: right;"><strong>Total Weighted Score:</strong></td>
-              <td colspan="2"><strong style="font-size: 1.2em; color: #5a67d8;">
+              <td colspan="3"><strong style="font-size: 1.2em; color: #5a67d8;">
                 ${scoresArr.reduce((sum, s) => sum + (parseFloat(s.weighted) || 0), 0).toFixed(2)}
               </strong></td>
             </tr>
@@ -941,54 +1166,155 @@ function renderDashboard(records) {
     return;
   }
   
-  // Calculate metrics: average score, best score, number of submissions
-  let total = 0, count = 0, best = 0, scores = [];
+  // Organize data by year, quarter, and month
+  const dataByYear = {};
+  const dataByQuarter = {};
+  const dataByMonth = {};
   
   records.forEach(rec => {
     let scoresData = rec.Scores || rec.scores;
-    if (scoresData) {
-      try {
-        let arr = typeof scoresData === 'string' ? JSON.parse(scoresData) : scoresData;
+    if (!scoresData) return;
+    
+    try {
+      let arr = typeof scoresData === 'string' ? JSON.parse(scoresData) : scoresData;
+      
+      if (Array.isArray(arr)) {
+        let score = arr.reduce((sum, s) => sum + (parseFloat(s.weighted) || 0), 0);
+        if (isNaN(score)) return;
         
-        if (Array.isArray(arr)) {
-          let score = arr.reduce((sum, s) => sum + (parseFloat(s.weighted) || 0), 0);
-          if (!isNaN(score)) {
-            scores.push(score);
-            total += score;
-            if (score > best) best = score;
-            count++;
-          }
-        }
-      } catch (e) {
-        console.error("Error parsing scores:", e);
+        const year = rec.Year || rec.year || '2025';
+        const month = rec.Month || rec.month || '1';
+        const quarter = Math.ceil(parseInt(month) / 3);
+        
+        // By Year
+        if (!dataByYear[year]) dataByYear[year] = [];
+        dataByYear[year].push(score);
+        
+        // By Quarter
+        const qKey = `${year}-Q${quarter}`;
+        if (!dataByQuarter[qKey]) dataByQuarter[qKey] = [];
+        dataByQuarter[qKey].push(score);
+        
+        // By Month
+        const mKey = `${year}-${String(month).padStart(2, '0')}`;
+        if (!dataByMonth[mKey]) dataByMonth[mKey] = [];
+        dataByMonth[mKey].push(score);
       }
+    } catch (e) {
+      console.error("Error parsing scores:", e);
     }
   });
   
-  let avg = count > 0 ? (total / count).toFixed(2) : "0.00";
+  // Calculate averages
+  const calculateAvg = (arr) => arr.length > 0 ? (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(2) : '0.00';
   
-  let html = `<div class="dashboard-summary">
-    <div class="dashboard-metric">
-      <span class="label">Total Submissions:</span> 
-      <span class="value">${count}</span>
-    </div>
-    <div class="dashboard-metric">
-      <span class="label">Average Weighted Score:</span> 
-      <span class="value">${avg}</span>
-    </div>
-    <div class="dashboard-metric">
-      <span class="label">Best Score:</span> 
-      <span class="value">${best.toFixed(2)}</span>
+  let html = `<div class="dashboard-container">`;
+  
+  // Overall Summary
+  const allScores = Object.values(dataByYear).flat();
+  html += `<div class="dashboard-card overall-card">
+    <h3>📊 Overall Performance</h3>
+    <div class="metric-grid">
+      <div class="metric-item">
+        <span class="metric-label">Total Submissions</span>
+        <span class="metric-value">${allScores.length}</span>
+      </div>
+      <div class="metric-item">
+        <span class="metric-label">Average Score</span>
+        <span class="metric-value">${calculateAvg(allScores)}</span>
+      </div>
+      <div class="metric-item">
+        <span class="metric-label">Best Score</span>
+        <span class="metric-value">${allScores.length > 0 ? Math.max(...allScores).toFixed(2) : '0.00'}</span>
+      </div>
+      <div class="metric-item">
+        <span class="metric-label">Lowest Score</span>
+        <span class="metric-value">${allScores.length > 0 ? Math.min(...allScores).toFixed(2) : '0.00'}</span>
+      </div>
     </div>
   </div>`;
   
-  // Add a breakdown by dimension if we have data
-  if (scores.length > 0) {
-    html += `<div class="dashboard-chart">
-      <h3>Score Trend</h3>
-      <p>Recent scores: ${scores.slice(-5).map(s => s.toFixed(2)).join(', ')}</p>
-    </div>`;
-  }
+  // Yearly Summary
+  html += `<div class="dashboard-card">
+    <h3>📅 Yearly Summary</h3>
+    <table class="summary-table">
+      <thead>
+        <tr>
+          <th>Year</th>
+          <th>Submissions</th>
+          <th>Average Score</th>
+          <th>Best Score</th>
+        </tr>
+      </thead>
+      <tbody>`;
+  
+  Object.keys(dataByYear).sort().reverse().forEach(year => {
+    const scores = dataByYear[year];
+    html += `<tr>
+      <td><strong>${year}</strong></td>
+      <td>${scores.length}</td>
+      <td>${calculateAvg(scores)}</td>
+      <td>${Math.max(...scores).toFixed(2)}</td>
+    </tr>`;
+  });
+  
+  html += `</tbody></table></div>`;
+  
+  // Quarterly Summary
+  html += `<div class="dashboard-card">
+    <h3>📆 Quarterly Summary</h3>
+    <table class="summary-table">
+      <thead>
+        <tr>
+          <th>Quarter</th>
+          <th>Submissions</th>
+          <th>Average Score</th>
+          <th>Best Score</th>
+        </tr>
+      </thead>
+      <tbody>`;
+  
+  Object.keys(dataByQuarter).sort().reverse().forEach(quarter => {
+    const scores = dataByQuarter[quarter];
+    html += `<tr>
+      <td><strong>${quarter}</strong></td>
+      <td>${scores.length}</td>
+      <td>${calculateAvg(scores)}</td>
+      <td>${Math.max(...scores).toFixed(2)}</td>
+    </tr>`;
+  });
+  
+  html += `</tbody></table></div>`;
+  
+  // Monthly Summary
+  html += `<div class="dashboard-card">
+    <h3>📈 Monthly Summary</h3>
+    <table class="summary-table">
+      <thead>
+        <tr>
+          <th>Month</th>
+          <th>Submissions</th>
+          <th>Average Score</th>
+          <th>Best Score</th>
+        </tr>
+      </thead>
+      <tbody>`;
+  
+  Object.keys(dataByMonth).sort().reverse().forEach(month => {
+    const scores = dataByMonth[month];
+    const [year, monthNum] = month.split('-');
+    const monthName = new Date(year, parseInt(monthNum) - 1).toLocaleString('default', { month: 'long' });
+    
+    html += `<tr>
+      <td><strong>${monthName} ${year}</strong></td>
+      <td>${scores.length}</td>
+      <td>${calculateAvg(scores)}</td>
+      <td>${Math.max(...scores).toFixed(2)}</td>
+    </tr>`;
+  });
+  
+  html += `</tbody></table></div>`;
+  html += `</div>`;
   
   wrap.innerHTML = html;
 }
