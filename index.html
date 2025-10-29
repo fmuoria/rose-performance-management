@@ -273,7 +273,6 @@ function showTab(tabId, btn) {
 }
 
 // ========== SCORECARD TABLE BUILDING ============
-
 function renderScorecardRows() {
   const tbody = document.getElementById("scorecardBody");
   if (!tbody) return;
@@ -290,50 +289,25 @@ function renderScorecardRows() {
       const currentIdx = idx; // Capture the current index
       
       if (m.type === "financial") {
-        // Financial dimension logic (UNCHANGED)
-        const budget = m.budget;
-        const savingsTargetPct = m.savingsTargetPct;
-        const savingsTarget = budget * (1 - savingsTargetPct);
-
+        // UPDATED: Financial dimension logic - now with editable target
         const row = document.createElement("tr");
         row.innerHTML = `
           <td>${dim.dimension}</td>
-          <td>
-            <b>${m.measure}</b><br>
-            <span style="color:#6c6c96;font-size:0.97em;">
-              Budget: <span id="budget_${currentIdx}">${budget.toLocaleString()}</span><br>
-              Savings Target: <span id="savings_target_${currentIdx}">${savingsTarget.toLocaleString()}</span>
-            </span>
-          </td>
-          <td>
-            <b>Budget:</b> ${budget.toLocaleString()}<br>
-            <b>Savings Target:</b> ${savingsTarget.toLocaleString()}<br>
-            <span style="font-size:0.95em;color:#888;">(Spend ≤ ${savingsTarget.toLocaleString()} for max score)</span>
-          </td>
-          <td>
-            <input type="number" id="actual_spent_${currentIdx}" min="0" max="${budget*2}" placeholder="Enter amount spent" style="width:100%">
-          </td>
-          <td>
-            <input type="text" id="pct_used_${currentIdx}" disabled style="width:80px;background:#eef;">
-          </td>
-          <td>
-            <input type="number" id="rating_${currentIdx}" min="1" max="5" step="0.1" disabled style="width:70px;background:#eef;">
-          </td>
-          <td>
-            <input type="number" id="weight_${currentIdx}" value="30" min="0" max="100" step="1" required style="width:65px">
-          </td>
-          <td>
-            <input type="text" id="weighted_${currentIdx}" disabled style="width:80px; background:#f5f5fd;">
-          </td>
-          <td>
-            <textarea id="comment_${currentIdx}" style="width:98%;"></textarea>
-          </td>
+          <td><b>${m.measure}</b></td>
+          <td><input type="number" id="target_budget_${currentIdx}" placeholder="Enter target budget" style="width:100%"></td>
+          <td><input type="number" id="actual_spent_${currentIdx}" min="0" placeholder="Enter amount spent" style="width:100%"></td>
+          <td><input type="text" id="pct_used_${currentIdx}" disabled style="width:80px;background:#eef;"></td>
+          <td><input type="number" id="rating_${currentIdx}" min="1" max="5" step="0.1" disabled style="width:70px;background:#eef;"></td>
+          <td><input type="number" id="weight_${currentIdx}" value="30" min="0" max="100" step="1" required style="width:65px"></td>
+          <td><input type="text" id="weighted_${currentIdx}" disabled style="width:80px; background:#f5f5fd;"></td>
+          <td><textarea id="comment_${currentIdx}" style="width:98%;"></textarea></td>
         `;
         tbody.appendChild(row);
 
-        // Input event for financial calculation
-        document.querySelector(`#actual_spent_${currentIdx}`).addEventListener('input', () => updateFinancialRow(currentIdx, budget, savingsTarget));
-        document.querySelector(`#weight_${currentIdx}`).addEventListener('input', () => updateFinancialRow(currentIdx, budget, savingsTarget));
+        // Add event listeners for financial calculation
+        document.getElementById(`target_budget_${currentIdx}`).addEventListener('input', () => updateFinancialRow(currentIdx));
+        document.getElementById(`actual_spent_${currentIdx}`).addEventListener('input', () => updateFinancialRow(currentIdx));
+        document.getElementById(`weight_${currentIdx}`).addEventListener('input', () => updateFinancialRow(currentIdx));
       } else {
         // Non-financial dimension logic with automatic rating calculation
         const row = document.createElement("tr");
@@ -360,37 +334,48 @@ function renderScorecardRows() {
   updateScoreSummary();
 }
 
-// ========== FINANCIAL CALCULATION LOGIC (UNCHANGED) ==========
-function calcFinancialRating(budget, savingsTarget, actualSpent) {
-  let rating = 3.0;
-  if (actualSpent < budget) {
-    rating = 3.0 + 2.0 * ((budget - actualSpent) / (budget - savingsTarget));
-  } else if (actualSpent > budget) {
-    rating = 3.0 - 2.0 * ((actualSpent - budget) / budget);
+// ========== UPDATED FINANCIAL CALCULATION LOGIC ==========
+function calcFinancialRating(targetBudget, actualSpent) {
+  if (targetBudget === 0 || actualSpent === 0) return 0;
+  
+  let rating = 3.0; // Base rating if actual equals target
+  
+  if (actualSpent < targetBudget) {
+    // Spent less than target (saved money) - rating increases
+    rating = 3.0 + 2.0 * ((targetBudget - actualSpent) / targetBudget);
+  } else if (actualSpent > targetBudget) {
+    // Spent more than target (overspent) - rating decreases
+    rating = 3.0 - 2.0 * ((actualSpent - targetBudget) / targetBudget);
   }
+  
+  // Clamp rating between 1.0 and 5.0
   rating = Math.max(1.0, Math.min(5.0, rating));
   return Number(rating.toFixed(1));
 }
 
-function updateFinancialRow(idx, budget, savingsTarget) {
+function updateFinancialRow(idx) {
+  const targetBudgetEl = document.getElementById(`target_budget_${idx}`);
   const actualSpentEl = document.getElementById(`actual_spent_${idx}`);
   const pctUsedEl = document.getElementById(`pct_used_${idx}`);
   const ratingEl = document.getElementById(`rating_${idx}`);
   const weightEl = document.getElementById(`weight_${idx}`);
   const weightedEl = document.getElementById(`weighted_${idx}`);
 
-  let actualSpent = parseFloat(actualSpentEl.value) || 0;
-  let pctUsed = budget > 0 ? (actualSpent / budget * 100) : 0;
+  const targetBudget = parseFloat(targetBudgetEl.value) || 0;
+  const actualSpent = parseFloat(actualSpentEl.value) || 0;
+  const weight = parseFloat(weightEl.value) || 0;
+
+  // Calculate % used
+  let pctUsed = targetBudget > 0 ? (actualSpent / targetBudget * 100) : 0;
   pctUsedEl.value = pctUsed ? pctUsed.toFixed(1) + '%' : '';
 
-  // Calculate rating using new logic
-  let rating = calcFinancialRating(budget, savingsTarget, actualSpent);
+  // Calculate rating
+  const rating = calcFinancialRating(targetBudget, actualSpent);
   ratingEl.value = rating;
 
-  // Weighted
-  let weight = parseFloat(weightEl.value) || 0;
-  let weighted = ((rating * weight) / 100).toFixed(2);
-  weightedEl.value = weighted && !isNaN(weighted) ? weighted : "";
+  // Calculate weighted average
+  const weighted = ((rating * weight) / 100).toFixed(2);
+  weightedEl.value = isNaN(weighted) ? "" : weighted;
 
   updateScoreSummary();
 }
@@ -482,8 +467,7 @@ function getScorecardFields() {
         fields.push({
           dimension: dim.dimension,
           measure: m.measure,
-          budget: m.budget,
-          savingsTarget: m.budget * (1 - m.savingsTargetPct),
+          targetBudget: document.getElementById(`target_budget_${idx}`).value,
           actualSpent: document.getElementById(`actual_spent_${idx}`).value,
           pctUsed: document.getElementById(`pct_used_${idx}`).value,
           rating: document.getElementById(`rating_${idx}`).value,
@@ -492,7 +476,6 @@ function getScorecardFields() {
           comment: document.getElementById(`comment_${idx}`).value
         });
       } else {
-        // UPDATED: Include target and actual for non-financial dimensions
         fields.push({
           dimension: dim.dimension,
           measure: m.measure,
