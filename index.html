@@ -680,6 +680,22 @@ function saveScorecard() {
     return;
   }
   
+  const year = document.getElementById("periodYear").value;
+  const month = document.getElementById("periodMonth").value;
+  const week = document.getElementById("periodWeek").value;
+  
+  // Check for duplicates
+  const isDuplicate = window.currentReports && window.currentReports.some(rec => {
+    return (rec.Year || rec.year) == year && 
+           (rec.Month || rec.month) == month && 
+           (rec.Week || rec.week) == week;
+  });
+  
+  if (isDuplicate) {
+    alert(`You have already submitted a scorecard for Year ${year}, Month ${month}, Week ${week}.\n\nPlease select a different week or month.`);
+    return;
+  }
+  
   const n = getScoreInputsCount();
   for (let i = 1; i <= n; ++i) {
     const ratingValue = document.getElementById(`rating_${i}`)?.value;
@@ -701,9 +717,9 @@ function saveScorecard() {
     job: document.getElementById("employeeJob").value,
     division: document.getElementById("division").value,
     level: document.getElementById("level").value,
-    year: document.getElementById("periodYear").value,
-    month: document.getElementById("periodMonth").value,
-    week: document.getElementById("periodWeek").value,
+    year: year,
+    month: month,
+    week: week,
     scores: getScorecardFields()
   };
 
@@ -713,7 +729,7 @@ function saveScorecard() {
   const jsonData = JSON.stringify(data);
   
   // Chunk the data into smaller pieces to avoid URL length limits
-  const chunkSize = 1500; // Safe size for URL parameters
+  const chunkSize = 1500;
   const chunks = [];
   for (let i = 0; i < jsonData.length; i += chunkSize) {
     chunks.push(jsonData.substring(i, i + chunkSize));
