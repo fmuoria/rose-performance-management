@@ -273,6 +273,7 @@ function showTab(tabId, btn) {
 }
 
 // ========== SCORECARD TABLE BUILDING ============
+
 function renderScorecardRows() {
   const tbody = document.getElementById("scorecardBody");
   if (!tbody) return;
@@ -286,6 +287,8 @@ function renderScorecardRows() {
 
     dim.measures.forEach(m => {
       idx++;
+      const currentIdx = idx; // Capture the current index
+      
       if (m.type === "financial") {
         // Financial dimension logic (UNCHANGED)
         const budget = m.budget;
@@ -298,8 +301,8 @@ function renderScorecardRows() {
           <td>
             <b>${m.measure}</b><br>
             <span style="color:#6c6c96;font-size:0.97em;">
-              Budget: <span id="budget_${idx}">${budget.toLocaleString()}</span><br>
-              Savings Target: <span id="savings_target_${idx}">${savingsTarget.toLocaleString()}</span>
+              Budget: <span id="budget_${currentIdx}">${budget.toLocaleString()}</span><br>
+              Savings Target: <span id="savings_target_${currentIdx}">${savingsTarget.toLocaleString()}</span>
             </span>
           </td>
           <td>
@@ -308,49 +311,49 @@ function renderScorecardRows() {
             <span style="font-size:0.95em;color:#888;">(Spend ≤ ${savingsTarget.toLocaleString()} for max score)</span>
           </td>
           <td>
-            <input type="number" id="actual_spent_${idx}" min="0" max="${budget*2}" placeholder="Enter amount spent" style="width:100%">
+            <input type="number" id="actual_spent_${currentIdx}" min="0" max="${budget*2}" placeholder="Enter amount spent" style="width:100%">
           </td>
           <td>
-            <input type="text" id="pct_used_${idx}" disabled style="width:80px;background:#eef;">
+            <input type="text" id="pct_used_${currentIdx}" disabled style="width:80px;background:#eef;">
           </td>
           <td>
-            <input type="number" id="rating_${idx}" min="1" max="5" step="0.1" disabled style="width:70px;background:#eef;">
+            <input type="number" id="rating_${currentIdx}" min="1" max="5" step="0.1" disabled style="width:70px;background:#eef;">
           </td>
           <td>
-            <input type="number" id="weight_${idx}" value="30" min="0" max="100" step="1" required style="width:65px">
+            <input type="number" id="weight_${currentIdx}" value="30" min="0" max="100" step="1" required style="width:65px">
           </td>
           <td>
-            <input type="text" id="weighted_${idx}" disabled style="width:80px; background:#f5f5fd;">
+            <input type="text" id="weighted_${currentIdx}" disabled style="width:80px; background:#f5f5fd;">
           </td>
           <td>
-            <textarea id="comment_${idx}" style="width:98%;"></textarea>
+            <textarea id="comment_${currentIdx}" style="width:98%;"></textarea>
           </td>
         `;
         tbody.appendChild(row);
 
         // Input event for financial calculation
-        document.querySelector(`#actual_spent_${idx}`).addEventListener('input', () => updateFinancialRow(idx, budget, savingsTarget));
-        document.querySelector(`#weight_${idx}`).addEventListener('input', () => updateFinancialRow(idx, budget, savingsTarget));
+        document.querySelector(`#actual_spent_${currentIdx}`).addEventListener('input', () => updateFinancialRow(currentIdx, budget, savingsTarget));
+        document.querySelector(`#weight_${currentIdx}`).addEventListener('input', () => updateFinancialRow(currentIdx, budget, savingsTarget));
       } else {
-        // UPDATED: Non-financial dimension logic with automatic rating calculation
+        // Non-financial dimension logic with automatic rating calculation
         const row = document.createElement("tr");
         row.innerHTML = `
           <td>${dim.dimension}</td>
           <td>${m.measure}</td>
-          <td><input type="number" id="target_${idx}" placeholder="Enter target" style="width:100%"></td>
-          <td><input type="number" id="actual_${idx}" placeholder="Enter actual" style="width:100%"></td>
+          <td><input type="number" id="target_${currentIdx}" placeholder="Enter target" style="width:100%"></td>
+          <td><input type="number" id="actual_${currentIdx}" placeholder="Enter actual" style="width:100%"></td>
           <td></td>
-          <td><input type="number" id="rating_${idx}" min="1" max="5" step="0.1" disabled style="width:70px;background:#eef;"></td>
-          <td><input type="number" id="weight_${idx}" value="${m.weight}" min="0" max="100" step="1" required style="width:65px"></td>
-          <td><input type="text" id="weighted_${idx}" disabled style="width:80px; background:#f5f5fd;"></td>
-          <td><textarea id="comment_${idx}" style="width:98%;"></textarea></td>
+          <td><input type="number" id="rating_${currentIdx}" min="1" max="5" step="0.1" disabled style="width:70px;background:#eef;"></td>
+          <td><input type="number" id="weight_${currentIdx}" value="${m.weight}" min="0" max="100" step="1" required style="width:65px"></td>
+          <td><input type="text" id="weighted_${currentIdx}" disabled style="width:80px; background:#f5f5fd;"></td>
+          <td><textarea id="comment_${currentIdx}" style="width:98%;"></textarea></td>
         `;
         tbody.appendChild(row);
 
-        // UPDATED: Add event listeners for automatic calculation
-        document.getElementById(`target_${idx}`).addEventListener('input', () => updateNonFinancialRow(idx));
-        document.getElementById(`actual_${idx}`).addEventListener('input', () => updateNonFinancialRow(idx));
-        document.getElementById(`weight_${idx}`).addEventListener('input', () => updateNonFinancialRow(idx));
+        // Add event listeners using the captured index
+        document.getElementById(`target_${currentIdx}`).addEventListener('input', () => updateNonFinancialRow(currentIdx));
+        document.getElementById(`actual_${currentIdx}`).addEventListener('input', () => updateNonFinancialRow(currentIdx));
+        document.getElementById(`weight_${currentIdx}`).addEventListener('input', () => updateNonFinancialRow(currentIdx));
       }
     });
   });
