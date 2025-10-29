@@ -509,12 +509,13 @@ function autofillUserDetails() {
     .catch(err => { /* Optionally handle error */ });
 }
 
-// ========== SAVE SCORECARD (UNCHANGED) ==========
+// ========== SAVE SCORECARD ==========
 function saveScorecard() {
   if (!userProfile) {
     alert("You must be signed in to submit a scorecard.");
     return;
   }
+  
   // Validate required fields
   if (!document.getElementById("employeeName").value.trim() ||
       !document.getElementById("employeeJob").value.trim() ||
@@ -524,13 +525,17 @@ function saveScorecard() {
     alert("Please fill out all required fields.");
     return;
   }
+  
   const n = getScoreInputsCount();
   for (let i = 1; i <= n; ++i) {
-    if (!document.getElementById(`rating_${i}`).value.trim()) {
-      alert("Please fill in all Ratings.");
+    const ratingValue = document.getElementById(`rating_${i}`)?.value;
+    const weightValue = document.getElementById(`weight_${i}`)?.value;
+    
+    if (!ratingValue || ratingValue.trim() === "" || parseFloat(ratingValue) === 0) {
+      alert("Please fill in all Ratings (enter target and actual values for automatic calculation).");
       return;
     }
-    if (!document.getElementById(`weight_${i}`).value.trim()) {
+    if (!weightValue || weightValue.trim() === "") {
       alert("Please fill in all Weights.");
       return;
     }
@@ -548,23 +553,33 @@ function saveScorecard() {
     scores: getScorecardFields()
   };
 
+  console.log("Sending data:", data); // For debugging
+
   fetch(APPS_SCRIPT_URL, {
     method: 'POST',
     body: JSON.stringify(data),
     headers: { 'Content-Type': 'application/json' }
   })
-  .then(r => r.json())
+  .then(r => {
+    console.log("Response status:", r.status);
+    return r.json();
+  })
   .then(resp => {
+    console.log("Response data:", resp);
     if (resp.result === "success") {
-      alert("Scorecard saved!");
+      alert("Scorecard saved successfully!");
       resetScorecard();
       loadUserReports();
       loadDashboard();
     } else {
-      alert("Error: " + resp.message);
+      alert("Error saving scorecard: " + (resp.message || "Unknown error"));
+      console.error("Server error:", resp);
     }
   })
-  .catch(err => alert("Error: " + err.message));
+  .catch(err => {
+    console.error("Fetch error:", err);
+    alert("Error: " + err.message);
+  });
 }
 
 // ========== LOAD REPORTS (UNCHANGED) ==========
