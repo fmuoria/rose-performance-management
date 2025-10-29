@@ -27,6 +27,11 @@
     .scorecard-table { width: 100%; border-collapse: collapse; margin: 25px 0 10px 0; background: #fafafa;}
     .scorecard-table th, .scorecard-table td { border: 1px solid #d1d5db; padding: 10px 8px; font-size: 1rem; vertical-align: top;}
     .scorecard-table th { background: #f2f6fa; color: #34495e; font-weight: bold;}
+   .scorecard-table th:nth-child(10),
+.scorecard-table td:nth-child(10) {
+  min-width: 150px;
+  max-width: 200px;
+}
     .scorecard-section-header { background: #667eea; color: #fff; font-size: 1.1rem; letter-spacing: 0.05em;}
     .section-total-row { background: #e4e8f8; font-weight: bold;}
     .final-total-row { background: #27ae60; color: #fff; font-weight: bold; font-size: 1.12rem;}
@@ -496,6 +501,7 @@
             <th style="width: 7%;">Weight<br>(%)</th>
             <th style="width: 10%;">Weighted<br>Average</th>
             <th style="width: 20%;">Manager's Comments</th>
+            <th>Evidence Link</th>
           </tr>
         </thead>
         <tbody id="scorecardBody"></tbody>
