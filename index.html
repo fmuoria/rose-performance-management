@@ -287,7 +287,7 @@ function renderScorecardRows() {
     dim.measures.forEach(m => {
       idx++;
       if (m.type === "financial") {
-        // Financial dimension logic
+        // Financial dimension logic (UNCHANGED)
         const budget = m.budget;
         const savingsTargetPct = m.savingsTargetPct;
         const savingsTarget = budget * (1 - savingsTargetPct);
@@ -332,30 +332,32 @@ function renderScorecardRows() {
         document.querySelector(`#actual_spent_${idx}`).addEventListener('input', () => updateFinancialRow(idx, budget, savingsTarget));
         document.querySelector(`#weight_${idx}`).addEventListener('input', () => updateFinancialRow(idx, budget, savingsTarget));
       } else {
-        // Normal dimension logic
+        // UPDATED: Non-financial dimension logic with automatic rating calculation
         const row = document.createElement("tr");
         row.innerHTML = `
           <td>${dim.dimension}</td>
           <td>${m.measure}</td>
-          <td>${m.target}</td>
-          <td><input type="text" id="actual_${idx}" style="width:100%"></td>
+          <td><input type="number" id="target_${idx}" placeholder="Enter target" style="width:100%"></td>
+          <td><input type="number" id="actual_${idx}" placeholder="Enter actual" style="width:100%"></td>
           <td></td>
-          <td><input type="number" id="rating_${idx}" min="1" max="5" step="0.1" required style="width:70px"></td>
+          <td><input type="number" id="rating_${idx}" min="1" max="5" step="0.1" disabled style="width:70px;background:#eef;"></td>
           <td><input type="number" id="weight_${idx}" value="${m.weight}" min="0" max="100" step="1" required style="width:65px"></td>
           <td><input type="text" id="weighted_${idx}" disabled style="width:80px; background:#f5f5fd;"></td>
           <td><textarea id="comment_${idx}" style="width:98%;"></textarea></td>
         `;
         tbody.appendChild(row);
 
-        document.getElementById(`rating_${idx}`).addEventListener('input', () => updateWeighted(idx));
-        document.getElementById(`weight_${idx}`).addEventListener('input', () => updateWeighted(idx));
+        // UPDATED: Add event listeners for automatic calculation
+        document.getElementById(`target_${idx}`).addEventListener('input', () => updateNonFinancialRow(idx));
+        document.getElementById(`actual_${idx}`).addEventListener('input', () => updateNonFinancialRow(idx));
+        document.getElementById(`weight_${idx}`).addEventListener('input', () => updateNonFinancialRow(idx));
       }
     });
   });
   updateScoreSummary();
 }
 
-// ========== FINANCIAL CALCULATION LOGIC ==========
+// ========== FINANCIAL CALCULATION LOGIC (UNCHANGED) ==========
 function calcFinancialRating(budget, savingsTarget, actualSpent) {
   let rating = 3.0;
   if (actualSpent < budget) {
@@ -390,13 +392,54 @@ function updateFinancialRow(idx, budget, savingsTarget) {
   updateScoreSummary();
 }
 
+// ========== NEW: NON-FINANCIAL CALCULATION LOGIC ==========
+function calcNonFinancialRating(target, actual) {
+  if (target === 0 || actual === 0) return 0;
+  
+  let rating = 3.0; // Base rating if actual equals target
+  
+  if (actual >= target) {
+    // Exceeds or meets target
+    rating = 3.0 + 2.0 * ((actual - target) / target);
+  } else {
+    // Below target
+    rating = 3.0 - 2.0 * ((target - actual) / target);
+  }
+  
+  // Clamp rating between 1.0 and 5.0
+  rating = Math.max(1.0, Math.min(5.0, rating));
+  return Number(rating.toFixed(1));
+}
+
+function updateNonFinancialRow(idx) {
+  const targetEl = document.getElementById(`target_${idx}`);
+  const actualEl = document.getElementById(`actual_${idx}`);
+  const ratingEl = document.getElementById(`rating_${idx}`);
+  const weightEl = document.getElementById(`weight_${idx}`);
+  const weightedEl = document.getElementById(`weighted_${idx}`);
+
+  const target = parseFloat(targetEl.value) || 0;
+  const actual = parseFloat(actualEl.value) || 0;
+  const weight = parseFloat(weightEl.value) || 0;
+
+  // Calculate rating
+  const rating = calcNonFinancialRating(target, actual);
+  ratingEl.value = rating;
+
+  // Calculate weighted average
+  const weighted = ((rating * weight) / 100).toFixed(2);
+  weightedEl.value = isNaN(weighted) ? "" : weighted;
+
+  updateScoreSummary();
+}
+
 function getScoreInputsCount() {
   let count = 0;
   SCORECARD_DIMENSIONS.forEach(dim => count += dim.measures.length);
   return count;
 }
 
-// ========== SCORECARD CALCULATION ==============
+// ========== SCORECARD CALCULATION (UNCHANGED) ==============
 function updateWeighted(idx) {
   const rating = parseFloat(document.getElementById(`rating_${idx}`).value) || 0;
   const weight = parseFloat(document.getElementById(`weight_${idx}`).value) || 0;
@@ -425,9 +468,8 @@ function resetScorecard() {
   document.getElementById("scoreSummary").innerHTML = "";
 }
 
-// ========== FORM DATA GATHERING ==============
+// ========== FORM DATA GATHERING (UPDATED) ==============
 function getScorecardFields() {
-  const n = getScoreInputsCount();
   const fields = [];
   let idx = 0;
   SCORECARD_DIMENSIONS.forEach(dim => {
@@ -447,10 +489,11 @@ function getScorecardFields() {
           comment: document.getElementById(`comment_${idx}`).value
         });
       } else {
+        // UPDATED: Include target and actual for non-financial dimensions
         fields.push({
           dimension: dim.dimension,
           measure: m.measure,
-          target: m.target,
+          target: document.getElementById(`target_${idx}`).value,
           actual: document.getElementById(`actual_${idx}`).value,
           rating: document.getElementById(`rating_${idx}`).value,
           weight: document.getElementById(`weight_${idx}`).value,
@@ -463,7 +506,7 @@ function getScorecardFields() {
   return fields;
 }
 
-// ========== AUTO-FILL USER DETAILS ==========
+// ========== AUTO-FILL USER DETAILS (UNCHANGED) ==========
 function autofillUserDetails() {
   if (!userProfile) return;
   fetch(APPS_SCRIPT_URL + '?action=lookupUser&email=' + encodeURIComponent(userProfile.email))
@@ -480,7 +523,7 @@ function autofillUserDetails() {
     .catch(err => { /* Optionally handle error */ });
 }
 
-// ========== SAVE SCORECARD ==========
+// ========== SAVE SCORECARD (UNCHANGED) ==========
 function saveScorecard() {
   if (!userProfile) {
     alert("You must be signed in to submit a scorecard.");
@@ -538,7 +581,7 @@ function saveScorecard() {
   .catch(err => alert("Error: " + err.message));
 }
 
-// ========== LOAD REPORTS ==========
+// ========== LOAD REPORTS (UNCHANGED) ==========
 function loadUserReports() {
   if (!userProfile) return;
   fetch(APPS_SCRIPT_URL + '?email=' + encodeURIComponent(userProfile.email))
@@ -581,7 +624,7 @@ function renderReportsTable(records) {
   wrap.innerHTML = html;
 }
 
-// ========== DASHBOARD ==========
+// ========== DASHBOARD (UNCHANGED) ==========
 function loadDashboard() {
   if (!userProfile) return;
   fetch(APPS_SCRIPT_URL + '?email=' + encodeURIComponent(userProfile.email))
