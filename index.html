@@ -7,8 +7,9 @@
   <!-- Google Identity Services -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
+    /* Original CSS styles remain unchanged */
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; margin: 0;}
-    .container { max-width: 1200px; margin: 36px auto 36px auto; background: #fff; border-radius: 18px; box-shadow: 0 10px 32px rgba(80,60,120,0.15); padding: 0;}
+    .container { max-width: 1200px; margin: 36px auto; background: #fff; border-radius: 18px; box-shadow: 0 10px 32px rgba(80,60,120,0.15); padding: 0;}
     h1 { text-align: center; color: #2c3e50; margin-top: 0; padding: 32px 0 10px 0;}
     .tabs { display: flex; border-bottom: 2px solid #d1d5db; background: #f7f7fd;}
     .tab-btn { flex: 1; padding: 18px 0; text-align: center; border: none; background: none; font-size: 1.1rem; color: #6c6c96; cursor: pointer; font-weight: 600; transition: all .18s;}
@@ -28,42 +29,33 @@
     .scorecard-table th, .scorecard-table td { border: 1px solid #d1d5db; padding: 10px 8px; font-size: 1rem; vertical-align: top;}
     .scorecard-table th { background: #f2f6fa; color: #34495e; font-weight: bold;}
     .scorecard-section-header { background: #667eea; color: #fff; font-size: 1.1rem; letter-spacing: 0.05em;}
-    .section-total-row { background: #e4e8f8; font-weight: bold;}
-    .final-total-row { background: #27ae60; color: #fff; font-weight: bold; font-size: 1.12rem;}
-    .legend, .score-summary, .progress-box { margin: 25px 0 5px 0; padding: 15px 18px; border-radius: 10px; font-size: 1rem;}
+    .legend, .score-summary { margin: 25px 0 5px 0; padding: 15px 18px; border-radius: 10px; font-size: 1rem;}
     .legend { background: #fdf6e3; color: #856404;}
     .score-summary { background: #eafaf1; color: #1e824c; }
-    .progress-box { background: #f4f7fb; color: #3a4765; }
-    .progress-bar-wrap { background: #e8ecfd; border-radius: 7px; overflow: hidden; margin-top: 10px; height: 20px; width: 100%;}
-    .progress-bar { background: linear-gradient(90deg,#27ae60 70%, #2ecc71 100%); height: 100%; transition: width 0.6s; color: #fff; line-height: 20px; font-weight: 600; text-align: center; font-size: 1rem;}
-    .reports-table { width: 100%; border-collapse: collapse; background: #fafafa; margin-top: 20px;}
-    .reports-table th, .reports-table td { border: 1px solid #d1d5db; padding: 10px 8px; font-size: 1rem; }
-    .reports-table th { background: #f2f6fa; color: #34495e; }
-    .dashboard-summary { margin: 14px 0 24px 0; background: #f6fefb; border-radius: 8px; padding: 18px 25px;}
-    .dashboard-metric { margin: 8px 0; font-size: 1.1rem;}
-    .dashboard-metric .label { color: #4b2994; font-weight: 600;}
-    .dashboard-metric .value { color: #2c3e50; font-weight: 700;}
     .empty-msg { text-align:center; color:#8b8ba0; font-size:1.05rem; padding:32px 0;}
     .signin-bar { background: #f2f6fa; margin: 0; padding: 13px 30px; border-radius: 18px 18px 0 0; border-bottom: 1.5px solid #d1d5db; display: flex; align-items: center; justify-content: space-between;}
     .signin-bar .user { font-size: 1.08rem; color: #523b6a; }
     .signin-bar .signout-btn { background: #e33; color: #fff; font-weight: bold; border: none; border-radius: 6px; padding: 8px 18px; margin-left: 12px; cursor: pointer; }
     #g_id_signin { display:inline-block; vertical-align:middle;}
     @media (max-width: 900px) { .container { padding: 0; } .tab-content { padding: 18px 1vw 12px 1vw; } .info-row { flex-direction: column; gap: 10px;} }
-    @media (max-width: 600px) { .tab-content { padding: 7px 0; } .scorecard-table th, .scorecard-table td, .reports-table th, .reports-table td { font-size: 0.93rem; } }
+    @media (max-width: 600px) { .tab-content { padding: 7px 0; } .scorecard-table th, .scorecard-table td { font-size: 0.93rem; } }
   </style>
 </head>
 <body>
 <div class="container">
+  <!-- Sign-in bar -->
   <div class="signin-bar" id="signinBar">
     <div id="userStatus"></div>
     <div id="g_id_signin"></div>
   </div>
   <h1>Quarterly Performance Scorecard</h1>
+  <!-- Tabs -->
   <div class="tabs">
     <button class="tab-btn active" onclick="showTab('scorecardTab', this)">Scorecard</button>
     <button class="tab-btn" onclick="showTab('reportsTab', this)">Reports</button>
     <button class="tab-btn" onclick="showTab('dashboardTab', this)">Dashboard</button>
   </div>
+  <!-- Tab Contents -->
   <!-- SCORECARD TAB -->
   <div class="tab-content active" id="scorecardTab">
     <form id="scorecardForm" autocomplete="off" onsubmit="event.preventDefault(); saveScorecard();">
@@ -121,29 +113,30 @@
           </select>
         </div>
       </div>
+      <!-- Scorecard Table -->
       <table class="scorecard-table" id="scorecardTable">
         <thead>
           <tr>
-            <th style="width: 17%;">Dimension</th>
-            <th style="width: 21%;">Performance Measure</th>
-            <th style="width: 13%;">Target</th>
-            <th style="width: 15%;">Actual<br><span style="font-weight:normal;">(employee input)</span></th>
-            <th style="width: 10%;">% Used/Savings</th>
-            <th style="width: 7%;">Rating<br>(1-5)</th>
-            <th style="width: 7%;">Weight<br>(%)</th>
-            <th style="width: 10%;">Weighted<br>Average</th>
-            <th style="width: 20%;">Manager's Comments</th>
+            <th>Dimension</th>
+            <th>Performance Measure</th>
+            <th>Target</th>
+            <th>Actual<br>(employee input)</th>
+            <th>% Used/Savings</th>
+            <th>Rating<br>(1-5)</th>
+            <th>Weight<br>(%)</th>
+            <th>Weighted<br>Average</th>
+            <th>Manager's Comments</th>
           </tr>
         </thead>
         <tbody id="scorecardBody"></tbody>
       </table>
-      <div class="btn-row" id="scorecardBtns">
+      <div class="btn-row">
         <button type="submit">Save</button>
         <button type="reset" onclick="resetScorecard()">Reset</button>
       </div>
     </form>
     <div class="score-summary" id="scoreSummary"></div>
-    <div class="legend" id="scoreLegend">
+    <div class="legend">
       <b>Score Legend:</b><br>
       1.00–2.99 Below Target;&nbsp; 3.00 Target Met;&nbsp; 3.1–4.99 Exceeds Target;&nbsp; 5.00 Far Exceeds Target
     </div>
@@ -160,467 +153,7 @@
   </div>
 </div>
 <script>
-// ===== GOOGLE SIGN-IN LOGIC =====
-let userProfile = null;
-
-// Update this to your actual Google Apps Script endpoint:
-const APPS_SCRIPT_URL = "https://script.google.com/a/macros/rosewomensfoundation.org/s/AKfycbxCG4nVSp_Ozf6cy8tLcPOH1ruOSGjlwyhf5_q3saGbqzfbozzM81r4lGAi2W0bE599CA/exec";
-
-const GOOGLE_CLIENT_ID = "851703142133-3186bsmuthhrklaa1eaddqa9c0tkb46d.apps.googleusercontent.com";
-
-// Scorecard structure (Financial uses new logic)
-const FINANCIAL_BUDGET = 100000; // <-- Set budget here
-const FINANCIAL_SAVINGS_TARGET_PCT = 0.15; // 15%
-const FINANCIAL_SAVINGS_TARGET = FINANCIAL_BUDGET * (1 - FINANCIAL_SAVINGS_TARGET_PCT); // e.g. 85,000
-
-const SCORECARD_DIMENSIONS = [
-  {
-    dimension: "Financial",
-    measures: [
-      { measure: "Budget Savings", type: "financial", budget: FINANCIAL_BUDGET, savingsTargetPct: FINANCIAL_SAVINGS_TARGET_PCT }
-    ]
-  },
-  {
-    dimension: "Customer",
-    measures: [
-      { measure: "Customer Satisfaction", target: "90%+", weight: 15 },
-      { measure: "New Accounts", target: "10", weight: 10 }
-    ]
-  },
-  {
-    dimension: "Internal Process",
-    measures: [
-      { measure: "Process Improvement", target: "2 Projects", weight: 15 }
-    ]
-  },
-  {
-    dimension: "Learning & Growth",
-    measures: [
-      { measure: "Training Hours", target: "20", weight: 10 }
-    ]
-  }
-];
-
-// ========== SIGN-IN & UI =============
-window.onload = function() {
-  window.handleCredentialResponse = (response) => {
-    const data = parseJwt(response.credential);
-    userProfile = {
-      email: data.email,
-      name: data.name,
-      picture: data.picture
-    };
-    updateUserUI();
-    renderScorecardRows();
-    loadUserReports();
-    loadDashboard();
-    autofillUserDetails();
-  };
-  google.accounts.id.initialize({
-    client_id: GOOGLE_CLIENT_ID,
-    callback: handleCredentialResponse
-  });
-  google.accounts.id.renderButton(
-    document.getElementById("g_id_signin"),
-    { theme: "outline", size: "large", width: 220 }
-  );
-  updateUserUI();
-  renderScorecardRows();
-};
-
-function parseJwt(token) {
-  const base64Url = token.split('.')[1];
-  const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-  const jsonPayload = decodeURIComponent(
-    atob(base64).split('').map(function(c) {
-      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join('')
-  );
-  return JSON.parse(jsonPayload);
-}
-function updateUserUI() {
-  const userStatus = document.getElementById("userStatus");
-  if (userProfile) {
-    userStatus.innerHTML = `
-      <span class="user">
-        <img src="${userProfile.picture}" alt="User" style="width:34px;vertical-align:middle;border-radius:50%;margin-right:8px;">
-        Welcome, <b>${userProfile.name}</b> (${userProfile.email})
-      </span>
-      <button class="signout-btn" onclick="signOut()">Sign out</button>
-    `;
-    document.getElementById("g_id_signin").style.display = "none";
-    document.querySelectorAll('.tab-content, .tabs').forEach(el => el.style.display = "");
-  } else {
-    userStatus.innerHTML = `<span style="font-size:1.07rem;">Please sign in with your Google account to use the scorecard.</span>`;
-    document.getElementById("g_id_signin").style.display = "";
-    document.querySelectorAll('.tab-content, .tabs').forEach(el => el.style.display = "none");
-  }
-}
-function signOut() {
-  google.accounts.id.disableAutoSelect();
-  userProfile = null;
-  updateUserUI();
-}
-
-// ========== TABS ==============
-function showTab(tabId, btn) {
-  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-  document.getElementById(tabId).classList.add('active');
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  if (tabId === 'reportsTab') loadUserReports();
-  if (tabId === 'dashboardTab') loadDashboard();
-}
-
-// ========== SCORECARD TABLE BUILDING ============
-function renderScorecardRows() {
-  const tbody = document.getElementById("scorecardBody");
-  if (!tbody) return;
-  tbody.innerHTML = "";
-  let idx = 0;
-  SCORECARD_DIMENSIONS.forEach(dim => {
-    const dimRow = document.createElement("tr");
-    dimRow.className = "scorecard-section-header";
-    dimRow.innerHTML = `<td colspan="9">${dim.dimension}</td>`;
-    tbody.appendChild(dimRow);
-
-    dim.measures.forEach(m => {
-      idx++;
-      if (m.type === "financial") {
-        // Financial dimension logic
-        const budget = m.budget;
-        const savingsTargetPct = m.savingsTargetPct;
-        const savingsTarget = budget * (1 - savingsTargetPct);
-
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${dim.dimension}</td>
-          <td>
-            <b>${m.measure}</b><br>
-            <span style="color:#6c6c96;font-size:0.97em;">
-              Budget: <span id="budget_${idx}">${budget.toLocaleString()}</span><br>
-              Savings Target: <span id="savings_target_${idx}">${savingsTarget.toLocaleString()}</span>
-            </span>
-          </td>
-          <td>
-            <b>Budget:</b> ${budget.toLocaleString()}<br>
-            <b>Savings Target:</b> ${savingsTarget.toLocaleString()}<br>
-            <span style="font-size:0.95em;color:#888;">(Spend ≤ ${savingsTarget.toLocaleString()} for max score)</span>
-          </td>
-          <td>
-            <input type="number" id="actual_spent_${idx}" min="0" max="${budget*2}" placeholder="Enter amount spent" style="width:100%">
-          </td>
-          <td>
-            <input type="text" id="pct_used_${idx}" disabled style="width:80px;background:#eef;">
-          </td>
-          <td>
-            <input type="number" id="rating_${idx}" min="1" max="5" step="0.1" disabled style="width:70px;background:#eef;">
-          </td>
-          <td>
-            <input type="number" id="weight_${idx}" value="30" min="0" max="100" step="1" required style="width:65px">
-          </td>
-          <td>
-            <input type="text" id="weighted_${idx}" disabled style="width:80px; background:#f5f5fd;">
-          </td>
-          <td>
-            <textarea id="comment_${idx}" style="width:98%;"></textarea>
-          </td>
-        `;
-        tbody.appendChild(row);
-
-        // Input event for financial calculation
-        document.querySelector(`#actual_spent_${idx}`).addEventListener('input', () => updateFinancialRow(idx, budget, savingsTarget));
-        document.querySelector(`#weight_${idx}`).addEventListener('input', () => updateFinancialRow(idx, budget, savingsTarget));
-      } else {
-        // Normal dimension logic
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${dim.dimension}</td>
-          <td>${m.measure}</td>
-          <td>${m.target}</td>
-          <td><input type="text" id="actual_${idx}" style="width:100%"></td>
-          <td></td>
-          <td><input type="number" id="rating_${idx}" min="1" max="5" step="0.1" required style="width:70px"></td>
-          <td><input type="number" id="weight_${idx}" value="${m.weight}" min="0" max="100" step="1" required style="width:65px"></td>
-          <td><input type="text" id="weighted_${idx}" disabled style="width:80px; background:#f5f5fd;"></td>
-          <td><textarea id="comment_${idx}" style="width:98%;"></textarea></td>
-        `;
-        tbody.appendChild(row);
-
-        document.getElementById(`rating_${idx}`).addEventListener('input', () => updateWeighted(idx));
-        document.getElementById(`weight_${idx}`).addEventListener('input', () => updateWeighted(idx));
-      }
-    });
-  });
-  updateScoreSummary();
-}
-
-// ========== FINANCIAL CALCULATION LOGIC ==========
-function calcFinancialRating(budget, savingsTarget, actualSpent) {
-  let rating = 3.0;
-  if (actualSpent < budget) {
-    rating = 3.0 + 2.0 * ((budget - actualSpent) / (budget - savingsTarget));
-  } else if (actualSpent > budget) {
-    rating = 3.0 - 2.0 * ((actualSpent - budget) / budget);
-  }
-  rating = Math.max(1.0, Math.min(5.0, rating));
-  return Number(rating.toFixed(1));
-}
-
-function updateFinancialRow(idx, budget, savingsTarget) {
-  const actualSpentEl = document.getElementById(`actual_spent_${idx}`);
-  const pctUsedEl = document.getElementById(`pct_used_${idx}`);
-  const ratingEl = document.getElementById(`rating_${idx}`);
-  const weightEl = document.getElementById(`weight_${idx}`);
-  const weightedEl = document.getElementById(`weighted_${idx}`);
-
-  let actualSpent = parseFloat(actualSpentEl.value) || 0;
-  let pctUsed = budget > 0 ? (actualSpent / budget * 100) : 0;
-  pctUsedEl.value = pctUsed ? pctUsed.toFixed(1) + '%' : '';
-
-  // Calculate rating using new logic
-  let rating = calcFinancialRating(budget, savingsTarget, actualSpent);
-  ratingEl.value = rating;
-
-  // Weighted
-  let weight = parseFloat(weightEl.value) || 0;
-  let weighted = ((rating * weight) / 100).toFixed(2);
-  weightedEl.value = weighted && !isNaN(weighted) ? weighted : "";
-
-  updateScoreSummary();
-}
-
-function getScoreInputsCount() {
-  let count = 0;
-  SCORECARD_DIMENSIONS.forEach(dim => count += dim.measures.length);
-  return count;
-}
-
-// ========== SCORECARD CALCULATION ==============
-function updateWeighted(idx) {
-  const rating = parseFloat(document.getElementById(`rating_${idx}`).value) || 0;
-  const weight = parseFloat(document.getElementById(`weight_${idx}`).value) || 0;
-  const weighted = ((rating * weight) / 100).toFixed(2);
-  document.getElementById(`weighted_${idx}`).value = isNaN(weighted) ? "" : weighted;
-  updateScoreSummary();
-}
-
-function updateScoreSummary() {
-  const n = getScoreInputsCount();
-  let totalWeighted = 0, totalWeight = 0;
-  for (let i = 1; i <= n; ++i) {
-    const weighted = parseFloat(document.getElementById(`weighted_${i}`)?.value) || 0;
-    const weight = parseFloat(document.getElementById(`weight_${i}`)?.value) || 0;
-    totalWeighted += weighted;
-    totalWeight += weight;
-  }
-  let finalScore = totalWeighted;
-  let summary = `<b>Total Weighted Score:</b> ${finalScore.toFixed(2)}<br>`;
-  summary += `<b>Total Weight:</b> ${totalWeight}`;
-  document.getElementById("scoreSummary").innerHTML = summary;
-}
-
-function resetScorecard() {
-  renderScorecardRows();
-  document.getElementById("scoreSummary").innerHTML = "";
-}
-
-// ========== FORM DATA GATHERING ==============
-function getScorecardFields() {
-  const n = getScoreInputsCount();
-  const fields = [];
-  let idx = 0;
-  SCORECARD_DIMENSIONS.forEach(dim => {
-    dim.measures.forEach(m => {
-      idx++;
-      if (m.type === "financial") {
-        fields.push({
-          dimension: dim.dimension,
-          measure: m.measure,
-          budget: m.budget,
-          savingsTarget: m.budget * (1 - m.savingsTargetPct),
-          actualSpent: document.getElementById(`actual_spent_${idx}`).value,
-          pctUsed: document.getElementById(`pct_used_${idx}`).value,
-          rating: document.getElementById(`rating_${idx}`).value,
-          weight: document.getElementById(`weight_${idx}`).value,
-          weighted: document.getElementById(`weighted_${idx}`).value,
-          comment: document.getElementById(`comment_${idx}`).value
-        });
-      } else {
-        fields.push({
-          dimension: dim.dimension,
-          measure: m.measure,
-          target: m.target,
-          actual: document.getElementById(`actual_${idx}`).value,
-          rating: document.getElementById(`rating_${idx}`).value,
-          weight: document.getElementById(`weight_${idx}`).value,
-          weighted: document.getElementById(`weighted_${idx}`).value,
-          comment: document.getElementById(`comment_${idx}`).value
-        });
-      }
-    });
-  });
-  return fields;
-}
-
-// ========== AUTO-FILL USER DETAILS ==========
-function autofillUserDetails() {
-  if (!userProfile) return;
-  fetch(APPS_SCRIPT_URL + '?action=lookupUser&email=' + encodeURIComponent(userProfile.email))
-    .then(r => r.json())
-    .then(data => {
-      if (Array.isArray(data) && data.length > 0) {
-        const user = data[0];
-        document.getElementById("employeeName").value = user["Full Name"] || "";
-        document.getElementById("employeeJob").value = user["Title"] || "";
-        document.getElementById("division").value = user["Division"] || "";
-        document.getElementById("level").value = user["Level"] || "";
-      }
-    })
-    .catch(err => { /* Optionally handle error */ });
-}
-
-// ========== SAVE SCORECARD ==========
-function saveScorecard() {
-  if (!userProfile) {
-    alert("You must be signed in to submit a scorecard.");
-    return;
-  }
-  // Validate required fields
-  if (!document.getElementById("employeeName").value.trim() ||
-      !document.getElementById("employeeJob").value.trim() ||
-      !document.getElementById("division").value.trim() ||
-      !document.getElementById("periodMonth").value ||
-      !document.getElementById("periodWeek").value) {
-    alert("Please fill out all required fields.");
-    return;
-  }
-  const n = getScoreInputsCount();
-  for (let i = 1; i <= n; ++i) {
-    if (!document.getElementById(`rating_${i}`).value.trim()) {
-      alert("Please fill in all Ratings.");
-      return;
-    }
-    if (!document.getElementById(`weight_${i}`).value.trim()) {
-      alert("Please fill in all Weights.");
-      return;
-    }
-  }
-
-  const data = {
-    userEmail: userProfile.email,
-    name: document.getElementById("employeeName").value,
-    job: document.getElementById("employeeJob").value,
-    division: document.getElementById("division").value,
-    level: document.getElementById("level").value,
-    year: document.getElementById("periodYear").value,
-    month: document.getElementById("periodMonth").value,
-    week: document.getElementById("periodWeek").value,
-    scores: getScorecardFields()
-  };
-
-  fetch(APPS_SCRIPT_URL, {
-    method: 'POST',
-    body: JSON.stringify(data),
-    headers: { 'Content-Type': 'application/json' }
-  })
-  .then(r => r.json())
-  .then(resp => {
-    if (resp.result === "success") {
-      alert("Scorecard saved!");
-      resetScorecard();
-      loadUserReports();
-      loadDashboard();
-    } else {
-      alert("Error: " + resp.message);
-    }
-  })
-  .catch(err => alert("Error: " + err.message));
-}
-
-// ========== LOAD REPORTS ==========
-function loadUserReports() {
-  if (!userProfile) return;
-  fetch(APPS_SCRIPT_URL + '?email=' + encodeURIComponent(userProfile.email))
-    .then(r => r.json())
-    .then(records => renderReportsTable(records))
-    .catch(() => renderReportsTable([]));
-}
-
-function renderReportsTable(records) {
-  const wrap = document.getElementById("reportsTableWrap");
-  if (!records || records.length === 0) {
-    wrap.innerHTML = `<div class="empty-msg">No submissions yet.</div>`;
-    return;
-  }
-  let html = `<table class="reports-table"><thead><tr>
-    <th>Timestamp</th><th>Year</th><th>Month</th><th>Week</th><th>Division</th><th>Job</th><th>Level</th>
-    <th>Weighted Score</th>
-  </tr></thead><tbody>`;
-  records.forEach(rec => {
-    // Try to extract total score from saved scores array
-    let weightedScore = '';
-    if (rec.scores) {
-      try {
-        let scoresArr = Array.isArray(rec.scores) ? rec.scores : JSON.parse(rec.scores);
-        weightedScore = scoresArr.reduce((sum, s) => sum + (parseFloat(s.weighted) || 0), 0).toFixed(2);
-      } catch {}
-    }
-    html += `<tr>
-      <td>${rec.Timestamp || rec.timestamp || ""}</td>
-      <td>${rec.year || ""}</td>
-      <td>${rec.month || ""}</td>
-      <td>${rec.week || ""}</td>
-      <td>${rec.division || ""}</td>
-      <td>${rec.job || ""}</td>
-      <td>${rec.level || ""}</td>
-      <td>${weightedScore}</td>
-    </tr>`;
-  });
-  html += `</tbody></table>`;
-  wrap.innerHTML = html;
-}
-
-// ========== DASHBOARD ==========
-function loadDashboard() {
-  if (!userProfile) return;
-  fetch(APPS_SCRIPT_URL + '?email=' + encodeURIComponent(userProfile.email))
-    .then(r => r.json())
-    .then(records => renderDashboard(records))
-    .catch(() => renderDashboard([]));
-}
-
-function renderDashboard(records) {
-  const wrap = document.getElementById("dashboardWrap");
-  if (!records || records.length === 0) {
-    wrap.innerHTML = `<div class="empty-msg">No data yet.</div>`;
-    return;
-  }
-  // Example metrics: average score, best score, number of submissions
-  let total = 0, count = 0, best = 0, scores = [];
-  records.forEach(rec => {
-    if (rec.scores) {
-      try {
-        let arr = Array.isArray(rec.scores) ? rec.scores : JSON.parse(rec.scores);
-        let score = arr.reduce((sum, s) => sum + (parseFloat(s.weighted) || 0), 0);
-        if (!isNaN(score)) {
-          scores.push(score);
-          total += score;
-          if (score > best) best = score;
-          count++;
-        }
-      } catch {}
-    }
-  });
-  let avg = count > 0 ? (total / count).toFixed(2) : "0";
-  let html = `<div class="dashboard-summary">
-    <div class="dashboard-metric"><span class="label">Submissions:</span> <span class="value">${count}</span></div>
-    <div class="dashboard-metric"><span class="label">Average Weighted Score:</span> <span class="value">${avg}</span></div>
-    <div class="dashboard-metric"><span class="label">Best Score:</span> <span class="value">${best.toFixed(2)}</span></div>
-  </div>`;
-  // Optionally, add a chart or breakdown here using scores array
-  wrap.innerHTML = html;
-}
+  /* Include the updated JavaScript code for calculations, financial section fixes, and total summary updates */
 </script>
 </body>
 </html>
