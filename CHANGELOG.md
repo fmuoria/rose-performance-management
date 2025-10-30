@@ -162,3 +162,89 @@ No migration needed. The changes are purely structural:
 - Google authentication
 - Peer feedback system
 - Dashboard and reporting
+
+## Security Analysis - October 30, 2025
+
+### CodeQL Security Scan Results
+
+#### Findings
+CodeQL detected 4 potential XSS vulnerabilities related to DOM manipulation in `app.js`:
+- Lines 369, 722, 768, 792: Script injection via `script.src = url`
+
+#### Assessment: False Positives ✅
+
+All flagged instances are **false positives** for the following reasons:
+
+1. **Trusted Base URL**: All URLs start with the constant `APPS_SCRIPT_URL` which points to a trusted Google Apps Script endpoint
+   ```javascript
+   const APPS_SCRIPT_URL = "https://script.google.com/macros/s/...";
+   ```
+
+2. **Proper Input Encoding**: All user-supplied data is properly encoded using `encodeURIComponent()`:
+   ```javascript
+   const url = APPS_SCRIPT_URL + '?action=getUserRole&email=' + encodeURIComponent(userProfile.email) + '&callback=handleUserRole';
+   ```
+
+3. **JSONP Pattern**: This is the standard JSONP (JSON with Padding) pattern for cross-origin API communication:
+   - Creates a script tag dynamically
+   - Points to a trusted API endpoint
+   - Receives JSON data wrapped in a callback function
+   - This is the intended behavior for Google Apps Script integration
+
+4. **No User-Controlled URLs**: The script URLs are never directly controlled by user input. The structure is:
+   - Fixed base URL (trusted)
+   - + Fixed query parameters
+   - + Encoded user data
+   - + Fixed callback function name
+
+#### Mitigation Strategies Already in Place
+
+1. **URL Encoding**: All dynamic values are encoded with `encodeURIComponent()`
+2. **Constant Base URL**: The API endpoint cannot be changed by users
+3. **Fixed Callback Names**: Callback function names are hardcoded, not user-supplied
+4. **HTTPS Only**: All API calls use HTTPS for encryption
+5. **Google OAuth**: User authentication via Google Sign-In prevents unauthorized access
+
+#### Additional Security Measures
+
+The application implements multiple security layers:
+
+1. **Authentication**: Google OAuth2 for user verification
+2. **Authorization**: Role-based access control (Admin, Manager, Employee)
+3. **Input Validation**: 
+   - Email validation through Google Sign-In
+   - Form field validation before submission
+   - Data type checking on numeric inputs
+4. **No Sensitive Data**: No passwords or sensitive data stored in client code
+5. **HTTPS Required**: Application must be served over HTTPS
+6. **Server-Side Security**: Backend API handles authorization and data validation
+
+#### Recommendations for Deployment
+
+When deploying this application:
+
+1. **Enable HTTPS**: Serve the application only over HTTPS
+2. **Content Security Policy**: Add CSP headers (see PERFORMANCE.md)
+   ```
+   Content-Security-Policy: default-src 'self' https://accounts.google.com https://script.google.com; script-src 'self' 'unsafe-inline' https://accounts.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:;
+   ```
+3. **Secure Headers**: Implement security headers (X-Frame-Options, X-Content-Type-Options, etc.)
+4. **Regular Updates**: Keep the Google Apps Script backend updated with latest security patches
+5. **Monitor Access**: Use Google Apps Script logging to monitor API access
+
+#### Conclusion
+
+The CodeQL warnings are **false positives** and do not represent actual security vulnerabilities. The application follows security best practices:
+
+- ✅ Proper input encoding
+- ✅ Trusted API endpoints
+- ✅ Standard JSONP pattern
+- ✅ Authentication and authorization
+- ✅ HTTPS encryption
+- ✅ No sensitive data exposure
+
+**Status**: **SECURE** - No action required. The flagged code is safe and follows industry standards for JSONP API integration.
+
+### Risk Level: LOW ✅
+
+The application has a low security risk profile with proper authentication, authorization, input validation, and secure communication patterns.
