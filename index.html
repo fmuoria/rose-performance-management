@@ -624,12 +624,14 @@ function renderTabs() {
     <button class="tab-btn active" onclick="showTab('scorecardTab', this)">Scorecard</button>
     <button class="tab-btn" onclick="showTab('reportsTab', this)">Reports</button>
     <button class="tab-btn" onclick="showTab('dashboardTab', this)">Dashboard</button>
+    <button class="tab-btn" onclick="showTab('peerFeedbackTab', this)">Peer Feedback</button>
   `;
   
   if (userRole === 'Manager' || userRole === 'Admin') {
     tabs += `
       <button class="tab-btn" onclick="showTab('myTeamTab', this)">My Team</button>
       <button class="tab-btn" onclick="showTab('setTargetsTab', this)">Set Targets</button>
+      <button class="tab-btn" onclick="showTab('requestPeerFeedbackTab', this)">Request Feedback</button>
       <button class="tab-btn" onclick="showTab('teamReportsTab', this)">Team Reports</button>
       <button class="tab-btn" onclick="showTab('teamDashboardTab', this)">Team Dashboard</button>
     `;
