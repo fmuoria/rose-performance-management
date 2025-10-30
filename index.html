@@ -1829,6 +1829,354 @@ function renderDashboard(records, wrapId) {
   
   wrap.innerHTML = html;
 }
+  // ========== PEER FEEDBACK SYSTEM ==========
+
+function loadPeerFeedbackTab() {
+  loadPendingFeedbackRequests();
+}
+
+function loadPendingFeedbackRequests() {
+  if (!userProfile) return;
+  
+  const url = APPS_SCRIPT_URL + '?action=getPendingFeedback&email=' + encodeURIComponent(userProfile.email) + '&callback=handlePendingFeedback';
+  
+  window.handlePendingFeedback = function(requests) {
+    console.log('Pending feedback requests:', requests);
+    renderPendingFeedback(requests);
+  };
+  
+  const script = document.createElement('script');
+  script.src = url;
+  document.body.appendChild(script);
+}
+
+function renderPendingFeedback(requests) {
+  const wrap = document.getElementById('peerFeedbackWrap');
+  if (!wrap) return;
+  
+  if (!requests || requests.length === 0) {
+    wrap.innerHTML = `<div class="empty-msg">✅ No pending peer feedback requests.<br><br>You're all caught up!</div>`;
+    return;
+  }
+  
+  let html = '<div style="display: grid; gap: 25px;">';
+  
+  requests.forEach(request => {
+    const coreValues = [
+      {
+        id: 'christCentered',
+        name: 'Christ-Centered',
+        description: 'Seeks to alleviate spiritual suffering by embracing the way of Christ and discerning the will of God in everything. Works for God, with God, and to glorify God.'
+      },
+      {
+        id: 'holisticInvestment',
+        name: 'Holistic Investment in Women',
+        description: 'Supports ROSE women as leaders in their emotional, spiritual, and physical well-being so they can serve with strength.'
+      },
+      {
+        id: 'trustedRelationships',
+        name: 'Cultivating Trusted Relationships',
+        description: 'Builds trusted, lasting relationships with people served, donors, and partner community. Trust is the foundation of effective change.'
+      },
+      {
+        id: 'humbleExcellence',
+        name: 'Humble Excellence',
+        description: 'Strives for excellence guided by data, driven by learning, and grounded in humility. Committed to continuous improvement.'
+      },
+      {
+        id: 'locallyLed',
+        name: 'Locally Led',
+        description: 'Programs are locally led by people from the regions served. Maintains core methodology with contextualization.'
+      },
+      {
+        id: 'unwaveringIntegrity',
+        name: 'Unwavering Integrity',
+        description: 'Zero tolerance for corruption, bribery, or discrimination. Upholds highest ethical standards of honesty, respect, compassion, and love.'
+      },
+      {
+        id: 'sustainableEmpowerment',
+        name: 'Sustainable Empowerment',
+        description: 'Creates dignity, not dependence. Never provides handouts or gifts. Focuses on equipping individuals to thrive long-term.'
+      }
+    ];
+    
+    html += `
+      <div class="team-card" style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border: 2px solid #667eea;">
+        <h3 style="color: #667eea; margin-top: 0;">📝 Feedback Request for: ${request['Employee Name']}</h3>
+        <p><strong>Period:</strong> ${request.Year} - ${request.Quarter}</p>
+        <p style="margin-top: 15px; padding: 15px; background: white; border-radius: 8px; border-left: 4px solid #667eea;">
+          <strong>Instructions:</strong> Please provide detailed, honest feedback on how <strong>${request['Employee Name'].split(' ')[0]}</strong> 
+          demonstrates each of ROSE's core values. Write specific examples of behaviors you've observed (both positive and areas for growth). 
+          Your feedback is <strong>anonymous</strong> to the employee but visible to their manager.
+        </p>
+        
+        <form id="feedbackForm_${request.ID}" style="margin-top: 20px;">
+    `;
+    
+    coreValues.forEach(value => {
+      html += `
+        <div style="margin-bottom: 25px; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+          <h4 style="color: #2d3748; margin: 0 0 8px 0;">${value.name}</h4>
+          <p style="font-size: 0.9em; color: #718096; margin: 0 0 12px 0; font-style: italic;">${value.description}</p>
+          <textarea id="${value.id}_${request.ID}" rows="4" required
+            style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 6px; font-size: 0.95em; font-family: inherit;"
+            placeholder="Describe specific examples of how ${request['Employee Name'].split(' ')[0]} demonstrates (or could improve on) this value. Be specific and constructive. Minimum 50 characters."></textarea>
+          <div style="margin-top: 8px; font-size: 0.85em; color: #a0aec0;">
+            <span id="${value.id}_count_${request.ID}">0</span> characters
+          </div>
+        </div>
+      `;
+    });
+    
+    html += `
+          <div style="margin-top: 25px; padding: 20px; background: #fffbeb; border-radius: 8px; border: 1px solid #fbbf24;">
+            <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #92400e;">
+              📝 Overall Comments (Optional):
+            </label>
+            <textarea id="comments_${request.ID}" rows="3"
+              style="width: 100%; padding: 12px; border: 2px solid #fbbf24; border-radius: 6px; font-size: 0.95em; font-family: inherit;"
+              placeholder="Any additional comments or observations about working with ${request['Employee Name'].split(' ')[0]}..."></textarea>
+          </div>
+          
+          <div style="text-align: center; margin-top: 25px;">
+            <button type="button" onclick="submitPeerFeedbackForm('${request.ID}')" 
+              style="background: #48bb78; font-size: 1.1em; padding: 14px 40px;">
+              ✅ Submit Anonymous Feedback
+            </button>
+          </div>
+        </form>
+      </div>
+    `;
+    
+    // Add character counters
+    coreValues.forEach(value => {
+      setTimeout(() => {
+        const textarea = document.getElementById(`${value.id}_${request.ID}`);
+        const counter = document.getElementById(`${value.id}_count_${request.ID}`);
+        if (textarea && counter) {
+          textarea.addEventListener('input', () => {
+            counter.textContent = textarea.value.length;
+            if (textarea.value.length < 50) {
+              counter.style.color = '#e53e3e';
+            } else {
+              counter.style.color = '#48bb78';
+            }
+          });
+        }
+      }, 100);
+    });
+  });
+  
+  html += '</div>';
+  wrap.innerHTML = html;
+}
+
+function submitPeerFeedbackForm(requestId) {
+  const coreValueIds = ['christCentered', 'holisticInvestment', 'trustedRelationships', 'humbleExcellence', 'locallyLed', 'unwaveringIntegrity', 'sustainableEmpowerment'];
+  
+  const feedback = {};
+  let isValid = true;
+  let errorMsg = '';
+  
+  coreValueIds.forEach(id => {
+    const textarea = document.getElementById(`${id}_${requestId}`);
+    if (textarea) {
+      const value = textarea.value.trim();
+      if (value.length < 50) {
+        isValid = false;
+        errorMsg += `- ${id.replace(/([A-Z])/g, ' $1').trim()}: needs at least 50 characters (currently ${value.length})\n`;
+      }
+      feedback[id] = value;
+    }
+  });
+  
+  if (!isValid) {
+    alert('Please provide more detailed feedback:\n\n' + errorMsg + '\nDetailed feedback helps provide meaningful insights for growth.');
+    return;
+  }
+  
+  const data = {
+    requestId: requestId,
+    feedback: feedback,
+    comments: document.getElementById(`comments_${requestId}`)?.value || ""
+  };
+  
+  console.log('Submitting peer feedback:', data);
+  
+  const jsonData = JSON.stringify(data);
+  const chunkSize = 1500;
+  const chunks = [];
+  for (let i = 0; i < jsonData.length; i += chunkSize) {
+    chunks.push(jsonData.substring(i, i + chunkSize));
+  }
+  
+  let url = APPS_SCRIPT_URL + '?action=submitPeerFeedback&callback=handleSubmitFeedbackResponse';
+  chunks.forEach((chunk, index) => {
+    url += '&chunk' + index + '=' + encodeURIComponent(chunk);
+  });
+  
+  window.handleSubmitFeedbackResponse = function(resp) {
+    console.log('Submit feedback response:', resp);
+    if (resp.result === 'success') {
+      alert('✅ Thank you! Your anonymous feedback has been submitted successfully.\n\nAI Analysis Ratings:\n' + 
+            '• Christ-Centered: ' + resp.ratings.christCentered + '/5\n' +
+            '• Holistic Investment: ' + resp.ratings.holisticInvestment + '/5\n' +
+            '• Trusted Relationships: ' + resp.ratings.trustedRelationships + '/5\n' +
+            '• Humble Excellence: ' + resp.ratings.humbleExcellence + '/5\n' +
+            '• Locally Led: ' + resp.ratings.locallyLed + '/5\n' +
+            '• Unwavering Integrity: ' + resp.ratings.unwaveringIntegrity + '/5\n' +
+            '• Sustainable Empowerment: ' + resp.ratings.sustainableEmpowerment + '/5');
+      loadPendingFeedbackRequests();
+    } else {
+      alert('Error submitting feedback: ' + (resp.message || 'Unknown error'));
+    }
+  };
+  
+  const script = document.createElement('script');
+  script.src = url;
+  document.body.appendChild(script);
+}
+
+function loadRequestPeerFeedbackTab() {
+  populateTeamSelects();
+  const select = document.getElementById('feedbackEmployeeSelect');
+  if (select) {
+    select.innerHTML = '<option value="">-- Select Team Member --</option>';
+    teamMembers.forEach(member => {
+      const option = document.createElement('option');
+      option.value = member.email;
+      option.textContent = `${member.name} (${member.title})`;
+      option.dataset.name = member.name;
+      select.appendChild(option);
+    });
+  }
+  
+  loadReviewerCheckboxes();
+}
+
+function loadReviewerCheckboxes() {
+  const wrap = document.getElementById('reviewerCheckboxes');
+  if (!wrap) return;
+  
+  if (teamMembers.length === 0) {
+    wrap.innerHTML = '<p style="color: #718096;">No team members available.</p>';
+    return;
+  }
+  
+  let html = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px;">';
+  
+  teamMembers.forEach(member => {
+    html += `
+      <label style="display: flex; align-items: center; padding: 12px; background: white; border: 2px solid #e2e8f0; border-radius: 6px; cursor: pointer; transition: all 0.2s;">
+        <input type="checkbox" value="${member.email}" class="reviewer-checkbox" style="margin-right: 10px; width: 18px; height: 18px; cursor: pointer;">
+        <div>
+          <div style="font-weight: 600; color: #2d3748;">${member.name}</div>
+          <div style="font-size: 0.85em; color: #718096;">${member.title}</div>
+        </div>
+      </label>
+    `;
+  });
+  
+  html += '</div>';
+  wrap.innerHTML = html;
+  
+  // Add hover effects
+  setTimeout(() => {
+    document.querySelectorAll('#reviewerCheckboxes label').forEach(label => {
+      label.addEventListener('mouseenter', () => {
+        label.style.borderColor = '#667eea';
+        label.style.background = '#f0f9ff';
+      });
+      label.addEventListener('mouseleave', () => {
+        if (!label.querySelector('input').checked) {
+          label.style.borderColor = '#e2e8f0';
+          label.style.background = 'white';
+        }
+      });
+      label.querySelector('input').addEventListener('change', (e) => {
+        if (e.target.checked) {
+          label.style.borderColor = '#667eea';
+          label.style.background = '#f0f9ff';
+        } else {
+          label.style.borderColor = '#e2e8f0';
+          label.style.background = 'white';
+        }
+      });
+    });
+  }, 100);
+}
+
+function submitPeerFeedbackRequest() {
+  const employeeSelect = document.getElementById('feedbackEmployeeSelect');
+  const selectedEmployee = employeeSelect.value;
+  const employeeName = employeeSelect.options[employeeSelect.selectedIndex]?.dataset.name;
+  
+  if (!selectedEmployee) {
+    alert('Please select a team member.');
+    return;
+  }
+  
+  const year = document.getElementById('feedbackYear').value;
+  const quarter = document.getElementById('feedbackQuarter').value;
+  
+  const checkboxes = document.querySelectorAll('.reviewer-checkbox:checked');
+  const reviewers = Array.from(checkboxes).map(cb => cb.value);
+  
+  if (reviewers.length === 0) {
+    alert('Please select at least one peer reviewer.');
+    return;
+  }
+  
+  if (reviewers.length < 2) {
+    const confirm = window.confirm('For more reliable feedback, we recommend selecting at least 2 reviewers. Continue with 1 reviewer?');
+    if (!confirm) return;
+  }
+  
+  const filteredReviewers = reviewers.filter(email => email !== selectedEmployee);
+  
+  if (filteredReviewers.length === 0) {
+    alert('Please select reviewers other than the employee being reviewed.');
+    return;
+  }
+  
+  const data = {
+    managerEmail: userProfile.email,
+    employeeEmail: selectedEmployee,
+    employeeName: employeeName,
+    year: year,
+    quarter: quarter,
+    reviewers: filteredReviewers
+  };
+  
+  console.log('Requesting peer feedback:', data);
+  
+  const jsonData = JSON.stringify(data);
+  const chunkSize = 1500;
+  const chunks = [];
+  for (let i = 0; i < jsonData.length; i += chunkSize) {
+    chunks.push(jsonData.substring(i, i + chunkSize));
+  }
+  
+  let url = APPS_SCRIPT_URL + '?action=requestPeerFeedback&callback=handleRequestFeedbackResponse';
+  chunks.forEach((chunk, index) => {
+    url += '&chunk' + index + '=' + encodeURIComponent(chunk);
+  });
+  
+  window.handleRequestFeedbackResponse = function(resp) {
+    console.log('Request feedback response:', resp);
+    if (resp.result === 'success') {
+      alert(`✅ Peer feedback requests sent successfully!\n\n${filteredReviewers.length} reviewer${filteredReviewers.length > 1 ? 's' : ''} will receive anonymous feedback requests for ${employeeName}.\n\nThey will evaluate based on 7 ROSE core values.`);
+      document.querySelectorAll('.reviewer-checkbox').forEach(cb => cb.checked = false);
+      loadReviewerCheckboxes();
+    } else {
+      alert('Error sending requests: ' + (resp.message || 'Unknown error'));
+    }
+  };
+  
+  const script = document.createElement('script');
+  script.src = url;
+  document.body.appendChild(script);
+}
 </script>
 </body>
 </html>
