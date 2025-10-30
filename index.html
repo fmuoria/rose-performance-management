@@ -36,48 +36,14 @@
   <!-- Google Identity Services - Deferred for Performance -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   
-  <!--
-    ========================================
-    SERVER CONFIGURATION RECOMMENDATIONS
-    ========================================
-    
-    For optimal performance, configure your web server with:
-    
-    1. BROWSER CACHING (Apache .htaccess or Nginx config):
-       - Cache static resources (CSS, JS, images) for 1 year
-       - Cache HTML for shorter periods (1 hour to 1 day)
-       
-       Apache example:
-       <IfModule mod_expires.c>
-         ExpiresActive On
-         ExpiresByType text/html "access plus 1 hour"
-         ExpiresByType text/css "access plus 1 year"
-         ExpiresByType application/javascript "access plus 1 year"
-         ExpiresByType image/png "access plus 1 year"
-         ExpiresByType image/jpeg "access plus 1 year"
-         ExpiresByType image/webp "access plus 1 year"
-       </IfModule>
-       
-    2. COMPRESSION (Gzip/Brotli):
-       Enable text-based compression to reduce file sizes by 70-90%
-       
-       Apache example:
-       <IfModule mod_deflate.c>
-         AddOutputFilterByType DEFLATE text/html text/css application/javascript
-       </IfModule>
-       
-       Nginx example:
-       gzip on;
-       gzip_types text/html text/css application/javascript;
-       brotli on;
-       brotli_types text/html text/css application/javascript;
-       
-    3. SECURITY HEADERS:
-       Add Content-Security-Policy, X-Frame-Options, etc.
+  <!-- 
+    PERFORMANCE: Enable server-side caching and compression (Gzip/Brotli) for optimal performance.
+    See documentation at: https://web.dev/uses-long-cache-ttl/ and https://web.dev/uses-text-compression/
   -->
  <style>
     /* Critical CSS - Above the fold styles with performance optimizations */
-    @font-face{font-display:swap}body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;font-display:swap;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;margin:0}
+    body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;margin:0}
+    *{font-display:swap}
     .container{max-width:1200px;margin:36px auto;background:#fff;border-radius:18px;box-shadow:0 10px 32px rgba(80,60,120,.15);padding:0}h1{text-align:center;color:#2c3e50;margin-top:0;padding:32px 0 10px}
     .tabs{display:flex;border-bottom:2px solid #d1d5db;background:#f7f7fd;overflow-x:auto}.tab-btn{flex:1;padding:18px 0;text-align:center;border:none;background:none;font-size:1.1rem;color:#6c6c96;cursor:pointer;font-weight:600;transition:all .18s;min-width:120px}
     .tab-btn.active{color:#4b2994;background:#fff;border-bottom:3px solid #667eea}.tab-content{display:none;padding:38px 38px 25px}.tab-content.active{display:block}
