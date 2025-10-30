@@ -225,6 +225,27 @@ For future image additions, use modern formats:
 </picture>
 ```
 
+### Font Optimization
+
+The site currently uses system fonts for instant rendering. If you need to add custom fonts, use `font-display: swap`:
+
+```css
+@font-face {
+  font-family: 'CustomFont';
+  src: url('custom-font.woff2') format('woff2'),
+       url('custom-font.woff') format('woff');
+  font-display: swap; /* Shows fallback font immediately, swaps when custom font loads */
+  font-weight: 400;
+  font-style: normal;
+}
+```
+
+**Best practices:**
+- Use `font-display: swap` to prevent invisible text (FOIT)
+- Preload critical fonts: `<link rel="preload" href="font.woff2" as="font" type="font/woff2" crossorigin>`
+- Prefer WOFF2 format (better compression)
+- Subset fonts to include only needed characters
+
 ### Service Worker (Progressive Web App)
 
 Consider implementing a service worker for offline support:
