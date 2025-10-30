@@ -2,12 +2,42 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Quarterly Performance Scorecard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Google Identity Services -->
+  <title>Quarterly Performance Scorecard - ROSE Performance Management</title>
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="ROSE Performance Management System - Track quarterly performance scorecards, set targets, and manage team performance with comprehensive dashboards and peer feedback.">
+  <meta name="keywords" content="performance management, scorecard, quarterly review, employee performance, team management, peer feedback">
+  <meta name="author" content="ROSE Organization">
+  <meta name="theme-color" content="#667eea">
+  
+  <!-- Open Graph Meta Tags -->
+  <meta property="og:title" content="ROSE Performance Management - Quarterly Scorecard">
+  <meta property="og:description" content="Comprehensive performance management system for tracking quarterly scorecards, team performance, and peer feedback.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://fmuoria.github.io/rose-performance-management/">
+  <meta property="og:site_name" content="ROSE Performance Management">
+  <meta property="og:locale" content="en_US">
+  
+  <!-- Twitter Card Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="ROSE Performance Management - Quarterly Scorecard">
+  <meta name="twitter:description" content="Comprehensive performance management system for tracking quarterly scorecards, team performance, and peer feedback.">
+  <meta name="twitter:site" content="@ROSE">
+  
+  <!-- Preconnect to External Domains -->
+  <link rel="preconnect" href="https://accounts.google.com" crossorigin>
+  <link rel="preconnect" href="https://script.google.com" crossorigin>
+  
+  <!-- DNS Prefetch -->
+  <link rel="dns-prefetch" href="https://accounts.google.com">
+  <link rel="dns-prefetch" href="https://script.google.com">
+  
+  <!-- Google Identity Services - Deferred for Performance -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
  <style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; margin: 0;}
+    /* Critical CSS - Above the fold styles with performance optimizations */
+    @font-face{font-display:swap}body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;font-display:swap;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;margin:0}
     .container { max-width: 1200px; margin: 36px auto 36px auto; background: #fff; border-radius: 18px; box-shadow: 0 10px 32px rgba(80,60,120,0.15); padding: 0;}
     h1 { text-align: center; color: #2c3e50; margin-top: 0; padding: 32px 0 10px 0;}
     .tabs { display: flex; border-bottom: 2px solid #d1d5db; background: #f7f7fd; overflow-x: auto;}
@@ -294,39 +324,39 @@
   </style>
 </head>
 <body>
-<div class="container">
-  <div class="signin-bar" id="signinBar">
-    <div id="userStatus"></div>
-    <div id="g_id_signin"></div>
+<div class="container" role="main" aria-label="Performance Management Application">
+  <div class="signin-bar" id="signinBar" role="banner" aria-label="User authentication and profile">
+    <div id="userStatus" role="status" aria-live="polite"></div>
+    <div id="g_id_signin" aria-label="Google Sign-In Button"></div>
   </div>
   <h1>Quarterly Performance Scorecard</h1>
-  <div class="tabs" id="tabsContainer">
+  <div class="tabs" id="tabsContainer" role="tablist" aria-label="Main navigation tabs">
     <!-- Tabs will be dynamically generated based on role -->
   </div>
   
   <!-- SCORECARD TAB -->
-  <div class="tab-content active" id="scorecardTab">
-    <form id="scorecardForm" autocomplete="off" onsubmit="event.preventDefault(); saveScorecard();">
+  <div class="tab-content active" id="scorecardTab" role="tabpanel" aria-labelledby="scorecard-tab" aria-label="Scorecard Form">
+    <form id="scorecardForm" autocomplete="off" onsubmit="event.preventDefault(); saveScorecard();" role="form" aria-label="Performance Scorecard Form">
       <div class="info-row">
         <div class="info-col">
           <label for="employeeName">Employee's Name:</label><br>
-          <input type="text" id="employeeName" required>
+          <input type="text" id="employeeName" required aria-required="true" aria-label="Employee name">
         </div>
         <div class="info-col">
           <label for="employeeJob">Job Title:</label><br>
-          <input type="text" id="employeeJob" required>
+          <input type="text" id="employeeJob" required aria-required="true" aria-label="Job title">
         </div>
         <div class="info-col">
           <label for="division">Division:</label><br>
-          <input type="text" id="division" required>
+          <input type="text" id="division" required aria-required="true" aria-label="Division">
         </div>
         <div class="info-col">
           <label for="level">Level:</label><br>
-          <input type="text" id="level" disabled>
+          <input type="text" id="level" disabled aria-label="Level (auto-filled)">
         </div>
         <div class="info-col">
           <label for="periodYear">Year:</label><br>
-          <select id="periodYear">
+          <select id="periodYear" aria-label="Select year">
             <option value="2025">2025</option>
             <option value="2026">2026</option>
             <option value="2024">2024</option>
@@ -334,7 +364,7 @@
         </div>
         <div class="info-col">
           <label for="periodMonth">Month:</label><br>
-          <select id="periodMonth" required onchange="loadWeeklyHistory(); if(window.peerReviewRowIndex) loadPeerFeedbackScore(window.peerReviewRowIndex);">
+          <select id="periodMonth" required onchange="loadWeeklyHistory(); if(window.peerReviewRowIndex) loadPeerFeedbackScore(window.peerReviewRowIndex);" aria-required="true" aria-label="Select month">
             <option value="">Select</option>
             <option value="01">January</option>
             <option value="02">February</option>
@@ -352,7 +382,7 @@
         </div>
         <div class="info-col">
           <label for="periodWeek">Week:</label><br>
-          <select id="periodWeek" required>
+          <select id="periodWeek" required aria-required="true" aria-label="Select week">
             <option value="">Select</option>
             <option value="1">Week 1</option>
             <option value="2">Week 2</option>
@@ -362,73 +392,73 @@
           </select>
         </div>
       </div>
-      <table class="scorecard-table" id="scorecardTable">
+      <table class="scorecard-table" id="scorecardTable" role="table" aria-label="Performance metrics table">
         <thead>
           <tr>
-            <th>Dimension</th>
-            <th>Performance Measure</th>
-            <th>Target</th>
-            <th>Actual<br><span style="font-weight:normal;">(employee input)</span></th>
-            <th>% Used/Savings</th>
-            <th>Rating<br>(1-5)</th>
-            <th>Weight<br>(%)</th>
-            <th>Weighted<br>Average</th>
-            <th>Manager's Comments</th>
-            <th>Evidence Link</th>
+            <th scope="col">Dimension</th>
+            <th scope="col">Performance Measure</th>
+            <th scope="col">Target</th>
+            <th scope="col">Actual<br><span style="font-weight:normal;">(employee input)</span></th>
+            <th scope="col">% Used/Savings</th>
+            <th scope="col">Rating<br>(1-5)</th>
+            <th scope="col">Weight<br>(%)</th>
+            <th scope="col">Weighted<br>Average</th>
+            <th scope="col">Manager's Comments</th>
+            <th scope="col">Evidence Link</th>
           </tr>
         </thead>
         <tbody id="scorecardBody"></tbody>
       </table>
-      <div class="btn-row" id="scorecardBtns">
-        <button type="submit">Save</button>
-        <button type="reset" onclick="resetScorecard()">Reset</button>
+      <div class="btn-row" id="scorecardBtns" role="group" aria-label="Form actions">
+        <button type="submit" aria-label="Save scorecard">Save</button>
+        <button type="reset" onclick="resetScorecard()" aria-label="Reset scorecard form">Reset</button>
       </div>
     </form>
-    <div class="score-summary" id="scoreSummary"></div>
-    <div class="legend" id="scoreLegend">
+    <div class="score-summary" id="scoreSummary" role="status" aria-live="polite"></div>
+    <div class="legend" id="scoreLegend" role="note" aria-label="Score legend">
       <b>Score Legend:</b><br>
       1.00–2.99 Below Target;&nbsp; 3.00 Target Met;&nbsp; 3.1–4.99 Exceeds Target;&nbsp; 5.00 Far Exceeds Target
     </div>
   </div>
   
   <!-- REPORTS TAB -->
-  <div class="tab-content" id="reportsTab">
+  <div class="tab-content" id="reportsTab" role="tabpanel" aria-labelledby="reports-tab" aria-label="Reports">
     <h2>Your Weekly Submissions</h2>
-    <div id="reportsTableWrap"></div>
+    <div id="reportsTableWrap" role="region" aria-label="Weekly submission reports"></div>
   </div>
   
   <!-- DASHBOARD TAB -->
-  <div class="tab-content" id="dashboardTab">
+  <div class="tab-content" id="dashboardTab" role="tabpanel" aria-labelledby="dashboard-tab" aria-label="Performance Dashboard">
     <h2>Performance Dashboard</h2>
-    <div id="dashboardWrap"></div>
+    <div id="dashboardWrap" role="region" aria-label="Performance metrics dashboard"></div>
   </div>
   
   <!-- MY TEAM TAB (Manager/Admin only) -->
-  <div class="tab-content" id="myTeamTab">
+  <div class="tab-content" id="myTeamTab" role="tabpanel" aria-labelledby="team-tab" aria-label="My Team">
     <h2>My Team</h2>
-    <div id="teamMembersWrap"></div>
+    <div id="teamMembersWrap" role="region" aria-label="Team members list"></div>
   </div>
   
   <!-- SET TARGETS TAB (Manager/Admin only) -->
-  <div class="tab-content" id="setTargetsTab">
+  <div class="tab-content" id="setTargetsTab" role="tabpanel" aria-labelledby="targets-tab" aria-label="Set Quarterly Targets">
     <h2>Set Quarterly Targets</h2>
     <div class="info-row" style="margin-bottom: 20px;">
       <div class="info-col">
         <label for="targetEmployeeSelect">Select Team Member:</label>
-        <select id="targetEmployeeSelect" onchange="loadEmployeeCurrentTargets()">
+        <select id="targetEmployeeSelect" onchange="loadEmployeeCurrentTargets()" aria-label="Select team member for targets">
           <option value="">-- Select Team Member --</option>
         </select>
       </div>
       <div class="info-col">
         <label for="targetYear">Year:</label>
-        <select id="targetYear">
+        <select id="targetYear" aria-label="Select target year">
           <option value="2025">2025</option>
           <option value="2026">2026</option>
         </select>
       </div>
       <div class="info-col">
         <label for="targetQuarter">Quarter:</label>
-        <select id="targetQuarter">
+        <select id="targetQuarter" aria-label="Select target quarter">
           <option value="Q1">Q1 (Jan-Mar)</option>
           <option value="Q2">Q2 (Apr-Jun)</option>
           <option value="Q3">Q3 (Jul-Sep)</option>
@@ -436,65 +466,65 @@
         </select>
       </div>
     </div>
-    <div id="targetsFormWrap"></div>
+    <div id="targetsFormWrap" role="region" aria-label="Targets form"></div>
   </div>
   
   <!-- TEAM REPORTS TAB (Manager/Admin only) -->
-  <div class="tab-content" id="teamReportsTab">
+  <div class="tab-content" id="teamReportsTab" role="tabpanel" aria-labelledby="team-reports-tab" aria-label="Team Member Reports">
     <h2>Team Member Reports</h2>
     <div class="info-row" style="margin-bottom: 20px;">
       <div class="info-col" style="max-width: 400px;">
         <label for="teamReportSelect">Select Team Member:</label>
-        <select id="teamReportSelect" onchange="loadTeamMemberReports()">
+        <select id="teamReportSelect" onchange="loadTeamMemberReports()" aria-label="Select team member for reports">
           <option value="">-- Select Team Member --</option>
         </select>
       </div>
     </div>
-    <div id="teamReportsWrap"></div>
+    <div id="teamReportsWrap" role="region" aria-label="Team member reports"></div>
   </div>
   
   <!-- TEAM DASHBOARD TAB (Manager/Admin only) -->
-  <div class="tab-content" id="teamDashboardTab">
+  <div class="tab-content" id="teamDashboardTab" role="tabpanel" aria-labelledby="team-dashboard-tab" aria-label="Team Performance Dashboard">
     <h2>Team Performance Dashboard</h2>
     <div class="info-row" style="margin-bottom: 20px;">
       <div class="info-col" style="max-width: 400px;">
         <label for="teamDashboardSelect">Select Team Member:</label>
-        <select id="teamDashboardSelect" onchange="loadTeamMemberDashboard()">
+        <select id="teamDashboardSelect" onchange="loadTeamMemberDashboard()" aria-label="Select team member for dashboard">
           <option value="">-- Select Team Member --</option>
         </select>
       </div>
     </div>
-    <div id="teamDashboardWrap"></div>
+    <div id="teamDashboardWrap" role="region" aria-label="Team member dashboard"></div>
   </div>
     <!-- PEER FEEDBACK TAB (All Users) -->
-  <div class="tab-content" id="peerFeedbackTab">
+  <div class="tab-content" id="peerFeedbackTab" role="tabpanel" aria-labelledby="peer-feedback-tab" aria-label="Peer Feedback Requests">
     <h2>✍️ Peer Feedback Requests</h2>
     <p style="color: #718096; margin-bottom: 20px;">Provide honest, constructive feedback on your colleagues' demonstration of ROSE core values.</p>
-    <div id="peerFeedbackWrap"></div>
+    <div id="peerFeedbackWrap" role="region" aria-label="Peer feedback requests"></div>
   </div>
   
   <!-- REQUEST PEER FEEDBACK TAB (Manager/Admin only) -->
-  <div class="tab-content" id="requestPeerFeedbackTab">
+  <div class="tab-content" id="requestPeerFeedbackTab" role="tabpanel" aria-labelledby="request-feedback-tab" aria-label="Request Peer Feedback">
     <h2>📋 Request Peer Feedback</h2>
     <p style="color: #718096; margin-bottom: 20px;">Request anonymous peer feedback for your team members based on ROSE core values. Select reviewers who work closely with the employee.</p>
     
     <div class="info-row" style="margin-bottom: 20px;">
       <div class="info-col">
         <label for="feedbackEmployeeSelect">Select Team Member:</label>
-        <select id="feedbackEmployeeSelect">
+        <select id="feedbackEmployeeSelect" aria-label="Select team member for feedback">
           <option value="">-- Select Team Member --</option>
         </select>
       </div>
       <div class="info-col">
         <label for="feedbackYear">Year:</label>
-        <select id="feedbackYear">
+        <select id="feedbackYear" aria-label="Select feedback year">
           <option value="2025">2025</option>
           <option value="2026">2026</option>
         </select>
       </div>
       <div class="info-col">
         <label for="feedbackQuarter">Quarter:</label>
-        <select id="feedbackQuarter">
+        <select id="feedbackQuarter" aria-label="Select feedback quarter">
           <option value="Q1">Q1 (Jan-Mar)</option>
           <option value="Q2">Q2 (Apr-Jun)</option>
           <option value="Q3">Q3 (Jul-Sep)</option>
@@ -506,8 +536,8 @@
     <div style="background: #f7fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
       <h3>Select Peer Reviewers:</h3>
       <p style="color: #718096; margin-bottom: 15px;">Choose 2-5 colleagues who work closely with this team member. Feedback will be anonymous to the employee.</p>
-      <div id="reviewerCheckboxes"></div>
-      <button onclick="submitPeerFeedbackRequest()" style="margin-top: 20px; background: #48bb78;">📤 Send Feedback Requests</button>
+      <div id="reviewerCheckboxes" role="group" aria-label="Select peer reviewers"></div>
+      <button onclick="submitPeerFeedbackRequest()" style="margin-top: 20px; background: #48bb78;" aria-label="Send feedback requests">📤 Send Feedback Requests</button>
     </div>
   </div>
 </div>
@@ -622,19 +652,19 @@ function getUserRole() {
 function renderTabs() {
   const tabsContainer = document.getElementById('tabsContainer');
   let tabs = `
-    <button class="tab-btn active" onclick="showTab('scorecardTab', this)">Scorecard</button>
-    <button class="tab-btn" onclick="showTab('reportsTab', this)">Reports</button>
-    <button class="tab-btn" onclick="showTab('dashboardTab', this)">Dashboard</button>
-    <button class="tab-btn" onclick="showTab('peerFeedbackTab', this)">Peer Feedback</button>
+    <button class="tab-btn active" onclick="showTab('scorecardTab', this)" role="tab" aria-selected="true" aria-controls="scorecardTab" id="scorecard-tab">Scorecard</button>
+    <button class="tab-btn" onclick="showTab('reportsTab', this)" role="tab" aria-selected="false" aria-controls="reportsTab" id="reports-tab">Reports</button>
+    <button class="tab-btn" onclick="showTab('dashboardTab', this)" role="tab" aria-selected="false" aria-controls="dashboardTab" id="dashboard-tab">Dashboard</button>
+    <button class="tab-btn" onclick="showTab('peerFeedbackTab', this)" role="tab" aria-selected="false" aria-controls="peerFeedbackTab" id="peer-feedback-tab">Peer Feedback</button>
   `;
   
   if (userRole === 'Manager' || userRole === 'Admin') {
     tabs += `
-      <button class="tab-btn" onclick="showTab('myTeamTab', this)">My Team</button>
-      <button class="tab-btn" onclick="showTab('setTargetsTab', this)">Set Targets</button>
-      <button class="tab-btn" onclick="showTab('requestPeerFeedbackTab', this)">Request Feedback</button>
-      <button class="tab-btn" onclick="showTab('teamReportsTab', this)">Team Reports</button>
-      <button class="tab-btn" onclick="showTab('teamDashboardTab', this)">Team Dashboard</button>
+      <button class="tab-btn" onclick="showTab('myTeamTab', this)" role="tab" aria-selected="false" aria-controls="myTeamTab" id="team-tab">My Team</button>
+      <button class="tab-btn" onclick="showTab('setTargetsTab', this)" role="tab" aria-selected="false" aria-controls="setTargetsTab" id="targets-tab">Set Targets</button>
+      <button class="tab-btn" onclick="showTab('requestPeerFeedbackTab', this)" role="tab" aria-selected="false" aria-controls="requestPeerFeedbackTab" id="request-feedback-tab">Request Feedback</button>
+      <button class="tab-btn" onclick="showTab('teamReportsTab', this)" role="tab" aria-selected="false" aria-controls="teamReportsTab" id="team-reports-tab">Team Reports</button>
+      <button class="tab-btn" onclick="showTab('teamDashboardTab', this)" role="tab" aria-selected="false" aria-controls="teamDashboardTab" id="team-dashboard-tab">Team Dashboard</button>
     `;
   }
   
@@ -647,11 +677,11 @@ function updateUserUI() {
     const roleBadgeClass = userRole.toLowerCase();
     userStatus.innerHTML = `
       <span class="user">
-        <img src="${userProfile.picture}" alt="User" style="width:34px;vertical-align:middle;border-radius:50%;margin-right:8px;">
+        <img src="${userProfile.picture}" alt="User profile picture" loading="lazy" width="34" height="34" style="width:34px;vertical-align:middle;border-radius:50%;margin-right:8px;">
         Welcome, <b>${userProfile.name}</b> 
         <span class="role-badge ${roleBadgeClass}">${userRole}</span>
       </span>
-      <button class="signout-btn" onclick="signOut()">Sign out</button>
+      <button class="signout-btn" onclick="signOut()" aria-label="Sign out of application">Sign out</button>
     `;
     document.getElementById("g_id_signin").style.display = "none";
     document.querySelectorAll('.tab-content, .tabs').forEach(el => el.style.display = "");
@@ -675,10 +705,20 @@ function signOut() {
 
 // ========== TABS ==============
 function showTab(tabId, btn) {
-  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-  document.getElementById(tabId).classList.add('active');
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(el => {
+    el.classList.remove('active');
+    el.setAttribute('aria-hidden', 'true');
+  });
+  const activeTab = document.getElementById(tabId);
+  activeTab.classList.add('active');
+  activeTab.setAttribute('aria-hidden', 'false');
+  
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.remove('active');
+    b.setAttribute('aria-selected', 'false');
+  });
   btn.classList.add('active');
+  btn.setAttribute('aria-selected', 'true');
   
   if (tabId === 'reportsTab') loadUserReports();
   if (tabId === 'dashboardTab') loadDashboard();
