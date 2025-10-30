@@ -334,7 +334,7 @@
         </div>
         <div class="info-col">
           <label for="periodMonth">Month:</label><br>
-          <select id="periodMonth" required onchange="loadEmployeeTargets()">
+          <select id="periodMonth" required onchange="loadEmployeeTargets(); if(window.peerReviewRowIndex) loadPeerFeedbackScore(window.peerReviewRowIndex);">
             <option value="">Select</option>
             <option value="01">January</option>
             <option value="02">February</option>
@@ -466,6 +466,51 @@
     </div>
     <div id="teamDashboardWrap"></div>
   </div>
+    <!-- PEER FEEDBACK TAB (All Users) -->
+  <div class="tab-content" id="peerFeedbackTab">
+    <h2>✍️ Peer Feedback Requests</h2>
+    <p style="color: #718096; margin-bottom: 20px;">Provide honest, constructive feedback on your colleagues' demonstration of ROSE core values.</p>
+    <div id="peerFeedbackWrap"></div>
+  </div>
+  
+  <!-- REQUEST PEER FEEDBACK TAB (Manager/Admin only) -->
+  <div class="tab-content" id="requestPeerFeedbackTab">
+    <h2>📋 Request Peer Feedback</h2>
+    <p style="color: #718096; margin-bottom: 20px;">Request anonymous peer feedback for your team members based on ROSE core values. Select reviewers who work closely with the employee.</p>
+    
+    <div class="info-row" style="margin-bottom: 20px;">
+      <div class="info-col">
+        <label for="feedbackEmployeeSelect">Select Team Member:</label>
+        <select id="feedbackEmployeeSelect">
+          <option value="">-- Select Team Member --</option>
+        </select>
+      </div>
+      <div class="info-col">
+        <label for="feedbackYear">Year:</label>
+        <select id="feedbackYear">
+          <option value="2025">2025</option>
+          <option value="2026">2026</option>
+        </select>
+      </div>
+      <div class="info-col">
+        <label for="feedbackQuarter">Quarter:</label>
+        <select id="feedbackQuarter">
+          <option value="Q1">Q1 (Jan-Mar)</option>
+          <option value="Q2">Q2 (Apr-Jun)</option>
+          <option value="Q3">Q3 (Jul-Sep)</option>
+          <option value="Q4">Q4 (Oct-Dec)</option>
+        </select>
+      </div>
+    </div>
+    
+    <div style="background: #f7fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+      <h3>Select Peer Reviewers:</h3>
+      <p style="color: #718096; margin-bottom: 15px;">Choose 2-5 colleagues who work closely with this team member. Feedback will be anonymous to the employee.</p>
+      <div id="reviewerCheckboxes"></div>
+      <button onclick="submitPeerFeedbackRequest()" style="margin-top: 20px; background: #48bb78;">📤 Send Feedback Requests</button>
+    </div>
+  </div>
+</div>
 </div>
 
 <script>
@@ -477,25 +522,25 @@ let teamMembers = [];
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzF9u325VOjHzVuZKU3xR8EMtKzq4jdIxVJqxzFSFOUnhgyvldSAaCTP-e-34krIaEu_Q/exec";
 const GOOGLE_CLIENT_ID = "851703142133-3186bsmuthhrklaa1eaddqa9c0tkb46d.apps.googleusercontent.com";
 
-// Default scorecard dimensions (can be overridden by targets)
+// Default scorecard dimensions
 const SCORECARD_DIMENSIONS = [
   {
     dimension: "Financial",
     measures: [
-      { measure: "Budget Savings", type: "financial", weight: 30 }
+      { measure: "Budget Management", type: "financial", weight: 10 }
     ]
   },
   {
     dimension: "Customer",
     measures: [
-      { measure: "Customer Satisfaction", weight: 15 },
-      { measure: "New Accounts", weight: 10 }
+      { measure: "Internal Customer (Peer Review)", type: "peer-review", weight: 25, readonly: true },
+      { measure: "External Customer Satisfaction", weight: 5 }
     ]
   },
   {
     dimension: "Internal Process",
     measures: [
-      { measure: "Process Improvement", weight: 15 }
+      { measure: "Process Improvement", weight: 50 }
     ]
   },
   {
@@ -937,6 +982,7 @@ function renderScorecardRows() {
       const currentIdx = idx;
       
       if (m.type === "financial") {
+        // Financial row (unchanged)
         const row = document.createElement("tr");
         row.innerHTML = `
           <td>${dim.dimension}</td>
@@ -955,7 +1001,31 @@ function renderScorecardRows() {
         document.getElementById(`target_budget_${currentIdx}`).addEventListener('input', () => updateFinancialRow(currentIdx));
         document.getElementById(`actual_spent_${currentIdx}`).addEventListener('input', () => updateFinancialRow(currentIdx));
         document.getElementById(`weight_${currentIdx}`).addEventListener('input', () => updateFinancialRow(currentIdx));
+      } else if (m.type === "peer-review") {
+        // Peer Review row - read-only, auto-populated from peer feedback
+        const row = document.createElement("tr");
+        row.style.background = "#f0f9ff"; // Light blue background
+        row.innerHTML = `
+          <td>${dim.dimension}</td>
+          <td><b>${m.measure}</b><br><span style="font-size:0.85em;color:#667eea;">Based on core values peer feedback</span></td>
+          <td><input type="text" id="target_${currentIdx}" value="N/A" disabled style="width:100%;background:#eef;text-align:center;"></td>
+          <td><input type="text" id="actual_${currentIdx}" value="Loading..." disabled style="width:100%;background:#eef;text-align:center;"></td>
+          <td></td>
+          <td><input type="number" id="rating_${currentIdx}" min="1" max="5" step="0.1" disabled style="width:70px;background:#eef;"></td>
+          <td><input type="number" id="weight_${currentIdx}" value="${m.weight}" disabled style="width:65px;background:#eef;"></td>
+          <td><input type="text" id="weighted_${currentIdx}" disabled style="width:80px; background:#f5f5fd;"></td>
+          <td><textarea id="comment_${currentIdx}" disabled style="width:98%;background:#eef;" placeholder="Aggregated peer feedback"></textarea></td>
+          <td><button type="button" onclick="viewPeerFeedbackDetails()" style="padding:6px 12px;font-size:0.9em;background:#667eea;">View Feedback</button></td>
+        `;
+        tbody.appendChild(row);
+        
+        // Store this as the peer review row index
+        window.peerReviewRowIndex = currentIdx;
+        
+        // Load peer feedback score
+        loadPeerFeedbackScore(currentIdx);
       } else {
+        // Regular non-financial row
         const row = document.createElement("tr");
         row.innerHTML = `
           <td>${dim.dimension}</td>
@@ -978,6 +1048,61 @@ function renderScorecardRows() {
     });
   });
   updateScoreSummary();
+}
+  // ========== LOAD PEER FEEDBACK SCORE ==========
+function loadPeerFeedbackScore(rowIdx) {
+  if (!userProfile) return;
+  
+  const year = document.getElementById("periodYear")?.value || new Date().getFullYear();
+  const month = document.getElementById("periodMonth")?.value;
+  
+  if (!month) {
+    document.getElementById(`actual_${rowIdx}`).value = "Select month first";
+    return;
+  }
+  
+  const quarter = "Q" + Math.ceil(parseInt(month) / 3);
+  
+  const url = APPS_SCRIPT_URL + '?action=getAggregatedPeerFeedback&employeeEmail=' + 
+              encodeURIComponent(userProfile.email) + '&year=' + year + '&quarter=' + quarter + 
+              '&callback=handlePeerFeedbackScore';
+  
+  window.handlePeerFeedbackScore = function(data) {
+    console.log('Peer feedback score:', data);
+    
+    const actualEl = document.getElementById(`actual_${rowIdx}`);
+    const ratingEl = document.getElementById(`rating_${rowIdx}`);
+    const weightEl = document.getElementById(`weight_${rowIdx}`);
+    const weightedEl = document.getElementById(`weighted_${rowIdx}`);
+    const commentEl = document.getElementById(`comment_${rowIdx}`);
+    
+    if (data.count === 0) {
+      actualEl.value = "No feedback yet";
+      ratingEl.value = "";
+      weightedEl.value = "";
+      commentEl.value = "No peer feedback received for this quarter.";
+    } else {
+      const avgScore = parseFloat(data.averageScore);
+      actualEl.value = avgScore.toFixed(2);
+      ratingEl.value = avgScore.toFixed(1);
+      
+      const weight = parseFloat(weightEl.value) || 0;
+      const weighted = ((avgScore * weight) / 100).toFixed(2);
+      weightedEl.value = weighted;
+      
+      commentEl.value = `Based on ${data.count} peer review${data.count > 1 ? 's' : ''} evaluating 7 core values.`;
+    }
+    
+    updateScoreSummary();
+  };
+  
+  const script = document.createElement('script');
+  script.src = url;
+  document.body.appendChild(script);
+}
+
+function viewPeerFeedbackDetails() {
+  alert("Peer feedback is anonymous. Your manager can view detailed feedback.\n\nYour score is based on the average of peer ratings across 7 ROSE core values.");
 }
   // ========== LOAD EMPLOYEE TARGETS ==========
 function loadEmployeeTargets() {
