@@ -767,10 +767,33 @@ function loadSetTargetsTab() {
   
   wrap.innerHTML = `
     <div class="targets-form">
+      <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #667eea;">
+        <h3 style="margin-top: 0; color: #667eea;">📊 Weight Allocation Rules</h3>
+        <p style="margin: 10px 0;"><strong>Customer Dimension (30% total):</strong></p>
+        <ul style="margin: 5px 0 15px 20px;">
+          <li><strong>Internal Customer (25%)</strong> - ✅ Automatic (Peer Review)</li>
+          <li><strong>External Customer (max 5%)</strong> - You can add measures below</li>
+        </ul>
+        
+        <p style="margin: 10px 0;"><strong>Other Dimensions:</strong></p>
+        <ul style="margin: 5px 0;">
+          <li><strong>Financial:</strong> Maximum 15%</li>
+          <li><strong>Internal Process:</strong> Maximum 50%</li>
+          <li><strong>Learning & Growth:</strong> Maximum 10%</li>
+        </ul>
+        
+        <p style="margin-top: 15px; padding: 10px; background: white; border-radius: 5px; font-weight: 600; color: #2d3748;">
+          Total must equal: 25% (Internal Customer) + Your targets (75%) = <span style="color: #667eea;">100%</span>
+        </p>
+      </div>
+      
       <h3>Set Performance Targets</h3>
       <div id="targetsList"></div>
-      <button onclick="addTargetRow()" style="margin-top: 15px;">+ Add Target</button>
-      <button onclick="saveTargets()" style="margin-top: 15px; background: #48bb78;">Save All Targets</button>
+      <div style="margin-top: 15px; display: flex; gap: 10px;">
+        <button onclick="addTargetRow()" style="background: #667eea;">+ Add Target</button>
+        <button onclick="saveTargets()" style="background: #48bb78;">💾 Save All Targets</button>
+        <button onclick="validateWeights()" style="background: #ed8936;">🔍 Check Weights</button>
+      </div>
     </div>
   `;
   
@@ -862,11 +885,27 @@ function saveTargets() {
   const targetRows = document.querySelectorAll('.target-row');
   const targets = [];
   
+  // Dimension weight limits
+  const dimensionLimits = {
+    'Financial': 15,
+    'Customer': 5, // Only external customer (internal is fixed at 25%)
+    'Internal Process': 50,
+    'Learning & Growth': 10
+  };
+  
+  const dimensionTotals = {
+    'Financial': 0,
+    'Customer': 0,
+    'Internal Process': 0,
+    'Learning & Growth': 0
+  };
+  
+  // Collect targets and calculate dimension totals
   targetRows.forEach(row => {
     const dimension = row.querySelector('.target-dimension').value;
     const measure = row.querySelector('.target-measure').value;
     const targetValue = row.querySelector('.target-value').value;
-    const weight = row.querySelector('.target-weight').value;
+    const weight = parseFloat(row.querySelector('.target-weight').value) || 0;
     const frequency = row.querySelector('.target-frequency').value;
     
     if (dimension && measure && targetValue && weight) {
@@ -877,11 +916,37 @@ function saveTargets() {
         weight: weight,
         frequency: frequency
       });
+      
+      if (dimensionTotals.hasOwnProperty(dimension)) {
+        dimensionTotals[dimension] += weight;
+      }
     }
   });
   
   if (targets.length === 0) {
     alert('Please add at least one target.');
+    return;
+  }
+  
+  // Validate dimension limits
+  let validationErrors = [];
+  
+  Object.keys(dimensionLimits).forEach(dimension => {
+    if (dimensionTotals[dimension] > dimensionLimits[dimension]) {
+      validationErrors.push(`${dimension}: ${dimensionTotals[dimension]}% exceeds limit of ${dimensionLimits[dimension]}%`);
+    }
+  });
+  
+  if (validationErrors.length > 0) {
+    alert('⚠️ Weight Limit Exceeded:\n\n' + validationErrors.join('\n') + '\n\nReminder:\n• Financial: max 15%\n• External Customer: max 5%\n• Internal Process: max 50%\n• Learning & Growth: max 10%\n• Internal Customer (25%) is automatic');
+    return;
+  }
+  
+  // Calculate total weight (including automatic 25% for Internal Customer)
+  const totalWeight = Object.values(dimensionTotals).reduce((sum, val) => sum + val, 0) + 25;
+  
+  if (Math.abs(totalWeight - 100) > 0.01) {
+    alert(`⚠️ Total Weight Error:\n\nCurrent total: ${totalWeight.toFixed(1)}%\n\nBreakdown:\n• Internal Customer: 25% (automatic)\n• Financial: ${dimensionTotals['Financial']}%\n• External Customer: ${dimensionTotals['Customer']}%\n• Internal Process: ${dimensionTotals['Internal Process']}%\n• Learning & Growth: ${dimensionTotals['Learning & Growth']}%\n\nTotal must equal 100%`);
     return;
   }
   
@@ -910,7 +975,7 @@ function saveTargets() {
   window.handleSaveTargetsResponse = function(resp) {
     console.log('Save targets response:', resp);
     if (resp.result === 'success') {
-      alert('Targets saved successfully!');
+      alert('✅ Targets saved successfully!\n\n• Internal Customer (25%) - Peer Review\n• Your custom targets - ' + (totalWeight - 25) + '%\n• Total: 100%');
       loadEmployeeCurrentTargets();
     } else {
       alert('Error saving targets: ' + (resp.message || 'Unknown error'));
@@ -920,6 +985,61 @@ function saveTargets() {
   const script = document.createElement('script');
   script.src = url;
   document.body.appendChild(script);
+}
+
+  function validateWeights() {
+  const targetRows = document.querySelectorAll('.target-row');
+  
+  const dimensionLimits = {
+    'Financial': 15,
+    'Customer': 5,
+    'Internal Process': 50,
+    'Learning & Growth': 10
+  };
+  
+  const dimensionTotals = {
+    'Financial': 0,
+    'Customer': 0,
+    'Internal Process': 0,
+    'Learning & Growth': 0
+  };
+  
+  targetRows.forEach(row => {
+    const dimension = row.querySelector('.target-dimension').value;
+    const weight = parseFloat(row.querySelector('.target-weight').value) || 0;
+    
+    if (dimensionTotals.hasOwnProperty(dimension)) {
+      dimensionTotals[dimension] += weight;
+    }
+  });
+  
+  const totalWeight = Object.values(dimensionTotals).reduce((sum, val) => sum + val, 0) + 25;
+  
+  let report = '📊 Weight Validation Report:\n\n';
+  report += '✅ Internal Customer: 25% (automatic)\n\n';
+  report += 'Your Targets:\n';
+  
+  Object.keys(dimensionLimits).forEach(dimension => {
+    const current = dimensionTotals[dimension];
+    const limit = dimensionLimits[dimension];
+    const status = current <= limit ? '✅' : '❌';
+    const label = dimension === 'Customer' ? 'External Customer' : dimension;
+    
+    report += `${status} ${label}: ${current}% / ${limit}% max\n`;
+  });
+  
+  report += `\n${'─'.repeat(35)}\n`;
+  report += `Total: ${totalWeight}% / 100%\n`;
+  
+  if (totalWeight === 100) {
+    report += '\n✅ Perfect! Weights add up to 100%';
+  } else if (totalWeight < 100) {
+    report += `\n⚠️ Need ${(100 - totalWeight).toFixed(1)}% more`;
+  } else {
+    report += `\n❌ Exceeded by ${(totalWeight - 100).toFixed(1)}%`;
+  }
+  
+  alert(report);
 }
 
 // ========== TEAM REPORTS (MANAGER/ADMIN) ==========
@@ -1154,10 +1274,8 @@ function loadEmployeeTargets() {
 function applyTargetsToScorecard(targets) {
   console.log('Applying targets to scorecard:', targets);
   
-  // Clear existing scorecard
   renderScorecardRows();
   
-  // Group targets by dimension
   const targetsByDimension = {};
   targets.forEach(target => {
     const dim = target.Dimension || target.dimension || '';
@@ -1167,72 +1285,101 @@ function applyTargetsToScorecard(targets) {
     targetsByDimension[dim].push(target);
   });
   
-  // Rebuild scorecard with targets
   const tbody = document.getElementById("scorecardBody");
   if (!tbody) return;
   tbody.innerHTML = "";
   
   let idx = 0;
   
-  // Build scorecard from targets instead of default dimensions
-  Object.keys(targetsByDimension).forEach(dimensionName => {
+  // Build scorecard ensuring Internal Customer is always first in Customer dimension
+  const dimensions = ['Financial', 'Customer', 'Internal Process', 'Learning & Growth'];
+  
+  dimensions.forEach(dimensionName => {
+    if (!targetsByDimension[dimensionName] && dimensionName !== 'Customer') {
+      return; // Skip if no targets for this dimension
+    }
+    
     // Add dimension header
     const dimRow = document.createElement("tr");
     dimRow.className = "scorecard-section-header";
     dimRow.innerHTML = `<td colspan="10">${dimensionName}</td>`;
     tbody.appendChild(dimRow);
     
-    // Add measures for this dimension
-    targetsByDimension[dimensionName].forEach(target => {
+    // For Customer dimension, ALWAYS add Internal Customer first
+    if (dimensionName === 'Customer') {
       idx++;
       const currentIdx = idx;
       
-      const measure = target.Measure || target.measure || '';
-      const targetValue = target['Target Value'] || target.targetValue || '';
-      const weight = target.Weight || target.weight || '';
-      const frequency = target.Frequency || target.frequency || '';
+      const row = document.createElement("tr");
+      row.style.background = "#f0f9ff";
+      row.innerHTML = `
+        <td>${dimensionName}</td>
+        <td><b>Internal Customer (Peer Review)</b><br><span style="font-size:0.85em;color:#667eea;">Based on core values peer feedback</span></td>
+        <td><input type="text" id="target_${currentIdx}" value="N/A" disabled style="width:100%;background:#eef;text-align:center;"></td>
+        <td><input type="text" id="actual_${currentIdx}" value="Loading..." disabled style="width:100%;background:#eef;text-align:center;"></td>
+        <td></td>
+        <td><input type="number" id="rating_${currentIdx}" min="1" max="5" step="0.1" disabled style="width:70px;background:#eef;"></td>
+        <td><input type="number" id="weight_${currentIdx}" value="25" disabled style="width:65px;background:#eef;"></td>
+        <td><input type="text" id="weighted_${currentIdx}" disabled style="width:80px; background:#f5f5fd;"></td>
+        <td><textarea id="comment_${currentIdx}" disabled style="width:98%;background:#eef;" placeholder="Aggregated peer feedback"></textarea></td>
+        <td><button type="button" onclick="viewPeerFeedbackDetails()" style="padding:6px 12px;font-size:0.9em;background:#667eea;">View Feedback</button></td>
+      `;
+      tbody.appendChild(row);
       
-      // Check if this is a financial measure
-      const isFinancial = dimensionName === 'Financial';
-      
-      if (isFinancial) {
-        // Financial row
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${dimensionName}</td>
-          <td><b>${measure}</b></td>
-          <td><input type="number" id="target_budget_${currentIdx}" value="${targetValue}" disabled style="width:100%;background:#eef;"></td>
-          <td><input type="number" id="actual_spent_${currentIdx}" min="0" placeholder="Enter amount spent" style="width:100%"></td>
-          <td><input type="text" id="pct_used_${currentIdx}" disabled style="width:80px;background:#eef;"></td>
-          <td><input type="number" id="rating_${currentIdx}" min="1" max="5" step="0.1" disabled style="width:70px;background:#eef;"></td>
-          <td><input type="number" id="weight_${currentIdx}" value="${weight}" disabled style="width:65px;background:#eef;"></td>
-          <td><input type="text" id="weighted_${currentIdx}" disabled style="width:80px; background:#f5f5fd;"></td>
-          <td><textarea id="comment_${currentIdx}" style="width:98%;"></textarea></td>
-          <td><input type="url" id="evidence_${currentIdx}" placeholder="https://drive.google.com/..." style="width:100%; padding: 6px; font-size: 0.95em;"></td>
-        `;
-        tbody.appendChild(row);
+      window.peerReviewRowIndex = currentIdx;
+      loadPeerFeedbackScore(currentIdx);
+    }
+    
+    // Add other measures for this dimension
+    if (targetsByDimension[dimensionName]) {
+      targetsByDimension[dimensionName].forEach(target => {
+        idx++;
+        const currentIdx = idx;
         
-        document.getElementById(`actual_spent_${currentIdx}`).addEventListener('input', () => updateFinancialRow(currentIdx));
-      } else {
-        // Non-financial row
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${dimensionName}</td>
-          <td>${measure}</td>
-          <td><input type="number" id="target_${currentIdx}" value="${targetValue}" disabled style="width:100%;background:#eef;"></td>
-          <td><input type="number" id="actual_${currentIdx}" placeholder="Enter actual" style="width:100%"></td>
-          <td></td>
-          <td><input type="number" id="rating_${currentIdx}" min="1" max="5" step="0.1" disabled style="width:70px;background:#eef;"></td>
-          <td><input type="number" id="weight_${currentIdx}" value="${weight}" disabled style="width:65px;background:#eef;"></td>
-          <td><input type="text" id="weighted_${currentIdx}" disabled style="width:80px; background:#f5f5fd;"></td>
-          <td><textarea id="comment_${currentIdx}" style="width:98%;"></textarea></td>
-          <td><input type="url" id="evidence_${currentIdx}" placeholder="https://drive.google.com/..." style="width:100%; padding: 6px; font-size: 0.95em;"></td>
-        `;
-        tbody.appendChild(row);
+        const measure = target.Measure || target.measure || '';
+        const targetValue = target['Target Value'] || target.targetValue || '';
+        const weight = target.Weight || target.weight || '';
+        const frequency = target.Frequency || target.frequency || '';
         
-        document.getElementById(`actual_${currentIdx}`).addEventListener('input', () => updateNonFinancialRow(currentIdx));
-      }
-    });
+        const isFinancial = dimensionName === 'Financial';
+        
+        if (isFinancial) {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${dimensionName}</td>
+            <td><b>${measure}</b></td>
+            <td><input type="number" id="target_budget_${currentIdx}" value="${targetValue}" disabled style="width:100%;background:#eef;"></td>
+            <td><input type="number" id="actual_spent_${currentIdx}" min="0" placeholder="Enter amount spent" style="width:100%"></td>
+            <td><input type="text" id="pct_used_${currentIdx}" disabled style="width:80px;background:#eef;"></td>
+            <td><input type="number" id="rating_${currentIdx}" min="1" max="5" step="0.1" disabled style="width:70px;background:#eef;"></td>
+            <td><input type="number" id="weight_${currentIdx}" value="${weight}" disabled style="width:65px;background:#eef;"></td>
+            <td><input type="text" id="weighted_${currentIdx}" disabled style="width:80px; background:#f5f5fd;"></td>
+            <td><textarea id="comment_${currentIdx}" style="width:98%;"></textarea></td>
+            <td><input type="url" id="evidence_${currentIdx}" placeholder="https://drive.google.com/..." style="width:100%; padding: 6px; font-size: 0.95em;"></td>
+          `;
+          tbody.appendChild(row);
+          
+          document.getElementById(`actual_spent_${currentIdx}`).addEventListener('input', () => updateFinancialRow(currentIdx));
+        } else {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${dimensionName}</td>
+            <td>${measure}</td>
+            <td><input type="number" id="target_${currentIdx}" value="${targetValue}" disabled style="width:100%;background:#eef;"></td>
+            <td><input type="number" id="actual_${currentIdx}" placeholder="Enter actual" style="width:100%"></td>
+            <td></td>
+            <td><input type="number" id="rating_${currentIdx}" min="1" max="5" step="0.1" disabled style="width:70px;background:#eef;"></td>
+            <td><input type="number" id="weight_${currentIdx}" value="${weight}" disabled style="width:65px;background:#eef;"></td>
+            <td><input type="text" id="weighted_${currentIdx}" disabled style="width:80px; background:#f5f5fd;"></td>
+            <td><textarea id="comment_${currentIdx}" style="width:98%;"></textarea></td>
+            <td><input type="url" id="evidence_${currentIdx}" placeholder="https://drive.google.com/..." style="width:100%; padding: 6px; font-size: 0.95em;"></td>
+          `;
+          tbody.appendChild(row);
+          
+          document.getElementById(`actual_${currentIdx}`).addEventListener('input', () => updateNonFinancialRow(currentIdx));
+        }
+      });
+    }
   });
   
   updateScoreSummary();
