@@ -334,7 +334,7 @@
         </div>
         <div class="info-col">
           <label for="periodMonth">Month:</label><br>
-          <select id="periodMonth" required onchange="loadEmployeeTargets(); if(window.peerReviewRowIndex) loadPeerFeedbackScore(window.peerReviewRowIndex);">
+          <select id="periodMonth" required onchange="loadWeeklyHistory(); if(window.peerReviewRowIndex) loadPeerFeedbackScore(window.peerReviewRowIndex);">
             <option value="">Select</option>
             <option value="01">January</option>
             <option value="02">February</option>
@@ -518,6 +518,7 @@
 let userProfile = null;
 let userRole = null; // 'Admin', 'Manager', or 'Employee'
 let teamMembers = [];
+let weeklyHistory = []; // NEW: Store historical weekly data
 
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzF9u325VOjHzVuZKU3xR8EMtKzq4jdIxVJqxzFSFOUnhgyvldSAaCTP-e-34krIaEu_Q/exec";
 const GOOGLE_CLIENT_ID = "851703142133-3186bsmuthhrklaa1eaddqa9c0tkb46d.apps.googleusercontent.com";
@@ -1270,6 +1271,91 @@ function loadEmployeeTargets() {
   script.src = url;
   document.body.appendChild(script);
 }
+  // ========== LOAD WEEKLY HISTORY FOR CUMULATIVE TRACKING ==========
+function loadWeeklyHistory() {
+  if (!userProfile) return;
+  
+  const year = document.getElementById("periodYear")?.value || new Date().getFullYear();
+  const month = document.getElementById("periodMonth")?.value;
+  
+  if (!month) return;
+  
+  const url = APPS_SCRIPT_URL + '?action=getWeeklyHistory&email=' + encodeURIComponent(userProfile.email) + 
+              '&year=' + year + '&month=' + month + '&callback=handleWeeklyHistory';
+  
+  window.handleWeeklyHistory = function(history) {
+    console.log('Weekly history:', history);
+    weeklyHistory = history || [];
+    
+    // After loading history, load targets
+    loadEmployeeTargets();
+  };
+  
+  const script = document.createElement('script');
+  script.src = url;
+  document.body.appendChild(script);
+}
+
+// Helper: Get cumulative total for a measure
+function getCumulativeTotal(dimension, measure) {
+  let total = 0;
+  
+  weeklyHistory.forEach(entry => {
+    if (entry.scores && Array.isArray(entry.scores)) {
+      entry.scores.forEach(score => {
+        if (score.dimension === dimension && score.measure === measure) {
+          const actual = parseFloat(score.actual || score.actualSpent || 0);
+          total += actual;
+        }
+      });
+    }
+  });
+  
+  return total;
+}
+
+// Helper: Get average rating for a measure
+function getAverageRating(dimension, measure) {
+  let totalRating = 0;
+  let count = 0;
+  
+  weeklyHistory.forEach(entry => {
+    if (entry.scores && Array.isArray(entry.scores)) {
+      entry.scores.forEach(score => {
+        if (score.dimension === dimension && score.measure === measure) {
+          const rating = parseFloat(score.rating || 0);
+          if (rating > 0) {
+            totalRating += rating;
+            count++;
+          }
+        }
+      });
+    }
+  });
+  
+  return count > 0 ? (totalRating / count) : 0;
+}
+
+// Helper: Get weekly breakdown for a measure
+function getWeeklyBreakdown(dimension, measure) {
+  const breakdown = [];
+  
+  weeklyHistory.forEach(entry => {
+    if (entry.scores && Array.isArray(entry.scores)) {
+      entry.scores.forEach(score => {
+        if (score.dimension === dimension && score.measure === measure) {
+          breakdown.push({
+            week: entry.week,
+            actual: parseFloat(score.actual || score.actualSpent || 0),
+            rating: parseFloat(score.rating || 0)
+          });
+        }
+      });
+    }
+  });
+  
+  return breakdown;
+}
 
 function applyTargetsToScorecard(targets) {
   console.log('Applying targets to scorecard:', targets);
@@ -1291,21 +1377,20 @@ function applyTargetsToScorecard(targets) {
   
   let idx = 0;
   
-  // Build scorecard ensuring Internal Customer is always first in Customer dimension
   const dimensions = ['Financial', 'Customer', 'Internal Process', 'Learning & Growth'];
+  const currentWeek = parseInt(document.getElementById("periodWeek")?.value || 1);
   
   dimensions.forEach(dimensionName => {
     if (!targetsByDimension[dimensionName] && dimensionName !== 'Customer') {
-      return; // Skip if no targets for this dimension
+      return;
     }
     
-    // Add dimension header
     const dimRow = document.createElement("tr");
     dimRow.className = "scorecard-section-header";
     dimRow.innerHTML = `<td colspan="10">${dimensionName}</td>`;
     tbody.appendChild(dimRow);
     
-    // For Customer dimension, ALWAYS add Internal Customer first
+    // Customer dimension - Internal Customer
     if (dimensionName === 'Customer') {
       idx++;
       const currentIdx = idx;
@@ -1314,7 +1399,7 @@ function applyTargetsToScorecard(targets) {
       row.style.background = "#f0f9ff";
       row.innerHTML = `
         <td>${dimensionName}</td>
-        <td><b>Internal Customer (Peer Review)</b><br><span style="font-size:0.85em;color:#667eea;">Based on core values peer feedback</span></td>
+        <td><b>Internal Customer (Peer Review)</b><br><span style="font-size:0.85em;color:#667eea;">Quarterly - Based on core values peer feedback</span></td>
         <td><input type="text" id="target_${currentIdx}" value="N/A" disabled style="width:100%;background:#eef;text-align:center;"></td>
         <td><input type="text" id="actual_${currentIdx}" value="Loading..." disabled style="width:100%;background:#eef;text-align:center;"></td>
         <td></td>
@@ -1330,26 +1415,50 @@ function applyTargetsToScorecard(targets) {
       loadPeerFeedbackScore(currentIdx);
     }
     
-    // Add other measures for this dimension
+    // Other measures
     if (targetsByDimension[dimensionName]) {
       targetsByDimension[dimensionName].forEach(target => {
         idx++;
         const currentIdx = idx;
         
         const measure = target.Measure || target.measure || '';
-        const targetValue = target['Target Value'] || target.targetValue || '';
+        const targetValue = parseFloat(target['Target Value'] || target.targetValue || 0);
         const weight = target.Weight || target.weight || '';
-        const frequency = target.Frequency || target.frequency || '';
+        const frequency = target.Frequency || target.frequency || 'Weekly';
         
         const isFinancial = dimensionName === 'Financial';
+        const isCumulative = (dimensionName === 'Internal Process' || dimensionName === 'Learning & Growth');
+        
+        // Get historical data
+        const cumulativeSoFar = isCumulative ? getCumulativeTotal(dimensionName, measure) : 0;
+        const averageRating = !isCumulative ? getAverageRating(dimensionName, measure) : 0;
+        const weeklyBreakdown = getWeeklyBreakdown(dimensionName, measure);
+        
+        // Calculate remaining
+        const remaining = isCumulative ? Math.max(0, targetValue - cumulativeSoFar) : 0;
+        const progressPct = isCumulative ? Math.min(100, (cumulativeSoFar / targetValue * 100)) : 0;
+        
+        // Calculate weeks remaining in period
+        let weeksInPeriod = 4; // Default for monthly
+        if (frequency === 'Quarterly') weeksInPeriod = 13;
+        const weeksRemaining = Math.max(0, weeksInPeriod - weeklyHistory.length);
         
         if (isFinancial) {
+          // Financial dimension - Show average performance
           const row = document.createElement("tr");
           row.innerHTML = `
             <td>${dimensionName}</td>
-            <td><b>${measure}</b></td>
-            <td><input type="number" id="target_budget_${currentIdx}" value="${targetValue}" disabled style="width:100%;background:#eef;"></td>
-            <td><input type="number" id="actual_spent_${currentIdx}" min="0" placeholder="Enter amount spent" style="width:100%"></td>
+            <td><b>${measure}</b><br><span style="font-size:0.85em;color:#667eea;">${frequency}</span></td>
+            <td>
+              <input type="number" id="target_budget_${currentIdx}" value="${targetValue}" disabled style="width:100%;background:#eef;">
+              ${weeklyBreakdown.length > 0 ? `
+                <div style="font-size:0.8em;color:#718096;margin-top:5px;padding:5px;background:#fef3c7;border-radius:4px;">
+                  📊 Average so far: <strong>${averageRating.toFixed(2)}</strong> rating<br>
+                  ${weeklyBreakdown.map(w => `Week ${w.week}: ${w.actual.toFixed(0)} (${w.rating.toFixed(1)})`).join(', ')}
+                </div>
+              ` : ''}
+            </td>
+            <td><input type="number" id="actual_spent_${currentIdx}" min="0" placeholder="This week's amount" style="width:100%"></td>
             <td><input type="text" id="pct_used_${currentIdx}" disabled style="width:80px;background:#eef;"></td>
             <td><input type="number" id="rating_${currentIdx}" min="1" max="5" step="0.1" disabled style="width:70px;background:#eef;"></td>
             <td><input type="number" id="weight_${currentIdx}" value="${weight}" disabled style="width:65px;background:#eef;"></td>
@@ -1360,13 +1469,73 @@ function applyTargetsToScorecard(targets) {
           tbody.appendChild(row);
           
           document.getElementById(`actual_spent_${currentIdx}`).addEventListener('input', () => updateFinancialRow(currentIdx));
-        } else {
+        } else if (isCumulative) {
+          // Cumulative measures - Show running total
           const row = document.createElement("tr");
           row.innerHTML = `
             <td>${dimensionName}</td>
-            <td>${measure}</td>
-            <td><input type="number" id="target_${currentIdx}" value="${targetValue}" disabled style="width:100%;background:#eef;"></td>
-            <td><input type="number" id="actual_${currentIdx}" placeholder="Enter actual" style="width:100%"></td>
+            <td>${measure}<br><span style="font-size:0.85em;color:#667eea;">${frequency} - Cumulative</span></td>
+            <td>
+              <input type="number" id="target_${currentIdx}" value="${targetValue}" disabled style="width:100%;background:#eef;">
+              <div style="margin-top:8px;padding:8px;background:#dcfce7;border-radius:6px;border-left:3px solid #22c55e;">
+                <div style="font-size:0.85em;font-weight:600;color:#14532d;margin-bottom:4px;">
+                  📈 Cumulative Progress
+                </div>
+                <div style="font-size:0.9em;color:#166534;margin:3px 0;">
+                  <strong>So far:</strong> ${cumulativeSoFar.toFixed(1)} ${dimensionName === 'Learning & Growth' ? 'hours' : 'units'}
+                </div>
+                <div style="font-size:0.9em;color:#166534;margin:3px 0;">
+                  <strong>Remaining:</strong> ${remaining.toFixed(1)} ${dimensionName === 'Learning & Growth' ? 'hours' : 'units'}
+                </div>
+                <div style="font-size:0.85em;color:#64748b;margin:3px 0;">
+                  <strong>Weeks left:</strong> ${weeksRemaining} ${weeksRemaining === 1 ? 'week' : 'weeks'}
+                </div>
+                <div style="margin-top:6px;background:#fff;border-radius:4px;height:20px;overflow:hidden;">
+                  <div style="background:#22c55e;height:100%;width:${progressPct}%;transition:width 0.3s;display:flex;align-items:center;justify-content:center;color:white;font-size:0.75em;font-weight:600;">
+                    ${progressPct.toFixed(0)}%
+                  </div>
+                </div>
+                ${weeklyBreakdown.length > 0 ? `
+                  <div style="font-size:0.75em;color:#64748b;margin-top:6px;padding-top:6px;border-top:1px solid #86efac;">
+                    ${weeklyBreakdown.map(w => `Week ${w.week}: +${w.actual.toFixed(1)}`).join(' • ')}
+                  </div>
+                ` : ''}
+              </div>
+            </td>
+            <td>
+              <input type="number" id="actual_${currentIdx}" placeholder="Add this week" style="width:100%;">
+              <div style="font-size:0.8em;color:#667eea;margin-top:3px;">
+                New total: <span id="new_total_${currentIdx}">${cumulativeSoFar.toFixed(1)}</span>
+              </div>
+              <input type="hidden" id="cumulative_${currentIdx}" value="${cumulativeSoFar}">
+            </td>
+            <td></td>
+            <td><input type="number" id="rating_${currentIdx}" min="1" max="5" step="0.1" disabled style="width:70px;background:#eef;"></td>
+            <td><input type="number" id="weight_${currentIdx}" value="${weight}" disabled style="width:65px;background:#eef;"></td>
+            <td><input type="text" id="weighted_${currentIdx}" disabled style="width:80px; background:#f5f5fd;"></td>
+            <td><textarea id="comment_${currentIdx}" style="width:98%;"></textarea></td>
+            <td><input type="url" id="evidence_${currentIdx}" placeholder="https://drive.google.com/..." style="width:100%; padding: 6px; font-size: 0.95em;"></td>
+          `;
+          tbody.appendChild(row);
+          
+          // Add listener for cumulative calculation
+          document.getElementById(`actual_${currentIdx}`).addEventListener('input', () => updateCumulativeRow(currentIdx));
+        } else {
+          // Non-cumulative, non-financial (Customer External)
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${dimensionName}</td>
+            <td>${measure}<br><span style="font-size:0.85em;color:#667eea;">${frequency}</span></td>
+            <td>
+              <input type="number" id="target_${currentIdx}" value="${targetValue}" disabled style="width:100%;background:#eef;">
+              ${weeklyBreakdown.length > 0 ? `
+                <div style="font-size:0.8em;color:#718096;margin-top:5px;padding:5px;background:#fef3c7;border-radius:4px;">
+                  📊 Average so far: <strong>${averageRating.toFixed(2)}</strong> rating<br>
+                  ${weeklyBreakdown.map(w => `Week ${w.week}: ${w.actual.toFixed(1)} (${w.rating.toFixed(1)})`).join(', ')}
+                </div>
+              ` : ''}
+            </td>
+            <td><input type="number" id="actual_${currentIdx}" placeholder="This week" style="width:100%"></td>
             <td></td>
             <td><input type="number" id="rating_${currentIdx}" min="1" max="5" step="0.1" disabled style="width:70px;background:#eef;"></td>
             <td><input type="number" id="weight_${currentIdx}" value="${weight}" disabled style="width:65px;background:#eef;"></td>
@@ -1467,6 +1636,35 @@ function updateNonFinancialRow(idx) {
 
   const rating = calcNonFinancialRating(target, actual);
   ratingEl.value = rating;
+
+  const weighted = ((rating * weight) / 100).toFixed(2);
+  weightedEl.value = isNaN(weighted) ? "" : weighted;
+
+  updateScoreSummary();
+}
+  function updateCumulativeRow(idx) {
+  const targetEl = document.getElementById(`target_${idx}`);
+  const actualEl = document.getElementById(`actual_${idx}`);
+  const cumulativeEl = document.getElementById(`cumulative_${idx}`);
+  const newTotalEl = document.getElementById(`new_total_${idx}`);
+  const ratingEl = document.getElementById(`rating_${idx}`);
+  const weightEl = document.getElementById(`weight_${idx}`);
+  const weightedEl = document.getElementById(`weighted_${idx}`);
+
+  const target = parseFloat(targetEl.value) || 0;
+  const thisWeek = parseFloat(actualEl.value) || 0;
+  const soFar = parseFloat(cumulativeEl.value) || 0;
+  const weight = parseFloat(weightEl.value) || 0;
+
+  // Calculate new total
+  const newTotal = soFar + thisWeek;
+  newTotalEl.textContent = newTotal.toFixed(1);
+  newTotalEl.style.fontWeight = 'bold';
+  newTotalEl.style.color = newTotal >= target ? '#22c55e' : '#667eea';
+
+  // Calculate rating based on new total vs target
+  const rating = calcNonFinancialRating(target, newTotal);
+  ratingEl.value = rating.toFixed(1);
 
   const weighted = ((rating * weight) / 100).toFixed(2);
   weightedEl.value = isNaN(weighted) ? "" : weighted;
