@@ -505,7 +505,13 @@ function loadSetTargetsTab() {
 
 function resetTargetsForm() {
   if (confirm('Are you sure you want to reset the form? This will clear all unsaved changes.')) {
-    loadSetTargetsTab();
+    // Clear the targets list while preserving the selected employee
+    const targetsList = document.getElementById('targetsList');
+    if (targetsList) {
+      targetsList.innerHTML = '';
+      // Add one empty row to start fresh
+      addTargetRow();
+    }
   }
 }
 
@@ -1037,8 +1043,20 @@ function showManagerPeerFeedbackModal() {
 
 function generateFeedbackBreakdown(data) {
   // Generate a breakdown display for the aggregated feedback
-  // Since we have the average score, we'll display it in a visually appealing way
+  // Validate and parse the average score
   const avgScore = parseFloat(data.averageScore);
+  
+  // Check if avgScore is a valid number
+  if (isNaN(avgScore) || avgScore < 0 || avgScore > 5) {
+    return `
+      <div style="margin: 20px 0; padding: 20px; background: #fee; border-radius: 8px; border-left: 4px solid #ef4444;">
+        <p style="color: #991b1b; margin: 0;">
+          ⚠️ Unable to display feedback breakdown. Invalid score data received.
+        </p>
+      </div>
+    `;
+  }
+  
   const scorePercentage = (avgScore / 5.0) * 100;
   
   let rating = '';
@@ -1061,18 +1079,23 @@ function generateFeedbackBreakdown(data) {
     ratingColor = '#ef4444';
   }
   
+  // Escape values for safe HTML insertion
+  const safeRating = rating.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const safeScore = avgScore.toFixed(2);
+  const safePercentage = scorePercentage.toFixed(1);
+  
   return `
     <div style="margin: 20px 0;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
         <span style="font-weight: 600; color: #2d3748;">Overall Performance Rating:</span>
-        <span style="font-weight: 700; font-size: 1.3em; color: ${ratingColor};">${rating}</span>
+        <span style="font-weight: 700; font-size: 1.3em; color: ${ratingColor};">${safeRating}</span>
       </div>
       
       <div style="background: #e2e8f0; border-radius: 10px; height: 30px; overflow: hidden; position: relative;">
-        <div style="background: linear-gradient(90deg, ${ratingColor}, ${ratingColor}dd); height: 100%; width: ${scorePercentage}%; 
+        <div style="background: linear-gradient(90deg, ${ratingColor}, ${ratingColor}dd); height: 100%; width: ${safePercentage}%; 
                     border-radius: 10px; display: flex; align-items: center; justify-content: flex-end; padding-right: 10px; 
                     transition: width 0.5s ease;">
-          <span style="color: white; font-weight: bold; font-size: 0.9em;">${avgScore.toFixed(2)}/5.0</span>
+          <span style="color: white; font-weight: bold; font-size: 0.9em;">${safeScore}/5.0</span>
         </div>
       </div>
       
@@ -1869,10 +1892,11 @@ function viewScorecardDetails(index, wrapId) {
                 <td>${score.weight}%</td>
                 <td><strong>${score.weighted}</strong></td>
                 <td>${score.comment || '-'}</td>
-                <td>${isPeerReview && isManagerView ? 
-                  `<button onclick="viewTeamMemberPeerFeedback('${employeeEmail}', ${record.Year || record.year}, ${record.Month || record.month})" 
+                <td>${isPeerReview && isManagerView && employeeEmail && (record.Year || record.year) && (record.Month || record.month) ? 
+                  `<button onclick="viewTeamMemberPeerFeedback('${employeeEmail.replace(/'/g, "\\'")}', '${record.Year || record.year}', '${record.Month || record.month}')" 
                           style="padding: 6px 12px; font-size: 0.9em; background: #667eea; color: white; border: none; 
                           border-radius: 6px; cursor: pointer;">View Detailed Feedback</button>` : 
+                  isPeerReview && isManagerView ? 'Data unavailable' :
                   (score.evidence ? `<a href="${score.evidence}" target="_blank" style="color: #667eea; text-decoration: underline;">View Evidence</a>` : '-')
                 }</td>
               </tr>
@@ -1899,16 +1923,28 @@ function viewScorecardDetails(index, wrapId) {
 }
 
 function viewTeamMemberPeerFeedback(employeeEmail, year, month) {
-  const quarter = "Q" + Math.ceil(parseInt(month) / 3);
+  // Validate inputs
+  if (!employeeEmail || !year || !month) {
+    alert("Unable to load feedback. Missing required parameters.");
+    return;
+  }
+  
+  const monthNum = parseInt(month);
+  if (isNaN(monthNum) || monthNum < 1 || monthNum > 12) {
+    alert("Invalid month value.");
+    return;
+  }
+  
+  const quarter = "Q" + Math.ceil(monthNum / 3);
   
   const url = APPS_SCRIPT_URL + '?action=getAggregatedPeerFeedback&employeeEmail=' + 
-              encodeURIComponent(employeeEmail) + '&year=' + year + '&quarter=' + quarter + 
+              encodeURIComponent(employeeEmail) + '&year=' + encodeURIComponent(year) + '&quarter=' + quarter + 
               '&callback=handleTeamMemberFeedbackView';
   
   window.handleTeamMemberFeedbackView = function(data) {
     console.log('Team member peer feedback view:', data);
     
-    if (data.count === 0) {
+    if (!data || data.count === 0) {
       alert("No peer feedback has been received for this employee in this quarter.");
       return;
     }
