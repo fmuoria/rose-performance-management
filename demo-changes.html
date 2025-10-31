@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ROSE Performance Management - Changes Demo</title>
+  <link rel="stylesheet" href="/home/runner/work/rose-performance-management/rose-performance-management/style.css">
+  <style>
+    .demo-container {
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    .demo-section {
+      margin: 30px 0;
+      padding: 25px;
+      border: 2px solid #f9dcc4;
+      border-radius: 10px;
+      background: linear-gradient(to bottom, #ffffff 0%, rgba(254, 243, 226, 0.3) 100%);
+    }
+    .demo-title {
+      color: #c12040;
+      font-size: 1.8em;
+      margin-bottom: 15px;
+      font-weight: 700;
+    }
+    .demo-subtitle {
+      color: #667eea;
+      font-size: 1.3em;
+      margin: 20px 0 10px 0;
+      font-weight: 600;
+    }
+    .feature-highlight {
+      background: #f0f9ff;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+      border-left: 4px solid #667eea;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="main-heading" style="text-align: center; color: #c12040;">🌹 ROSE Performance Management - Implementation Demo</h1>
+    
+    <div class="demo-container">
+      <div class="demo-section">
+        <h2 class="demo-title">📊 Feature 1: Manager Access to Employee Feedback</h2>
+        
+        <div class="feature-highlight">
+          <h3 class="demo-subtitle">Enhancement Overview</h3>
+          <p>Managers can now view detailed anonymous peer feedback results when reviewing team member scorecards.</p>
+          <ul>
+            <li>✅ Access aggregated feedback scores from Internal Customer Perspective</li>
+            <li>✅ View breakdown of ROSE core values assessment</li>
+            <li>✅ Maintain employee privacy with anonymized results</li>
+            <li>✅ Visual rating display with performance indicators</li>
+          </ul>
+        </div>
+
+        <div class="feature-highlight">
+          <h3 class="demo-subtitle">How It Works</h3>
+          <p><strong>Step 1:</strong> Manager navigates to "Team Reports" tab</p>
+          <p><strong>Step 2:</strong> Selects a team member and views their scorecard details</p>
+          <p><strong>Step 3:</strong> For the "Internal Customer (Peer Review)" row, a "View Detailed Feedback" button appears</p>
+          <p><strong>Step 4:</strong> Clicking opens a modal with:</p>
+          <ul>
+            <li>Average peer feedback score (e.g., 4.2/5.0)</li>
+            <li>Number of peer reviews collected</li>
+            <li>Performance rating (Exceptional, Excellent, Very Good, etc.)</li>
+            <li>Visual progress bar showing score</li>
+            <li>List of ROSE core values covered</li>
+            <li>Privacy notice ensuring anonymity</li>
+          </ul>
+        </div>
+
+        <div style="background: #fffbeb; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #f59e0b;">
+          <p style="margin: 0; color: #78350f;">
+            ℹ️ <strong>Privacy Protection:</strong> Individual reviewer identities remain anonymous. Only aggregated scores and statistics are shown to maintain confidentiality.
+          </p>
+        </div>
+      </div>
+
+      <div class="demo-section">
+        <h2 class="demo-title">🔄 Feature 2: Reset Button in Set Targets Tab</h2>
+        
+        <div class="feature-highlight">
+          <h3 class="demo-subtitle">Enhancement Overview</h3>
+          <p>Added a reset button with improved layout to the Set Targets tab for better usability.</p>
+          <ul>
+            <li>✅ New "Reset Form" button added to button row</li>
+            <li>✅ Confirmation dialog prevents accidental resets</li>
+            <li>✅ Improved CSS with flex-wrap for proper button display</li>
+            <li>✅ All buttons remain fully visible on all screen sizes</li>
+          </ul>
+        </div>
+
+        <div class="feature-highlight">
+          <h3 class="demo-subtitle">Button Row Layout</h3>
+          <p>The Set Targets tab now includes four action buttons in a responsive layout:</p>
+          
+          <div class="targets-button-row">
+            <button style="background: #667eea;">+ Add Target</button>
+            <button style="background: #48bb78;">💾 Save All Targets</button>
+            <button style="background: #ed8936;">🔍 Check Weights</button>
+            <button style="background: linear-gradient(135deg, #231f1f 0%, #555 100%);">🔄 Reset Form</button>
+          </div>
+        </div>
+
+        <div class="feature-highlight">
+          <h3 class="demo-subtitle">CSS Improvements</h3>
+          <ul>
+            <li><code>flex-wrap: wrap</code> - Buttons wrap to new line on smaller screens</li>
+            <li><code>gap: 12px</code> - Consistent spacing between buttons</li>
+            <li><code>min-width: fit-content</code> - Buttons don't shrink below content width</li>
+            <li>Visual container with gradient background for better grouping</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="demo-section">
+        <h2 class="demo-title">🎯 Implementation Summary</h2>
+        
+        <div class="feature-highlight">
+          <h3 class="demo-subtitle">Files Modified</h3>
+          <ul>
+            <li><strong>script.js</strong> - Added manager feedback viewing functions and reset functionality</li>
+            <li><strong>style.css</strong> - Added targets-button-row styling for proper button layout</li>
+          </ul>
+        </div>
+
+        <div class="feature-highlight">
+          <h3 class="demo-subtitle">Key Functions Added</h3>
+          <ul>
+            <li><code>showManagerPeerFeedbackModal()</code> - Displays detailed feedback for managers on own scorecard</li>
+            <li><code>viewTeamMemberPeerFeedback()</code> - Shows team member feedback in team reports</li>
+            <li><code>generateFeedbackBreakdown()</code> - Generates visual feedback display</li>
+            <li><code>resetTargetsForm()</code> - Resets the Set Targets form with confirmation</li>
+          </ul>
+        </div>
+
+        <div style="background: #d1fae5; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #10b981;">
+          <p style="margin: 0; color: #065f46;">
+            ✅ <strong>Testing Status:</strong> All changes maintain existing functionality. No breaking changes detected.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
