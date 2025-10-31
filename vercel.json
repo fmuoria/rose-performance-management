@@ -12,7 +12,6 @@
       "src": "/sw.js",
       "headers": {
         "Cache-Control": "no-cache, no-store, must-revalidate",
-        "Pragma": "no-cache",
         "Expires": "0"
       },
       "dest": "/sw.js"

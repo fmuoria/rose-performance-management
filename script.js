@@ -6,6 +6,13 @@ const CONFIG = {
   SERVICE_WORKER_UPDATE_INTERVAL: 60000 // Check for updates every minute
 };
 
+// ===== UTILITY FUNCTIONS =====
+// Helper function to build API URLs safely with URLSearchParams
+function buildApiUrl(baseUrl, params) {
+  const urlParams = new URLSearchParams(params);
+  return baseUrl + '?' + urlParams.toString();
+}
+
 // ===== SERVICE WORKER REGISTRATION =====
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -2262,16 +2269,14 @@ function checkTargetsUpdate() {
   
   const quarter = "Q" + Math.ceil(parseInt(month) / 3);
   
-  // Build URL safely with URLSearchParams
-  const params = new URLSearchParams({
+  // Build URL safely with helper function
+  const url = buildApiUrl(APPS_SCRIPT_URL, {
     action: 'getTargetsUpdateTime',
     email: userProfile.email,
     year: year,
     quarter: quarter,
     callback: 'handleTargetsUpdateCheck'
   });
-  
-  const url = APPS_SCRIPT_URL + '?' + params.toString();
   
   window.handleTargetsUpdateCheck = function(data) {
     if (data && data.updateTime) {
@@ -2299,14 +2304,12 @@ function checkTargetsUpdate() {
 
 // Check for new peer feedback requests
 function checkFeedbackUpdate() {
-  // Build URL safely with URLSearchParams
-  const params = new URLSearchParams({
+  // Build URL safely with helper function
+  const url = buildApiUrl(APPS_SCRIPT_URL, {
     action: 'getPendingFeedbackCount',
     email: userProfile.email,
     callback: 'handleFeedbackUpdateCheck'
   });
-  
-  const url = APPS_SCRIPT_URL + '?' + params.toString();
   
   window.handleFeedbackUpdateCheck = function(data) {
     if (data && data.count !== undefined) {

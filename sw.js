@@ -64,16 +64,14 @@ self.addEventListener('fetch', (event) => {
   // Skip caching for external APIs (Google, Apps Script)
   // Use exact origin checking for better security
   if (url.origin === 'https://accounts.google.com' || 
-      url.origin === 'https://www.googleapis.com' ||
-      url.hostname === 'accounts.google.com' ||
-      url.hostname.endsWith('.googleapis.com')) {
+      url.origin === 'https://www.googleapis.com') {
     // Network only for authentication and external services
     event.respondWith(fetch(request));
     return;
   }
   
   // For Apps Script API calls, use network-first strategy
-  if (url.hostname === 'script.google.com' || url.hostname.endsWith('.script.google.com')) {
+  if (url.origin === 'https://script.google.com') {
     event.respondWith(
       fetch(request)
         .catch(() => {
