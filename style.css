@@ -1,5 +1,5 @@
 /* ROSE Performance Management System - Enhanced UX Styles */
-/* Color Palette: #c12040 (red), #f57b51 (orange), #f5daaf (yellow), #231f1f (dark) */
+/* Color Palette: #c12040 (ROSE red), #f57b51 (coral), #f9dcc4 (peach), #fef3e2 (cream), #e8b4be (soft pink), #231f1f (dark) */
 
 /* ===== GOOGLE FONTS ===== */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
@@ -478,7 +478,7 @@ button:disabled:hover {
 }
 
 .progress-box {
-  background: rgba(245, 218, 175, 0.2);
+  background: rgba(254, 243, 226, 0.3);
   color: #231f1f;
   border-left: 4px solid #c12040;
 }
@@ -799,7 +799,7 @@ button:disabled:hover {
 }
 
 .role-badge.manager {
-  background: linear-gradient(135deg, #f57b51 0%, #f5daaf 100%);
+  background: linear-gradient(135deg, #f57b51 0%, #f9dcc4 100%);
   color: #231f1f;
 }
 
@@ -1270,7 +1270,7 @@ canvas {
 /* ===== FOOTER ===== */
 .rose-footer {
   background: linear-gradient(135deg, #231f1f 0%, #c12040 100%);
-  color: #f5daaf;
+  color: #fef3e2;
   text-align: center;
   padding: 40px 20px;
   margin-top: 50px;
