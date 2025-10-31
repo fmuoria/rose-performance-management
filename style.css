@@ -1346,3 +1346,151 @@ canvas {
     font-size: 0.85rem;
   }
 }
+
+/* ===== AI ANALYTICS STYLES ===== */
+.ai-suggestions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.ai-suggestion-item {
+  padding: 18px;
+  background: #f7fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.ai-suggestion-item:hover {
+  border-color: #667eea;
+  background: #f0f9ff;
+  transform: translateX(5px);
+}
+
+.btn-select-suggestion:hover {
+  background: #5a67d8 !important;
+  transform: scale(1.05);
+}
+
+.recognition-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 25px;
+  margin: 30px 0;
+}
+
+.recognition-card {
+  padding: 25px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: 3px solid #667eea;
+}
+
+.recognition-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.notifications-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.notification-item {
+  padding: 18px;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.notification-item.unread {
+  background: #f0f9ff;
+  border-color: #667eea;
+}
+
+.notification-item:hover {
+  transform: translateX(5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.notification-badge {
+  background: #ef4444;
+  color: white;
+  border-radius: 12px;
+  padding: 2px 8px;
+  font-size: 0.75em;
+  font-weight: bold;
+  margin-left: 8px;
+  display: inline-block;
+  min-width: 20px;
+  text-align: center;
+}
+
+#notification-bell {
+  position: relative;
+  cursor: pointer;
+  font-size: 1.5em;
+  padding: 8px;
+  transition: all 0.3s ease;
+}
+
+#notification-bell:hover {
+  transform: scale(1.1);
+}
+
+.ai-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9em;
+}
+
+.ai-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.ai-btn:active {
+  transform: translateY(0);
+}
+
+.review-section {
+  padding: 20px;
+  background: #f7fafc;
+  border-radius: 10px;
+  border-left: 4px solid #667eea;
+}
+
+/* ===== RESPONSIVE ADJUSTMENTS ===== */
+@media (max-width: 768px) {
+  .recognition-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .ai-suggestion-item {
+    padding: 12px;
+  }
+  
+  .notification-item {
+    padding: 12px;
+  }
+  
+  .ai-btn {
+    padding: 6px 12px;
+    font-size: 0.85em;
+  }
+}

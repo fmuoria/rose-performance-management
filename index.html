@@ -77,6 +77,12 @@
       <img src="rose-logo.svg" alt="ROSE Logo" class="rose-logo">
     </div>
     <div id="userStatus" role="status" aria-live="polite"></div>
+    <div id="notificationBell" style="display: none;">
+      <span id="notification-bell" onclick="showNotificationCenter()" title="Notifications">
+        🔔
+        <span id="notification-badge" class="notification-badge" style="display: none;">0</span>
+      </span>
+    </div>
     <div id="g_id_signin" aria-label="Google Sign-In Button"></div>
   </div>
   <h1 class="main-heading">🌹 ROSE Performance Dashboard</h1>
@@ -290,6 +296,32 @@
       <button onclick="submitPeerFeedbackRequest()" style="margin-top: 20px; background: #48bb78;" aria-label="Send feedback requests">📤 Send Feedback Requests</button>
     </div>
   </div>
+  
+  <!-- AI INSIGHTS TAB (Manager/Admin only) -->
+  <div class="tab-content" id="aiInsightsTab" role="tabpanel" aria-labelledby="ai-insights-tab" aria-label="AI Insights">
+    <h2>🤖 AI-Powered Insights & Analytics</h2>
+    <p style="color: #718096; margin-bottom: 20px;">Generate AI-powered performance reviews and insights for your team members.</p>
+    
+    <div class="info-row" style="margin-bottom: 20px;">
+      <div class="info-col" style="max-width: 500px;">
+        <label for="aiInsightsEmployeeSelect">Select Team Member:</label>
+        <select id="aiInsightsEmployeeSelect" aria-label="Select team member for AI insights">
+          <option value="">-- Select Team Member --</option>
+        </select>
+      </div>
+    </div>
+    
+    <div id="aiInsightsWrap" role="region" aria-label="AI insights and review generation">
+      <div class="empty-msg">Select a team member to generate AI-powered insights and monthly performance reviews.</div>
+    </div>
+  </div>
+  
+  <!-- RECOGNITION TAB (All Users) -->
+  <div class="tab-content" id="recognitionTab" role="tabpanel" aria-labelledby="recognition-tab" aria-label="Employee Recognition">
+    <h2>🏆 Employee Recognition Awards</h2>
+    <p style="color: #718096; margin-bottom: 20px;">Celebrating excellence: Employee of the Month, Quarter, and Year awards.</p>
+    <div id="recognitionWrap" role="region" aria-label="Recognition awards"></div>
+  </div>
 </div>
 
 <!-- Footer -->
@@ -302,6 +334,8 @@
 </footer>
 
 <!-- Load external JavaScript files at the end of body for better performance -->
+<script src="ai-analytics.js"></script>
+<script src="ai-analytics-ui.js"></script>
 <script src="ui-enhancements.js"></script>
 <script src="dashboard-charts.js"></script>
 <script src="script.js"></script>

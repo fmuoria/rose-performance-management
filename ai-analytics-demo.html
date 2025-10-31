@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Analytics Feature Demo - ROSE PMS</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    
+    .demo-container {
+      background: white;
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    }
+    
+    h1 {
+      color: #667eea;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    
+    .subtitle {
+      text-align: center;
+      color: #718096;
+      margin-bottom: 40px;
+    }
+    
+    .feature-section {
+      margin-bottom: 50px;
+      padding: 30px;
+      background: #f7fafc;
+      border-radius: 12px;
+      border-left: 5px solid #667eea;
+    }
+    
+    .feature-section h2 {
+      color: #2d3748;
+      margin-top: 0;
+    }
+    
+    .demo-btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1em;
+      transition: all 0.3s ease;
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+    
+    .demo-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    
+    .demo-output {
+      background: white;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 20px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    
+    .success {
+      color: #48bb78;
+      font-weight: bold;
+    }
+    
+    .info {
+      color: #667eea;
+    }
+    
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+    
+    .feature-card {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      border: 2px solid #e2e8f0;
+      text-align: center;
+    }
+    
+    .feature-icon {
+      font-size: 3em;
+      margin-bottom: 15px;
+    }
+    
+    .stat-box {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      margin: 10px 0;
+    }
+    
+    .stat-box h3 {
+      margin: 0 0 10px 0;
+      font-size: 2em;
+    }
+    
+    .stat-box p {
+      margin: 0;
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-container">
+    <h1>🤖 AI Analytics Features Demo</h1>
+    <p class="subtitle">Interactive demonstration of AI-powered talent analytics and recognition features</p>
+    
+    <!-- Feature 1: AI Goal Suggestions -->
+    <div class="feature-section">
+      <h2>💡 Feature 1: AI Goal Suggestions</h2>
+      <p>Generate intelligent, personalized performance goals based on dimension and employee performance history.</p>
+      
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-icon">💰</div>
+          <h4>Financial Goals</h4>
+          <button class="demo-btn" onclick="demoGoalSuggestions('Financial')">Generate</button>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">👥</div>
+          <h4>Customer Goals</h4>
+          <button class="demo-btn" onclick="demoGoalSuggestions('Customer')">Generate</button>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⚙️</div>
+          <h4>Internal Process Goals</h4>
+          <button class="demo-btn" onclick="demoGoalSuggestions('Internal Process')">Generate</button>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📚</div>
+          <h4>Learning & Growth Goals</h4>
+          <button class="demo-btn" onclick="demoGoalSuggestions('Learning & Growth')">Generate</button>
+        </div>
+      </div>
+      
+      <div id="goalOutput" class="demo-output" style="display:none;"></div>
+    </div>
+    
+    <!-- Feature 2: AI Comment Suggestions -->
+    <div class="feature-section">
+      <h2>💬 Feature 2: AI Comment Suggestions</h2>
+      <p>Generate context-aware performance feedback based on ratings and metrics.</p>
+      
+      <button class="demo-btn" onclick="demoCommentSuggestions(4.8, 'Exceptional')">Exceptional (4.8)</button>
+      <button class="demo-btn" onclick="demoCommentSuggestions(4.0, 'Strong')">Strong (4.0)</button>
+      <button class="demo-btn" onclick="demoCommentSuggestions(3.2, 'Meets Expectations')">Meets (3.2)</button>
+      <button class="demo-btn" onclick="demoCommentSuggestions(2.5, 'Below Expectations')">Below (2.5)</button>
+      
+      <div id="commentOutput" class="demo-output" style="display:none;"></div>
+    </div>
+    
+    <!-- Feature 3: Monthly Performance Review -->
+    <div class="feature-section">
+      <h2>📝 Feature 3: AI-Generated Monthly Review</h2>
+      <p>Comprehensive performance review with strengths, improvements, and recommended goals.</p>
+      
+      <button class="demo-btn" onclick="demoMonthlyReview()">Generate Sample Review</button>
+      
+      <div id="reviewOutput" class="demo-output" style="display:none;"></div>
+    </div>
+    
+    <!-- Feature 4: Employee Recognition System -->
+    <div class="feature-section">
+      <h2>🏆 Feature 4: Employee Recognition System</h2>
+      <p>Automatic calculation of top performers for various time periods and departments.</p>
+      
+      <button class="demo-btn" onclick="demoRecognition()">Calculate Sample Recognition</button>
+      
+      <div id="recognitionOutput" class="demo-output" style="display:none;"></div>
+    </div>
+    
+    <!-- Feature 5: Notification System -->
+    <div class="feature-section">
+      <h2>🔔 Feature 5: Notification System</h2>
+      <p>Real-time notifications for AI reports and employee recognitions.</p>
+      
+      <button class="demo-btn" onclick="demoNotifications()">Create Sample Notifications</button>
+      <button class="demo-btn" onclick="viewNotifications()">View Notifications</button>
+      <button class="demo-btn" onclick="clearNotifications()">Clear All</button>
+      
+      <div id="notificationOutput" class="demo-output" style="display:none;"></div>
+    </div>
+    
+    <!-- Statistics -->
+    <div class="feature-section">
+      <h2>📊 Implementation Statistics</h2>
+      
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+        <div class="stat-box">
+          <h3>2</h3>
+          <p>New JavaScript Files</p>
+        </div>
+        <div class="stat-box">
+          <h3>15+</h3>
+          <p>AI Functions</p>
+        </div>
+        <div class="stat-box">
+          <h3>3</h3>
+          <p>New Tabs Added</p>
+        </div>
+        <div class="stat-box">
+          <h3>100%</h3>
+          <p>Privacy Maintained</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script src="ai-analytics.js"></script>
+  <script src="ai-analytics-ui.js"></script>
+  
+  <script>
+    // Demo Functions
+    
+    function demoGoalSuggestions(dimension) {
+      const output = document.getElementById('goalOutput');
+      output.style.display = 'block';
+      
+      const employeeData = { averageScore: 3.8 };
+      const suggestions = window.AIAnalytics.generateAIGoalSuggestions(employeeData, dimension);
+      
+      let html = `<span class="success">✓ Generated ${suggestions.length} AI-powered goals for ${dimension}:</span>\n\n`;
+      suggestions.forEach((suggestion, index) => {
+        html += `${index + 1}. ${suggestion}\n\n`;
+      });
+      
+      output.innerHTML = html;
+    }
+    
+    function demoCommentSuggestions(rating, level) {
+      const output = document.getElementById('commentOutput');
+      output.style.display = 'block';
+      
+      const scoreData = {
+        rating: rating,
+        measure: 'Budget Management',
+        dimension: 'Financial',
+        target: 100000,
+        actual: rating >= 4 ? 95000 : 110000
+      };
+      
+      const suggestions = window.AIAnalytics.generateAICommentSuggestions(scoreData, {});
+      
+      let html = `<span class="success">✓ Generated ${suggestions.length} AI-powered comments for ${level} performance (${rating}):</span>\n\n`;
+      suggestions.forEach((suggestion, index) => {
+        html += `${index + 1}. ${suggestion}\n\n`;
+      });
+      
+      output.innerHTML = html;
+    }
+    
+    function demoMonthlyReview() {
+      const output = document.getElementById('reviewOutput');
+      output.style.display = 'block';
+      
+      const employeeData = {
+        name: 'John Doe',
+        scores: [
+          { dimension: 'Financial', measure: 'Budget Management', rating: 4.2, weight: 15 },
+          { dimension: 'Customer', measure: 'Customer Satisfaction', rating: 4.5, weight: 30 },
+          { dimension: 'Internal Process', measure: 'Process Improvement', rating: 3.8, weight: 40 },
+          { dimension: 'Learning & Growth', measure: 'Training Hours', rating: 4.0, weight: 15 }
+        ]
+      };
+      
+      const review = window.AIAnalytics.generateMonthlyReview(employeeData, '10', '2025');
+      
+      let html = `<span class="success">✓ Generated AI-Powered Monthly Review:</span>\n\n`;
+      html += `<span class="info">Period:</span> ${review.monthYear}\n`;
+      html += `<span class="info">Overall Score:</span> ${review.score} / 5.0\n\n`;
+      html += `<span class="info">Executive Summary:</span>\n${review.summary}\n\n`;
+      html += `<span class="info">Key Strengths (${review.strengths.length}):</span>\n`;
+      review.strengths.forEach(s => html += `  • ${s}\n`);
+      html += `\n<span class="info">Areas for Development (${review.improvements.length}):</span>\n`;
+      review.improvements.forEach(i => html += `  • ${i}\n`);
+      html += `\n<span class="info">Recommended Goals (${review.goals.length}):</span>\n`;
+      review.goals.forEach(g => html += `  • ${g}\n`);
+      
+      output.innerHTML = html;
+    }
+    
+    function demoRecognition() {
+      const output = document.getElementById('recognitionOutput');
+      output.style.display = 'block';
+      
+      const employees = [
+        {
+          email: 'employee1@rose.org',
+          name: 'Alice Johnson',
+          division: 'Operations',
+          scores: [
+            { rating: 4.8, weight: 25 },
+            { rating: 4.5, weight: 30 },
+            { rating: 4.7, weight: 35 },
+            { rating: 4.6, weight: 10 }
+          ],
+          peerFeedbackScore: 4.7
+        },
+        {
+          email: 'employee2@rose.org',
+          name: 'Bob Smith',
+          division: 'Operations',
+          scores: [
+            { rating: 4.2, weight: 25 },
+            { rating: 4.0, weight: 30 },
+            { rating: 4.3, weight: 35 },
+            { rating: 4.1, weight: 10 }
+          ],
+          peerFeedbackScore: 4.3
+        },
+        {
+          email: 'employee3@rose.org',
+          name: 'Carol Williams',
+          division: 'Finance',
+          scores: [
+            { rating: 4.9, weight: 25 },
+            { rating: 4.8, weight: 30 },
+            { rating: 4.7, weight: 35 },
+            { rating: 4.8, weight: 10 }
+          ],
+          peerFeedbackScore: 4.9
+        }
+      ];
+      
+      const monthWinner = window.AIAnalytics.selectEmployeeOfMonth(employees, 'Operations', '10', '2025');
+      const quarterWinner = window.AIAnalytics.selectEmployeeOfQuarter(employees, 'Operations', 'Q4', '2025');
+      const orgWinner = window.AIAnalytics.selectOrganizationWinner(employees, 'month', '10', '2025');
+      
+      let html = `<span class="success">✓ Recognition Awards Calculated:</span>\n\n`;
+      
+      if (monthWinner) {
+        html += `<span class="info">🌟 Employee of the Month (Operations):</span>\n`;
+        html += `  Winner: ${monthWinner.employee.name}\n`;
+        html += `  Score: ${monthWinner.score}\n`;
+        html += `  Period: ${monthWinner.period}\n\n`;
+      }
+      
+      if (quarterWinner) {
+        html += `<span class="info">🏅 Employee of the Quarter (Operations):</span>\n`;
+        html += `  Winner: ${quarterWinner.employee.name}\n`;
+        html += `  Score: ${quarterWinner.score}\n`;
+        html += `  Period: ${quarterWinner.period}\n\n`;
+      }
+      
+      if (orgWinner) {
+        html += `<span class="info">🏆 Organization Employee of the Month:</span>\n`;
+        html += `  Winner: ${orgWinner.employee.name}\n`;
+        html += `  Department: ${orgWinner.employee.division}\n`;
+        html += `  Score: ${orgWinner.score}\n`;
+        html += `  Period: ${orgWinner.period}\n`;
+      }
+      
+      output.innerHTML = html;
+    }
+    
+    function demoNotifications() {
+      const output = document.getElementById('notificationOutput');
+      output.style.display = 'block';
+      
+      // Create sample notifications
+      const notification1 = window.AIAnalytics.createAIReportNotification(
+        'manager@rose.org',
+        'ai_suggestion',
+        {
+          title: '🤖 New AI Insights Available',
+          message: 'AI-generated performance review for John Doe is ready for review',
+          priority: 'high'
+        }
+      );
+      
+      const notification2 = window.AIAnalytics.createRecognitionNotification({
+        employee: { email: 'employee@rose.org', name: 'Alice Johnson' },
+        award: 'Employee of the Month',
+        period: 'October 2025',
+        score: '4.75'
+      });
+      
+      window.AIAnalytics.storeNotification(notification1);
+      window.AIAnalytics.storeNotification(notification2);
+      
+      let html = `<span class="success">✓ Created 2 sample notifications:</span>\n\n`;
+      html += `<span class="info">Notification 1:</span>\n`;
+      html += `  Type: ${notification1.type}\n`;
+      html += `  Title: ${notification1.title}\n`;
+      html += `  Message: ${notification1.message}\n\n`;
+      html += `<span class="info">Notification 2:</span>\n`;
+      html += `  Type: ${notification2.type}\n`;
+      html += `  Title: ${notification2.title}\n`;
+      html += `  Message: ${notification2.message}\n`;
+      
+      output.innerHTML = html;
+    }
+    
+    function viewNotifications() {
+      const output = document.getElementById('notificationOutput');
+      output.style.display = 'block';
+      
+      const notifications = window.AIAnalytics.getStoredNotifications();
+      
+      if (notifications.length === 0) {
+        output.innerHTML = '<span class="info">No notifications stored.</span>';
+        return;
+      }
+      
+      let html = `<span class="success">✓ Stored Notifications (${notifications.length}):</span>\n\n`;
+      notifications.forEach((notif, index) => {
+        html += `<span class="info">Notification ${index + 1}:</span>\n`;
+        html += `  Type: ${notif.type}\n`;
+        html += `  Title: ${notif.title}\n`;
+        html += `  Recipient: ${notif.recipientEmail}\n`;
+        html += `  Read: ${notif.read ? 'Yes' : 'No'}\n`;
+        html += `  Priority: ${notif.priority}\n\n`;
+      });
+      
+      output.innerHTML = html;
+    }
+    
+    function clearNotifications() {
+      try {
+        localStorage.removeItem('rose_pms_notifications');
+        const output = document.getElementById('notificationOutput');
+        output.style.display = 'block';
+        output.innerHTML = '<span class="success">✓ All notifications cleared from localStorage.</span>';
+      } catch (error) {
+        alert('Error clearing notifications: ' + error.message);
+      }
+    }
+    
+    // Show initial message
+    console.log('🤖 AI Analytics Demo Loaded');
+    console.log('All AI functions are available through window.AIAnalytics');
+  </script>
+</body>
+</html>
