@@ -976,8 +976,19 @@ function showManagerPeerFeedbackModal() {
   window.handleManagerPeerFeedbackView = function(data) {
     console.log('Manager peer feedback view:', data);
     
-    if (data.count === 0) {
+    if (!data || data.count === 0) {
       alert("No peer feedback has been received for this quarter yet.");
+      return;
+    }
+    
+    // Validate and sanitize data
+    const safeCount = parseInt(data.count) || 0;
+    const safeYear = String(year).replace(/[<>&"']/g, '');
+    const safeQuarter = String(quarter).replace(/[<>&"']/g, '');
+    const avgScore = parseFloat(data.averageScore);
+    
+    if (isNaN(avgScore) || safeCount === 0) {
+      alert("Invalid feedback data received.");
       return;
     }
     
@@ -993,9 +1004,9 @@ function showManagerPeerFeedbackModal() {
         <div class="modal-body">
           <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #667eea;">
             <p style="margin: 0; color: #2d3748;">
-              <strong>Period:</strong> ${year}, ${quarter} | 
-              <strong>Total Reviews:</strong> ${data.count} | 
-              <strong>Average Score:</strong> <span style="color: #667eea; font-size: 1.2em; font-weight: bold;">${parseFloat(data.averageScore).toFixed(2)}</span> / 5.0
+              <strong>Period:</strong> ${safeYear}, ${safeQuarter} | 
+              <strong>Total Reviews:</strong> ${safeCount} | 
+              <strong>Average Score:</strong> <span style="color: #667eea; font-size: 1.2em; font-weight: bold;">${avgScore.toFixed(2)}</span> / 5.0
             </p>
           </div>
           
@@ -1018,9 +1029,9 @@ function showManagerPeerFeedbackModal() {
           <div style="margin-top: 30px; padding: 20px; background: #f7fafc; border-radius: 8px; border: 2px solid #e2e8f0;">
             <h4 style="margin-top: 0; color: #2d3748;">📝 Summary</h4>
             <p style="color: #4a5568; line-height: 1.6;">
-              Based on <strong>${data.count}</strong> peer review${data.count > 1 ? 's' : ''}, 
+              Based on <strong>${safeCount}</strong> peer review${safeCount > 1 ? 's' : ''}, 
               this employee has demonstrated strong alignment with ROSE core values, achieving an 
-              average score of <strong style="color: #667eea;">${parseFloat(data.averageScore).toFixed(2)}</strong> out of 5.0.
+              average score of <strong style="color: #667eea;">${avgScore.toFixed(2)}</strong> out of 5.0.
             </p>
             <p style="color: #718096; font-size: 0.9em; margin: 10px 0 0 0;">
               This score contributes 25% to the overall performance scorecard as part of the Internal Customer Perspective.
@@ -1893,7 +1904,7 @@ function viewScorecardDetails(index, wrapId) {
                 <td><strong>${score.weighted}</strong></td>
                 <td>${score.comment || '-'}</td>
                 <td>${isPeerReview && isManagerView && employeeEmail && (record.Year || record.year) && (record.Month || record.month) ? 
-                  `<button onclick="viewTeamMemberPeerFeedback('${employeeEmail.replace(/'/g, "\\'")}', '${record.Year || record.year}', '${record.Month || record.month}')" 
+                  `<button onclick="viewTeamMemberPeerFeedback('${employeeEmail.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}', '${record.Year || record.year}', '${record.Month || record.month}')" 
                           style="padding: 6px 12px; font-size: 0.9em; background: #667eea; color: white; border: none; 
                           border-radius: 6px; cursor: pointer;">View Detailed Feedback</button>` : 
                   isPeerReview && isManagerView ? 'Data unavailable' :
@@ -1949,6 +1960,17 @@ function viewTeamMemberPeerFeedback(employeeEmail, year, month) {
       return;
     }
     
+    // Validate and sanitize data
+    const safeCount = parseInt(data.count) || 0;
+    const safeYear = String(year).replace(/[<>&"']/g, '');
+    const safeQuarter = String(quarter).replace(/[<>&"']/g, '');
+    const avgScore = parseFloat(data.averageScore);
+    
+    if (isNaN(avgScore) || safeCount === 0) {
+      alert("Invalid feedback data received.");
+      return;
+    }
+    
     // Create modal to display detailed aggregated feedback
     const modal = document.createElement('div');
     modal.className = 'scorecard-modal';
@@ -1961,9 +1983,9 @@ function viewTeamMemberPeerFeedback(employeeEmail, year, month) {
         <div class="modal-body">
           <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #667eea;">
             <p style="margin: 0; color: #2d3748;">
-              <strong>Period:</strong> ${year}, ${quarter} | 
-              <strong>Total Reviews:</strong> ${data.count} | 
-              <strong>Average Score:</strong> <span style="color: #667eea; font-size: 1.2em; font-weight: bold;">${parseFloat(data.averageScore).toFixed(2)}</span> / 5.0
+              <strong>Period:</strong> ${safeYear}, ${safeQuarter} | 
+              <strong>Total Reviews:</strong> ${safeCount} | 
+              <strong>Average Score:</strong> <span style="color: #667eea; font-size: 1.2em; font-weight: bold;">${avgScore.toFixed(2)}</span> / 5.0
             </p>
           </div>
           
@@ -1986,9 +2008,9 @@ function viewTeamMemberPeerFeedback(employeeEmail, year, month) {
           <div style="margin-top: 30px; padding: 20px; background: #f7fafc; border-radius: 8px; border: 2px solid #e2e8f0;">
             <h4 style="margin-top: 0; color: #2d3748;">📝 Summary</h4>
             <p style="color: #4a5568; line-height: 1.6;">
-              Based on <strong>${data.count}</strong> peer review${data.count > 1 ? 's' : ''}, 
+              Based on <strong>${safeCount}</strong> peer review${safeCount > 1 ? 's' : ''}, 
               this employee has demonstrated strong alignment with ROSE core values, achieving an 
-              average score of <strong style="color: #667eea;">${parseFloat(data.averageScore).toFixed(2)}</strong> out of 5.0.
+              average score of <strong style="color: #667eea;">${avgScore.toFixed(2)}</strong> out of 5.0.
             </p>
             <p style="color: #718096; font-size: 0.9em; margin: 10px 0 0 0;">
               This score contributes 25% to the overall performance scorecard as part of the Internal Customer Perspective.
