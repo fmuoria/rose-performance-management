@@ -1,3 +1,91 @@
+// ===== SERVICE WORKER REGISTRATION =====
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then((registration) => {
+        console.log('Service Worker registered successfully:', registration.scope);
+        
+        // Check for updates periodically
+        setInterval(() => {
+          registration.update();
+        }, 60000); // Check every minute
+        
+        // Listen for updates
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // New service worker available, notify user
+              if (confirm('A new version is available! Would you like to update?')) {
+                newWorker.postMessage({ type: 'SKIP_WAITING' });
+                window.location.reload();
+              }
+            }
+          });
+        });
+      })
+      .catch((error) => {
+        console.error('Service Worker registration failed:', error);
+      });
+  });
+}
+
+// ===== SESSION PERSISTENCE =====
+const SESSION_KEY = 'rose_pms_session';
+const SESSION_EXPIRY_KEY = 'rose_pms_session_expiry';
+const SESSION_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+
+// Save session to localStorage
+function saveSession(profile, role) {
+  try {
+    const sessionData = {
+      profile: profile,
+      role: role,
+      timestamp: Date.now()
+    };
+    localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
+    localStorage.setItem(SESSION_EXPIRY_KEY, Date.now() + SESSION_DURATION);
+    console.log('Session saved successfully');
+  } catch (error) {
+    console.error('Error saving session:', error);
+  }
+}
+
+// Load session from localStorage
+function loadSession() {
+  try {
+    const sessionExpiry = localStorage.getItem(SESSION_EXPIRY_KEY);
+    
+    // Check if session has expired
+    if (sessionExpiry && Date.now() > parseInt(sessionExpiry)) {
+      console.log('Session expired, clearing...');
+      clearSession();
+      return null;
+    }
+    
+    const sessionData = localStorage.getItem(SESSION_KEY);
+    if (sessionData) {
+      const parsed = JSON.parse(sessionData);
+      console.log('Session loaded successfully');
+      return parsed;
+    }
+  } catch (error) {
+    console.error('Error loading session:', error);
+  }
+  return null;
+}
+
+// Clear session from localStorage
+function clearSession() {
+  try {
+    localStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem(SESSION_EXPIRY_KEY);
+    console.log('Session cleared');
+  } catch (error) {
+    console.error('Error clearing session:', error);
+  }
+}
+
 // ===== GLOBAL VARIABLES =====
 let userProfile = null;
 let userRole = null; // 'Admin', 'Manager', or 'Employee'
@@ -38,6 +126,37 @@ const SCORECARD_DIMENSIONS = [
 
 // ========== SIGN-IN & UI =============
 window.onload = function() {
+  // Try to restore session from localStorage first
+  const savedSession = loadSession();
+  if (savedSession && savedSession.profile && savedSession.role) {
+    console.log('Restoring session from localStorage');
+    userProfile = savedSession.profile;
+    userRole = savedSession.role;
+    
+    // Initialize UI with saved session
+    updateUserUI();
+    renderTabs();
+    renderScorecardRows();
+    autofillUserDetails();
+    loadUserReports();
+    loadDashboard();
+    
+    // Load team data for managers/admins
+    if (userRole === 'Manager' || userRole === 'Admin') {
+      loadTeamMembers();
+    }
+    
+    // Initialize real-time updates
+    initializeRealtimeFeatures();
+    
+    // Hide sign-in button since user is already signed in
+    const signinBtn = document.getElementById("g_id_signin");
+    if (signinBtn) signinBtn.style.display = "none";
+    
+    return; // Skip Google Sign-In initialization
+  }
+  
+  // No saved session, proceed with Google Sign-In
   window.handleCredentialResponse = (response) => {
     const data = parseJwt(response.credential);
     userProfile = {
@@ -82,6 +201,9 @@ function getUserRole() {
   console.log('User role data:', data);
   userRole = data.role || 'Employee';
   
+  // Save session to localStorage for persistence
+  saveSession(userProfile, userRole);
+  
   updateUserUI();
   renderTabs();
   renderScorecardRows();
@@ -93,6 +215,9 @@ function getUserRole() {
   if (userRole === 'Manager' || userRole === 'Admin') {
     loadTeamMembers();
   }
+  
+  // Initialize real-time updates
+  initializeRealtimeFeatures();
   
   // For employees, load targets when month is selected
   // (will be triggered by onchange event on month dropdown)
@@ -153,6 +278,7 @@ function updateUserUI() {
 
 function signOut() {
   google.accounts.id.disableAutoSelect();
+  clearSession(); // Clear saved session
   userProfile = null;
   userRole = null;
   teamMembers = [];
@@ -2022,4 +2148,247 @@ function submitPeerFeedbackRequest() {
   const script = document.createElement('script');
   script.src = url;
   document.body.appendChild(script);
+}
+
+// ===== REAL-TIME UPDATES (Polling for changes) =====
+let pollingInterval = null;
+let lastTargetsUpdate = null;
+let lastFeedbackUpdate = null;
+
+// Start polling for updates when user is signed in
+function startRealtimeUpdates() {
+  if (pollingInterval) {
+    clearInterval(pollingInterval);
+  }
+  
+  // Poll every 30 seconds for updates
+  pollingInterval = setInterval(() => {
+    if (userProfile && userRole) {
+      checkForUpdates();
+    }
+  }, 30000); // 30 seconds
+  
+  console.log('Real-time updates enabled (polling every 30 seconds)');
+}
+
+// Check for updates from the server
+function checkForUpdates() {
+  // For employees, check if targets have been updated
+  if (userRole === 'Employee') {
+    checkTargetsUpdate();
+  }
+  
+  // For all users, check for new peer feedback requests
+  checkFeedbackUpdate();
+}
+
+// Check if targets have been updated
+function checkTargetsUpdate() {
+  const year = document.getElementById("periodYear")?.value || new Date().getFullYear();
+  const month = document.getElementById("periodMonth")?.value;
+  
+  if (!month) return;
+  
+  const quarter = "Q" + Math.ceil(parseInt(month) / 3);
+  
+  const url = APPS_SCRIPT_URL + '?action=getTargetsUpdateTime&email=' + 
+              encodeURIComponent(userProfile.email) + '&year=' + year + 
+              '&quarter=' + quarter + '&callback=handleTargetsUpdateCheck';
+  
+  window.handleTargetsUpdateCheck = function(data) {
+    if (data && data.updateTime) {
+      const updateTime = new Date(data.updateTime).getTime();
+      
+      // If this is the first check or if there's a new update
+      if (!lastTargetsUpdate || updateTime > lastTargetsUpdate) {
+        const wasFirstCheck = !lastTargetsUpdate;
+        lastTargetsUpdate = updateTime;
+        
+        // Show notification only if this isn't the first check
+        if (!wasFirstCheck) {
+          showUpdateNotification('Your manager has updated your targets!', () => {
+            loadEmployeeTargets();
+          });
+        }
+      }
+    }
+  };
+  
+  const script = document.createElement('script');
+  script.src = url;
+  document.body.appendChild(script);
+}
+
+// Check for new peer feedback requests
+function checkFeedbackUpdate() {
+  const url = APPS_SCRIPT_URL + '?action=getPendingFeedbackCount&email=' + 
+              encodeURIComponent(userProfile.email) + '&callback=handleFeedbackUpdateCheck';
+  
+  window.handleFeedbackUpdateCheck = function(data) {
+    if (data && data.count !== undefined) {
+      // Update the badge on the peer feedback tab if needed
+      updatePeerFeedbackBadge(data.count);
+      
+      // If count increased, show notification
+      if (lastFeedbackUpdate !== null && data.count > lastFeedbackUpdate) {
+        showUpdateNotification('You have new peer feedback requests!', () => {
+          showTab('peerFeedbackTab', document.querySelector('[aria-controls="peerFeedbackTab"]'));
+        });
+      }
+      
+      lastFeedbackUpdate = data.count;
+    }
+  };
+  
+  const script = document.createElement('script');
+  script.src = url;
+  document.body.appendChild(script);
+}
+
+// Update badge on peer feedback tab
+function updatePeerFeedbackBadge(count) {
+  const peerFeedbackBtn = document.getElementById('peer-feedback-tab');
+  if (peerFeedbackBtn) {
+    // Remove existing badge
+    const existingBadge = peerFeedbackBtn.querySelector('.notification-badge');
+    if (existingBadge) {
+      existingBadge.remove();
+    }
+    
+    // Add new badge if count > 0
+    if (count > 0) {
+      const badge = document.createElement('span');
+      badge.className = 'notification-badge';
+      badge.textContent = count;
+      badge.style.cssText = `
+        background: #e53e3e;
+        color: white;
+        border-radius: 10px;
+        padding: 2px 8px;
+        font-size: 0.75em;
+        font-weight: bold;
+        margin-left: 8px;
+        display: inline-block;
+      `;
+      peerFeedbackBtn.appendChild(badge);
+    }
+  }
+}
+
+// Show update notification
+function showUpdateNotification(message, onClickCallback) {
+  // Check if notifications are supported
+  if (!("Notification" in window)) {
+    // Fallback to in-app notification
+    showInAppNotification(message, onClickCallback);
+    return;
+  }
+  
+  // Check notification permission
+  if (Notification.permission === "granted") {
+    const notification = new Notification("ROSE PMS Update", {
+      body: message,
+      icon: "/icon-192.png",
+      badge: "/icon-192.png",
+      tag: "rose-pms-update",
+      requireInteraction: false
+    });
+    
+    notification.onclick = () => {
+      window.focus();
+      if (onClickCallback) onClickCallback();
+      notification.close();
+    };
+  } else if (Notification.permission !== "denied") {
+    // Request permission
+    Notification.requestPermission().then((permission) => {
+      if (permission === "granted") {
+        showUpdateNotification(message, onClickCallback);
+      } else {
+        showInAppNotification(message, onClickCallback);
+      }
+    });
+  } else {
+    // Permission denied, use in-app notification
+    showInAppNotification(message, onClickCallback);
+  }
+}
+
+// Show in-app notification banner
+function showInAppNotification(message, onClickCallback) {
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.className = 'in-app-notification';
+  notification.innerHTML = `
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span style="font-size: 1.2em;">🔔</span>
+      <span style="flex: 1;">${message}</span>
+      <button onclick="this.closest('.in-app-notification').remove()" 
+              style="background: rgba(255,255,255,0.3); border: none; color: white; 
+                     padding: 4px 12px; border-radius: 4px; cursor: pointer;">
+        Dismiss
+      </button>
+    </div>
+  `;
+  
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 16px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    z-index: 10000;
+    max-width: 400px;
+    cursor: pointer;
+    animation: slideIn 0.3s ease-out;
+  `;
+  
+  // Add animation
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+  
+  notification.onclick = () => {
+    if (onClickCallback) onClickCallback();
+    notification.remove();
+  };
+  
+  document.body.appendChild(notification);
+  
+  // Auto-dismiss after 10 seconds
+  setTimeout(() => {
+    if (notification.parentNode) {
+      notification.style.animation = 'slideOut 0.3s ease-out';
+      setTimeout(() => notification.remove(), 300);
+    }
+  }, 10000);
+}
+
+// Initialize real-time updates when user signs in
+// This will be called from getUserRole after successful authentication
+function initializeRealtimeFeatures() {
+  startRealtimeUpdates();
+  
+  // Request notification permission on first sign-in
+  if ("Notification" in window && Notification.permission === "default") {
+    setTimeout(() => {
+      if (confirm("Enable notifications to stay updated with changes in real-time?")) {
+        Notification.requestPermission();
+      }
+    }, 2000); // Wait 2 seconds after sign-in to ask
+  }
 }

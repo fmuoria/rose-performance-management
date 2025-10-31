@@ -1,0 +1,206 @@
+# ROSE Performance Management - Apache Configuration
+# Enable this file by placing it in your web root or configuring your Apache server
+
+# ========== BROWSER CACHING ==========
+<IfModule mod_expires.c>
+  ExpiresActive On
+  
+  # Cache HTML for 1 hour (frequently updated)
+  ExpiresByType text/html "access plus 1 hour"
+  
+  # Cache CSS and JavaScript for 1 year (versioned files)
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  
+  # Cache images for 1 year
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  ExpiresByType image/x-icon "access plus 1 year"
+  
+  # Cache fonts for 1 year
+  ExpiresByType font/woff "access plus 1 year"
+  ExpiresByType font/woff2 "access plus 1 year"
+  ExpiresByType application/font-woff "access plus 1 year"
+  ExpiresByType application/font-woff2 "access plus 1 year"
+  
+  # Cache manifest and service worker for 1 hour (needs to update)
+  ExpiresByType application/manifest+json "access plus 1 hour"
+  ExpiresByType text/cache-manifest "access plus 0 seconds"
+</IfModule>
+
+# Add Cache-Control headers
+<IfModule mod_headers.c>
+  # HTML - Short cache with revalidation
+  <FilesMatch "\.(html|htm)$">
+    Header set Cache-Control "public, max-age=3600, must-revalidate"
+  </FilesMatch>
+  
+  # CSS and JavaScript - Long cache with immutable flag
+  <FilesMatch "\.(css|js)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  
+  # Images - Long cache
+  <FilesMatch "\.(png|jpg|jpeg|webp|svg|ico)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  
+  # Service Worker - No cache (must check for updates)
+  <FilesMatch "^sw\.js$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+  </FilesMatch>
+  
+  # Manifest - Short cache
+  <FilesMatch "\.(manifest|json)$">
+    Header set Cache-Control "public, max-age=3600"
+  </FilesMatch>
+</IfModule>
+
+# ========== COMPRESSION (GZIP/BROTLI) ==========
+<IfModule mod_deflate.c>
+  # Enable compression for text-based files
+  AddOutputFilterByType DEFLATE text/html
+  AddOutputFilterByType DEFLATE text/plain
+  AddOutputFilterByType DEFLATE text/xml
+  AddOutputFilterByType DEFLATE text/css
+  AddOutputFilterByType DEFLATE text/javascript
+  AddOutputFilterByType DEFLATE application/javascript
+  AddOutputFilterByType DEFLATE application/x-javascript
+  AddOutputFilterByType DEFLATE application/json
+  AddOutputFilterByType DEFLATE application/xml
+  AddOutputFilterByType DEFLATE application/rss+xml
+  AddOutputFilterByType DEFLATE application/manifest+json
+  AddOutputFilterByType DEFLATE image/svg+xml
+  
+  # Exclude already-compressed files
+  SetEnvIfNoCase Request_URI \.(?:gif|jpe?g|png|webp|woff2?)$ no-gzip
+  
+  # Handle browser compatibility
+  BrowserMatch ^Mozilla/4 gzip-only-text/html
+  BrowserMatch ^Mozilla/4\.0[678] no-gzip
+  BrowserMatch \bMSIE !no-gzip !gzip-only-text/html
+  
+  # Add proper headers for proxies
+  <IfModule mod_headers.c>
+    Header append Vary User-Agent env=!dont-vary
+    Header append Vary Accept-Encoding
+  </IfModule>
+</IfModule>
+
+# ========== SECURITY HEADERS ==========
+<IfModule mod_headers.c>
+  # Prevent clickjacking attacks
+  Header always set X-Frame-Options "SAMEORIGIN"
+  
+  # Prevent MIME type sniffing
+  Header always set X-Content-Type-Options "nosniff"
+  
+  # Enable XSS protection (legacy browsers)
+  Header always set X-XSS-Protection "1; mode=block"
+  
+  # Referrer policy for privacy
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  
+  # Content Security Policy (adjust based on your needs)
+  # This allows Google Sign-In and Google Apps Script
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://accounts.google.com https://script.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self' data:; connect-src 'self' https://accounts.google.com https://script.google.com; frame-src https://accounts.google.com; manifest-src 'self';"
+  
+  # Remove server signature for security
+  Header always unset Server
+  Header always unset X-Powered-By
+</IfModule>
+
+# Hide server information
+ServerSignature Off
+
+# ========== MIME TYPES ==========
+<IfModule mod_mime.c>
+  # Web fonts
+  AddType font/woff .woff
+  AddType font/woff2 .woff2
+  AddType application/vnd.ms-fontobject .eot
+  AddType font/ttf .ttf
+  AddType font/otf .otf
+  
+  # Web manifest
+  AddType application/manifest+json .webmanifest .json
+  
+  # SVG
+  AddType image/svg+xml .svg .svgz
+  AddEncoding gzip .svgz
+  
+  # WebP
+  AddType image/webp .webp
+</IfModule>
+
+# ========== REWRITE RULES ==========
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  
+  # Redirect to HTTPS (uncomment if you have SSL)
+  # RewriteCond %{HTTPS} off
+  # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+  
+  # Remove trailing slashes (optional)
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_URI} (.+)/$
+  RewriteRule ^ %1 [R=301,L]
+  
+  # Serve minified versions if available
+  # Uncomment these lines if you create .min.css and .min.js files
+  # RewriteCond %{REQUEST_URI} ^(.*)\.css$
+  # RewriteCond %{DOCUMENT_ROOT}%1.min.css -f
+  # RewriteRule ^(.*)\.css$ $1.min.css [L]
+  
+  # RewriteCond %{REQUEST_URI} ^(.*)\.js$
+  # RewriteCond %{DOCUMENT_ROOT}%1.min.js -f
+  # RewriteRule ^(.*)\.js$ $1.min.js [L]
+</IfModule>
+
+# ========== PERFORMANCE ==========
+# Enable Keep-Alive for better performance
+<IfModule mod_headers.c>
+  Header set Connection keep-alive
+</IfModule>
+
+# Limit request size (adjust as needed)
+LimitRequestBody 10485760
+
+# ========== ERROR PAGES (Optional) ==========
+# ErrorDocument 404 /404.html
+# ErrorDocument 500 /500.html
+
+# ========== DIRECTORY OPTIONS ==========
+# Disable directory browsing
+Options -Indexes
+
+# Follow symbolic links
+Options +FollowSymLinks
+
+# Disable MultiViews (can cause issues)
+Options -MultiViews
+
+# ========== FILE PROTECTION ==========
+# Protect .htaccess and other hidden files
+<FilesMatch "^\.">
+  Require all denied
+</FilesMatch>
+
+# Allow access to service worker
+<FilesMatch "^sw\.js$">
+  Require all granted
+</FilesMatch>
+
+# Protect sensitive files (if any)
+<FilesMatch "\.(log|md|txt)$">
+  Require all denied
+</FilesMatch>
+
+# Allow PERFORMANCE.md if you want it accessible
+<Files "PERFORMANCE.md">
+  Require all granted
+</Files>
