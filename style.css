@@ -1,5 +1,5 @@
 /* ROSE Performance Management System - Enhanced UX Styles */
-/* Color Palette: #c12040 (red), #f57b51 (orange), #f5daaf (yellow), #231f1f (dark) */
+/* Color Palette: #c12040 (ROSE red), #f57b51 (coral), #f9dcc4 (peach), #fef3e2 (cream), #e8b4be (soft pink), #231f1f (dark) */
 
 /* ===== GOOGLE FONTS ===== */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
@@ -11,7 +11,7 @@
 
 body {
   font-family: Arial, Helvetica, sans-serif;
-  background: linear-gradient(135deg, #c12040 0%, #f57b51 100%);
+  background: linear-gradient(135deg, #e8b4be 0%, #f9dcc4 50%, #fef3e2 100%);
   min-height: 100vh;
   margin: 0;
   padding: 0;
@@ -30,7 +30,7 @@ body {
   font-size: 2.5rem;
   font-family: 'Poppins', sans-serif;
   font-weight: 700;
-  color: rgba(245, 218, 175, 0.08);
+  color: rgba(254, 243, 226, 0.05);
   white-space: nowrap;
   pointer-events: none;
   z-index: 0;
@@ -53,14 +53,14 @@ body {
 }
 
 .rose-logo {
-  height: 50px;
+  height: 80px;
   width: auto;
   transition: transform 0.3s ease;
-  filter: drop-shadow(0 2px 4px rgba(193, 32, 64, 0.3));
+  filter: drop-shadow(0 3px 6px rgba(193, 32, 64, 0.4));
 }
 
 .rose-logo:hover {
-  transform: scale(1.1) rotate(5deg);
+  transform: scale(1.05) rotate(3deg);
 }
 
 /* ===== HEADINGS WITH POPPINS ===== */
@@ -77,13 +77,14 @@ h1 {
   font-size: 2.5rem;
   color: #c12040;
   font-weight: 700;
-  text-shadow: 0 2px 4px rgba(193, 32, 64, 0.1);
+  text-shadow: 0 2px 4px rgba(193, 32, 64, 0.15);
   transition: transform 0.3s ease;
   position: relative;
+  letter-spacing: 0.5px;
 }
 
 h1:hover {
-  transform: scale(1.02);
+  transform: scale(1.01);
 }
 
 h2 {
@@ -117,8 +118,8 @@ h3 {
 /* ===== TABS ===== */
 .tabs {
   display: flex;
-  border-bottom: 2px solid #f5daaf;
-  background: linear-gradient(to bottom, #ffffff 0%, #f5daaf 100%);
+  border-bottom: 2px solid #e8b4be;
+  background: linear-gradient(to bottom, #ffffff 0%, #fef3e2 100%);
   overflow-x: auto;
   border-radius: 18px 18px 0 0;
 }
@@ -235,7 +236,7 @@ textarea {
   font-family: Arial, sans-serif;
   padding: 10px 12px;
   width: 100%;
-  border: 2px solid #f5daaf;
+  border: 2px solid #f9dcc4;
   border-radius: 8px;
   background: #fff;
   margin-top: 2px;
@@ -248,8 +249,8 @@ input[type="number"]:hover,
 input[type="text"]:hover,
 input[type="url"]:hover,
 textarea:hover {
-  border-color: #f57b51;
-  box-shadow: 0 2px 8px rgba(245, 123, 81, 0.2);
+  border-color: #e8b4be;
+  box-shadow: 0 2px 8px rgba(232, 180, 190, 0.3);
 }
 
 select:focus,
@@ -272,7 +273,7 @@ textarea {
 input[type="number"]:disabled,
 input[type="text"]:disabled,
 textarea:disabled {
-  background: #f5daaf;
+  background: #fef3e2;
   color: #231f1f;
   opacity: 0.7;
   cursor: not-allowed;
@@ -357,7 +358,7 @@ button:disabled:hover {
 
 .scorecard-table th,
 .scorecard-table td {
-  border: 1px solid #f5daaf;
+  border: 1px solid #f9dcc4;
   padding: 12px 10px;
   font-size: 1rem;
   vertical-align: top;
@@ -365,7 +366,7 @@ button:disabled:hover {
 }
 
 .scorecard-table th {
-  background: linear-gradient(to bottom, #f5daaf 0%, #f5daaf 100%);
+  background: linear-gradient(to bottom, #fef3e2 0%, #f9dcc4 100%);
   color: #231f1f;
   font-weight: 700;
   font-family: 'Poppins', sans-serif;
@@ -375,7 +376,7 @@ button:disabled:hover {
 }
 
 .scorecard-table tbody tr:hover {
-  background: rgba(245, 218, 175, 0.2);
+  background: rgba(249, 220, 196, 0.3);
 }
 
 .scorecard-table th:nth-child(10),
@@ -422,21 +423,21 @@ button:disabled:hover {
 
 .reports-table th,
 .reports-table td {
-  border: 1px solid #f5daaf;
+  border: 1px solid #f9dcc4;
   padding: 12px 10px;
   font-size: 1rem;
   transition: background 0.2s ease;
 }
 
 .reports-table th {
-  background: linear-gradient(to bottom, #f5daaf 0%, #f5daaf 100%);
+  background: linear-gradient(to bottom, #fef3e2 0%, #f9dcc4 100%);
   color: #231f1f;
   font-weight: 700;
   font-family: 'Poppins', sans-serif;
 }
 
 .reports-table tbody tr:hover {
-  background: rgba(245, 218, 175, 0.2);
+  background: rgba(249, 220, 196, 0.3);
   cursor: pointer;
 }
 
@@ -452,9 +453,9 @@ button:disabled:hover {
 }
 
 .legend {
-  background: linear-gradient(to right, #f5daaf 0%, #fef3c7 100%);
+  background: linear-gradient(to right, #fef3e2 0%, #fffbf0 100%);
   color: #231f1f;
-  border-left: 4px solid #f57b51;
+  border-left: 4px solid #e8b4be;
   font-weight: 600;
 }
 
@@ -477,14 +478,14 @@ button:disabled:hover {
 }
 
 .progress-box {
-  background: rgba(245, 218, 175, 0.2);
+  background: rgba(254, 243, 226, 0.3);
   color: #231f1f;
   border-left: 4px solid #c12040;
 }
 
 /* ===== PROGRESS BAR ===== */
 .progress-bar-wrap {
-  background: #f5daaf;
+  background: #f9dcc4;
   border-radius: 10px;
   overflow: hidden;
   margin-top: 10px;
@@ -550,14 +551,14 @@ button:disabled:hover {
   border-radius: 12px;
   padding: 24px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  border: 2px solid #f5daaf;
+  border: 2px solid #f9dcc4;
   transition: all 0.3s ease;
 }
 
 .dashboard-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(193, 32, 64, 0.2);
-  border-color: #f57b51;
+  box-shadow: 0 8px 25px rgba(232, 180, 190, 0.3);
+  border-color: #e8b4be;
 }
 
 .dashboard-card h3 {
@@ -624,19 +625,19 @@ button:disabled:hover {
 .summary-table td {
   padding: 14px;
   text-align: left;
-  border-bottom: 1px solid #f5daaf;
+  border-bottom: 1px solid #f9dcc4;
   transition: background 0.2s ease;
 }
 
 .summary-table th {
-  background: linear-gradient(to bottom, #f5daaf 0%, #fef3c7 100%);
+  background: linear-gradient(to bottom, #fef3e2 0%, #fffbf0 100%);
   color: #231f1f;
   font-weight: 600;
   font-family: 'Poppins', sans-serif;
 }
 
 .summary-table tbody tr:hover {
-  background: rgba(245, 218, 175, 0.2);
+  background: rgba(249, 220, 196, 0.3);
 }
 
 /* ===== MESSAGES ===== */
@@ -651,11 +652,11 @@ button:disabled:hover {
 
 /* ===== SIGNIN BAR ===== */
 .signin-bar {
-  background: linear-gradient(to right, #f5daaf 0%, #fef3c7 100%);
+  background: linear-gradient(to right, #fef3e2 0%, #f9dcc4 100%);
   margin: 0;
   padding: 15px 30px;
   border-radius: 18px 18px 0 0;
-  border-bottom: 2px solid #f57b51;
+  border-bottom: 2px solid #e8b4be;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -665,7 +666,7 @@ button:disabled:hover {
 }
 
 .signin-bar:hover {
-  background: linear-gradient(to right, #fef3c7 0%, #f5daaf 100%);
+  background: linear-gradient(to right, #f9dcc4 0%, #fef3e2 100%);
 }
 
 .signin-bar .user {
@@ -704,7 +705,7 @@ button:disabled:hover {
 /* ===== TEAM CARDS ===== */
 .team-card {
   background: #fff;
-  border: 2px solid #f5daaf;
+  border: 2px solid #f9dcc4;
   border-radius: 12px;
   padding: 20px;
   margin: 10px 0;
@@ -714,8 +715,8 @@ button:disabled:hover {
 
 .team-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(193, 32, 64, 0.2);
-  border-color: #f57b51;
+  box-shadow: 0 8px 20px rgba(232, 180, 190, 0.3);
+  border-color: #e8b4be;
 }
 
 .team-card h4 {
@@ -739,11 +740,11 @@ button:disabled:hover {
 
 /* ===== TARGETS FORM ===== */
 .targets-form {
-  background: linear-gradient(to bottom, #ffffff 0%, rgba(245, 218, 175, 0.1) 100%);
+  background: linear-gradient(to bottom, #ffffff 0%, rgba(254, 243, 226, 0.3) 100%);
   padding: 24px;
   border-radius: 12px;
   margin: 20px 0;
-  border: 2px solid #f5daaf;
+  border: 2px solid #f9dcc4;
 }
 
 .target-row {
@@ -798,7 +799,7 @@ button:disabled:hover {
 }
 
 .role-badge.manager {
-  background: linear-gradient(135deg, #f57b51 0%, #f5daaf 100%);
+  background: linear-gradient(135deg, #f57b51 0%, #f9dcc4 100%);
   color: #231f1f;
 }
 
@@ -855,7 +856,7 @@ button:disabled:hover {
 
 .modal-header {
   padding: 24px 32px;
-  border-bottom: 2px solid #f5daaf;
+  border-bottom: 2px solid #f9dcc4;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -894,11 +895,11 @@ button:disabled:hover {
 }
 
 .detail-info {
-  background: linear-gradient(to bottom, rgba(245, 218, 175, 0.2) 0%, rgba(245, 218, 175, 0.05) 100%);
+  background: linear-gradient(to bottom, rgba(254, 243, 226, 0.4) 0%, rgba(254, 243, 226, 0.1) 100%);
   padding: 24px;
   border-radius: 10px;
   margin-bottom: 20px;
-  border-left: 4px solid #f57b51;
+  border-left: 4px solid #e8b4be;
 }
 
 .detail-info p {
@@ -918,18 +919,18 @@ button:disabled:hover {
 .details-table td {
   padding: 14px;
   text-align: left;
-  border-bottom: 1px solid #f5daaf;
+  border-bottom: 1px solid #f9dcc4;
 }
 
 .details-table th {
-  background: linear-gradient(to bottom, #f5daaf 0%, #fef3c7 100%);
+  background: linear-gradient(to bottom, #fef3e2 0%, #fffbf0 100%);
   font-weight: 600;
   color: #231f1f;
   font-family: 'Poppins', sans-serif;
 }
 
 .details-table tbody tr:hover {
-  background: rgba(245, 218, 175, 0.2);
+  background: rgba(249, 220, 196, 0.3);
 }
 
 .details-table tfoot {
@@ -940,9 +941,9 @@ button:disabled:hover {
 
 .modal-footer {
   padding: 20px 32px;
-  border-top: 2px solid #f5daaf;
+  border-top: 2px solid #f9dcc4;
   text-align: right;
-  background: rgba(245, 218, 175, 0.1);
+  background: rgba(254, 243, 226, 0.3);
   border-radius: 0 0 16px 16px;
 }
 
@@ -965,7 +966,7 @@ button:disabled:hover {
 }
 
 .btn-close-modal {
-  background: #f5daaf;
+  background: #f9dcc4;
   color: #231f1f;
   border: none;
   padding: 12px 28px;
@@ -977,7 +978,7 @@ button:disabled:hover {
 }
 
 .btn-close-modal:hover {
-  background: #f57b51;
+  background: #e8b4be;
   color: #fff;
   transform: translateY(-2px);
 }
@@ -1269,7 +1270,7 @@ canvas {
 /* ===== FOOTER ===== */
 .rose-footer {
   background: linear-gradient(135deg, #231f1f 0%, #c12040 100%);
-  color: #f5daaf;
+  color: #fef3e2;
   text-align: center;
   padding: 40px 20px;
   margin-top: 50px;
