@@ -777,6 +777,27 @@ button:disabled:hover {
   margin: 0;
 }
 
+/* ===== TARGETS BUTTON ROW ===== */
+.targets-button-row {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 15px;
+  background: linear-gradient(to right, rgba(254, 243, 226, 0.3), rgba(249, 220, 196, 0.3));
+  border-radius: 10px;
+  border: 1px solid #f9dcc4;
+}
+
+.targets-button-row button {
+  flex: 0 1 auto;
+  white-space: nowrap;
+  min-width: fit-content;
+}
+
 /* ===== ROLE BADGES ===== */
 .role-badge {
   display: inline-block;

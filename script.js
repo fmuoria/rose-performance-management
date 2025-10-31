@@ -491,15 +491,22 @@ function loadSetTargetsTab() {
       
       <h3>Set Performance Targets</h3>
       <div id="targetsList"></div>
-      <div style="margin-top: 15px; display: flex; gap: 10px;">
+      <div class="targets-button-row">
         <button onclick="addTargetRow()" style="background: #667eea;">+ Add Target</button>
         <button onclick="saveTargets()" style="background: #48bb78;">💾 Save All Targets</button>
         <button onclick="validateWeights()" style="background: #ed8936;">🔍 Check Weights</button>
+        <button onclick="resetTargetsForm()" style="background: linear-gradient(135deg, #231f1f 0%, #555 100%);">🔄 Reset Form</button>
       </div>
     </div>
   `;
   
   addTargetRow();
+}
+
+function resetTargetsForm() {
+  if (confirm('Are you sure you want to reset the form? This will clear all unsaved changes.')) {
+    loadSetTargetsTab();
+  }
 }
 
 let targetRowCount = 0;
@@ -936,7 +943,153 @@ function loadPeerFeedbackScore(rowIdx) {
 }
 
 function viewPeerFeedbackDetails() {
-  alert("Peer feedback is anonymous. Your manager can view detailed feedback.\n\nYour score is based on the average of peer ratings across 7 ROSE core values.");
+  if (userRole === 'Manager' || userRole === 'Admin') {
+    // For managers, show detailed modal with aggregated feedback
+    showManagerPeerFeedbackModal();
+  } else {
+    // For employees, show simple message
+    alert("Peer feedback is anonymous. Your manager can view detailed feedback.\n\nYour score is based on the average of peer ratings across 7 ROSE core values.");
+  }
+}
+
+function showManagerPeerFeedbackModal() {
+  const year = document.getElementById("periodYear")?.value || new Date().getFullYear();
+  const month = document.getElementById("periodMonth")?.value;
+  
+  if (!month) {
+    alert("Please select a month first to view peer feedback.");
+    return;
+  }
+  
+  const quarter = "Q" + Math.ceil(parseInt(month) / 3);
+  
+  const url = APPS_SCRIPT_URL + '?action=getAggregatedPeerFeedback&employeeEmail=' + 
+              encodeURIComponent(userProfile.email) + '&year=' + year + '&quarter=' + quarter + 
+              '&callback=handleManagerPeerFeedbackView';
+  
+  window.handleManagerPeerFeedbackView = function(data) {
+    console.log('Manager peer feedback view:', data);
+    
+    if (data.count === 0) {
+      alert("No peer feedback has been received for this quarter yet.");
+      return;
+    }
+    
+    // Create modal to display detailed aggregated feedback
+    const modal = document.createElement('div');
+    modal.className = 'scorecard-modal';
+    modal.innerHTML = `
+      <div class="modal-content" style="max-width: 800px;">
+        <div class="modal-header">
+          <h2>📊 Internal Customer Perspective - Peer Feedback Results</h2>
+          <button class="modal-close" onclick="this.closest('.scorecard-modal').remove()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #667eea;">
+            <p style="margin: 0; color: #2d3748;">
+              <strong>Period:</strong> ${year}, ${quarter} | 
+              <strong>Total Reviews:</strong> ${data.count} | 
+              <strong>Average Score:</strong> <span style="color: #667eea; font-size: 1.2em; font-weight: bold;">${parseFloat(data.averageScore).toFixed(2)}</span> / 5.0
+            </p>
+          </div>
+          
+          <div style="background: #fffbeb; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #f59e0b;">
+            <p style="margin: 0; font-size: 0.95em; color: #78350f;">
+              ℹ️ <strong>Privacy Notice:</strong> This feedback is aggregated from multiple peer reviewers to maintain anonymity. 
+              Individual reviewer identities are protected.
+            </p>
+          </div>
+          
+          <h3 style="color: #667eea; margin-top: 25px;">Core Values Assessment</h3>
+          <p style="color: #718096; margin-bottom: 15px;">
+            Peer reviewers evaluated performance across 7 ROSE core values. Below are the aggregated results:
+          </p>
+          
+          <div id="feedbackBreakdown">
+            ${generateFeedbackBreakdown(data)}
+          </div>
+          
+          <div style="margin-top: 30px; padding: 20px; background: #f7fafc; border-radius: 8px; border: 2px solid #e2e8f0;">
+            <h4 style="margin-top: 0; color: #2d3748;">📝 Summary</h4>
+            <p style="color: #4a5568; line-height: 1.6;">
+              Based on <strong>${data.count}</strong> peer review${data.count > 1 ? 's' : ''}, 
+              this employee has demonstrated strong alignment with ROSE core values, achieving an 
+              average score of <strong style="color: #667eea;">${parseFloat(data.averageScore).toFixed(2)}</strong> out of 5.0.
+            </p>
+            <p style="color: #718096; font-size: 0.9em; margin: 10px 0 0 0;">
+              This score contributes 25% to the overall performance scorecard as part of the Internal Customer Perspective.
+            </p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button onclick="this.closest('.scorecard-modal').remove()" class="btn-close-modal">Close</button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+  };
+  
+  const script = document.createElement('script');
+  script.src = url;
+  document.body.appendChild(script);
+}
+
+function generateFeedbackBreakdown(data) {
+  // Generate a breakdown display for the aggregated feedback
+  // Since we have the average score, we'll display it in a visually appealing way
+  const avgScore = parseFloat(data.averageScore);
+  const scorePercentage = (avgScore / 5.0) * 100;
+  
+  let rating = '';
+  let ratingColor = '';
+  
+  if (avgScore >= 4.5) {
+    rating = 'Exceptional';
+    ratingColor = '#10b981';
+  } else if (avgScore >= 4.0) {
+    rating = 'Excellent';
+    ratingColor = '#3b82f6';
+  } else if (avgScore >= 3.5) {
+    rating = 'Very Good';
+    ratingColor = '#667eea';
+  } else if (avgScore >= 3.0) {
+    rating = 'Good';
+    ratingColor = '#f59e0b';
+  } else {
+    rating = 'Needs Improvement';
+    ratingColor = '#ef4444';
+  }
+  
+  return `
+    <div style="margin: 20px 0;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <span style="font-weight: 600; color: #2d3748;">Overall Performance Rating:</span>
+        <span style="font-weight: 700; font-size: 1.3em; color: ${ratingColor};">${rating}</span>
+      </div>
+      
+      <div style="background: #e2e8f0; border-radius: 10px; height: 30px; overflow: hidden; position: relative;">
+        <div style="background: linear-gradient(90deg, ${ratingColor}, ${ratingColor}dd); height: 100%; width: ${scorePercentage}%; 
+                    border-radius: 10px; display: flex; align-items: center; justify-content: flex-end; padding-right: 10px; 
+                    transition: width 0.5s ease;">
+          <span style="color: white; font-weight: bold; font-size: 0.9em;">${avgScore.toFixed(2)}/5.0</span>
+        </div>
+      </div>
+      
+      <div style="margin-top: 20px; padding: 15px; background: white; border-radius: 8px; border: 1px solid #e2e8f0;">
+        <h4 style="margin-top: 0; color: #2d3748;">ROSE Core Values Covered:</h4>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+          <div style="padding: 8px; background: #f0f9ff; border-radius: 6px;">✅ Results-Oriented</div>
+          <div style="padding: 8px; background: #f0f9ff; border-radius: 6px;">✅ Ownership & Accountability</div>
+          <div style="padding: 8px; background: #f0f9ff; border-radius: 6px;">✅ Service Excellence</div>
+          <div style="padding: 8px; background: #f0f9ff; border-radius: 6px;">✅ Collaboration</div>
+          <div style="padding: 8px; background: #f0f9ff; border-radius: 6px;">✅ Innovation</div>
+          <div style="padding: 8px; background: #f0f9ff; border-radius: 6px;">✅ Integrity</div>
+          <div style="padding: 8px; background: #f0f9ff; border-radius: 6px;">✅ Continuous Learning</div>
+        </div>
+      </div>
+    </div>
+  `;
 }
   // ========== LOAD EMPLOYEE TARGETS ==========
 function loadEmployeeTargets() {
@@ -1664,6 +1817,10 @@ function viewScorecardDetails(index, wrapId) {
     return;
   }
   
+  // Check if user is a manager viewing team member data
+  const isManagerView = (userRole === 'Manager' || userRole === 'Admin') && wrapId === 'teamReportsWrap';
+  const employeeEmail = record['User Email'] || record.userEmail || '';
+  
   const modal = document.createElement('div');
   modal.className = 'scorecard-modal';
   modal.innerHTML = `
@@ -1698,8 +1855,12 @@ function viewScorecardDetails(index, wrapId) {
                         </tr>
           </thead>
           <tbody>
-            ${scoresArr.map(score => `
-              <tr>
+            ${scoresArr.map(score => {
+              // Check if this is an Internal Customer (Peer Review) row
+              const isPeerReview = score.measure && score.measure.includes('Internal Customer') && score.measure.includes('Peer Review');
+              
+              return `
+              <tr ${isPeerReview && isManagerView ? 'style="background: #f0f9ff;"' : ''}>
                 <td><strong>${score.dimension}</strong></td>
                 <td>${score.measure}</td>
                 <td>${score.target || score.targetBudget || ''}</td>
@@ -1708,9 +1869,15 @@ function viewScorecardDetails(index, wrapId) {
                 <td>${score.weight}%</td>
                 <td><strong>${score.weighted}</strong></td>
                 <td>${score.comment || '-'}</td>
-                <td>${score.evidence ? `<a href="${score.evidence}" target="_blank" style="color: #667eea; text-decoration: underline;">View Evidence</a>` : '-'}</td>
+                <td>${isPeerReview && isManagerView ? 
+                  `<button onclick="viewTeamMemberPeerFeedback('${employeeEmail}', ${record.Year || record.year}, ${record.Month || record.month})" 
+                          style="padding: 6px 12px; font-size: 0.9em; background: #667eea; color: white; border: none; 
+                          border-radius: 6px; cursor: pointer;">View Detailed Feedback</button>` : 
+                  (score.evidence ? `<a href="${score.evidence}" target="_blank" style="color: #667eea; text-decoration: underline;">View Evidence</a>` : '-')
+                }</td>
               </tr>
-            `).join('')}
+            `;
+            }).join('')}
           </tbody>
           <tfoot>
             <tr>
@@ -1729,6 +1896,81 @@ function viewScorecardDetails(index, wrapId) {
   `;
   
   document.body.appendChild(modal);
+}
+
+function viewTeamMemberPeerFeedback(employeeEmail, year, month) {
+  const quarter = "Q" + Math.ceil(parseInt(month) / 3);
+  
+  const url = APPS_SCRIPT_URL + '?action=getAggregatedPeerFeedback&employeeEmail=' + 
+              encodeURIComponent(employeeEmail) + '&year=' + year + '&quarter=' + quarter + 
+              '&callback=handleTeamMemberFeedbackView';
+  
+  window.handleTeamMemberFeedbackView = function(data) {
+    console.log('Team member peer feedback view:', data);
+    
+    if (data.count === 0) {
+      alert("No peer feedback has been received for this employee in this quarter.");
+      return;
+    }
+    
+    // Create modal to display detailed aggregated feedback
+    const modal = document.createElement('div');
+    modal.className = 'scorecard-modal';
+    modal.innerHTML = `
+      <div class="modal-content" style="max-width: 800px;">
+        <div class="modal-header">
+          <h2>📊 Internal Customer Perspective - Peer Feedback Results</h2>
+          <button class="modal-close" onclick="this.closest('.scorecard-modal').remove()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #667eea;">
+            <p style="margin: 0; color: #2d3748;">
+              <strong>Period:</strong> ${year}, ${quarter} | 
+              <strong>Total Reviews:</strong> ${data.count} | 
+              <strong>Average Score:</strong> <span style="color: #667eea; font-size: 1.2em; font-weight: bold;">${parseFloat(data.averageScore).toFixed(2)}</span> / 5.0
+            </p>
+          </div>
+          
+          <div style="background: #fffbeb; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #f59e0b;">
+            <p style="margin: 0; font-size: 0.95em; color: #78350f;">
+              ℹ️ <strong>Privacy Notice:</strong> This feedback is aggregated from multiple peer reviewers to maintain anonymity. 
+              Individual reviewer identities are protected.
+            </p>
+          </div>
+          
+          <h3 style="color: #667eea; margin-top: 25px;">Core Values Assessment</h3>
+          <p style="color: #718096; margin-bottom: 15px;">
+            Peer reviewers evaluated performance across 7 ROSE core values. Below are the aggregated results:
+          </p>
+          
+          <div id="feedbackBreakdown">
+            ${generateFeedbackBreakdown(data)}
+          </div>
+          
+          <div style="margin-top: 30px; padding: 20px; background: #f7fafc; border-radius: 8px; border: 2px solid #e2e8f0;">
+            <h4 style="margin-top: 0; color: #2d3748;">📝 Summary</h4>
+            <p style="color: #4a5568; line-height: 1.6;">
+              Based on <strong>${data.count}</strong> peer review${data.count > 1 ? 's' : ''}, 
+              this employee has demonstrated strong alignment with ROSE core values, achieving an 
+              average score of <strong style="color: #667eea;">${parseFloat(data.averageScore).toFixed(2)}</strong> out of 5.0.
+            </p>
+            <p style="color: #718096; font-size: 0.9em; margin: 10px 0 0 0;">
+              This score contributes 25% to the overall performance scorecard as part of the Internal Customer Perspective.
+            </p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button onclick="this.closest('.scorecard-modal').remove()" class="btn-close-modal">Close</button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+  };
+  
+  const script = document.createElement('script');
+  script.src = url;
+  document.body.appendChild(script);
 }
 
 function loadDashboard(wrapId) {
