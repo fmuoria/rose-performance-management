@@ -677,10 +677,18 @@ function saveTargets() {
   window.handleSaveTargetsResponse = function(resp) {
     console.log('Save targets response:', resp);
     if (resp.result === 'success') {
-      alert('✅ Targets saved successfully!\n\n• Internal Customer (25%) - Peer Review\n• Your custom targets - ' + (totalWeight - 25) + '%\n• Total: 100%');
+      if (typeof showToast === 'function') {
+        showToast('✅ Targets saved successfully! Internal Customer (25%) + Your targets (' + (totalWeight - 25) + '%) = 100%', 'success', 5000);
+      } else {
+        alert('✅ Targets saved successfully!\n\n• Internal Customer (25%) - Peer Review\n• Your custom targets - ' + (totalWeight - 25) + '%\n• Total: 100%');
+      }
       loadEmployeeCurrentTargets();
     } else {
-      alert('Error saving targets: ' + (resp.message || 'Unknown error'));
+      if (typeof showToast === 'function') {
+        showToast('❌ Error saving targets: ' + (resp.message || 'Unknown error'), 'error');
+      } else {
+        alert('Error saving targets: ' + (resp.message || 'Unknown error'));
+      }
     }
   };
   
@@ -1536,12 +1544,20 @@ function saveScorecard() {
   window.handleSaveResponse = function(resp) {
     console.log("Response data:", resp);
     if (resp.result === "success") {
-      alert("Scorecard saved successfully!");
+      if (typeof showToast === 'function') {
+        showToast("✅ Scorecard saved successfully!", "success");
+      } else {
+        alert("Scorecard saved successfully!");
+      }
       resetScorecard();
       loadUserReports();
       loadDashboard();
     } else {
-      alert("Error saving scorecard: " + (resp.message || "Unknown error"));
+      if (typeof showToast === 'function') {
+        showToast("❌ Error saving scorecard: " + (resp.message || "Unknown error"), "error");
+      } else {
+        alert("Error saving scorecard: " + (resp.message || "Unknown error"));
+      }
       console.error("Server error:", resp);
     }
   };
@@ -1549,7 +1565,11 @@ function saveScorecard() {
   const script = document.createElement('script');
   script.src = url;
   script.onerror = function() {
-    alert("Error: Failed to save scorecard. The data might be too large.");
+    if (typeof showToast === 'function') {
+      showToast("❌ Failed to save scorecard. The data might be too large.", "error");
+    } else {
+      alert("Error: Failed to save scorecard. The data might be too large.");
+    }
   };
   document.body.appendChild(script);
 }
@@ -2068,17 +2088,25 @@ function submitPeerFeedbackForm(requestId) {
   window.handleSubmitFeedbackResponse = function(resp) {
     console.log('Submit feedback response:', resp);
     if (resp.result === 'success') {
-      alert('✅ Thank you! Your anonymous feedback has been submitted successfully.\n\nAI Analysis Ratings:\n' + 
-            '• Christ-Centered: ' + resp.ratings.christCentered + '/5\n' +
-            '• Holistic Investment: ' + resp.ratings.holisticInvestment + '/5\n' +
-            '• Trusted Relationships: ' + resp.ratings.trustedRelationships + '/5\n' +
-            '• Humble Excellence: ' + resp.ratings.humbleExcellence + '/5\n' +
-            '• Locally Led: ' + resp.ratings.locallyLed + '/5\n' +
-            '• Unwavering Integrity: ' + resp.ratings.unwaveringIntegrity + '/5\n' +
-            '• Sustainable Empowerment: ' + resp.ratings.sustainableEmpowerment + '/5');
+      if (typeof showToast === 'function') {
+        showToast('✅ Thank you! Your anonymous feedback has been submitted successfully.', 'success', 5000);
+      } else {
+        alert('✅ Thank you! Your anonymous feedback has been submitted successfully.\n\nAI Analysis Ratings:\n' + 
+              '• Christ-Centered: ' + resp.ratings.christCentered + '/5\n' +
+              '• Holistic Investment: ' + resp.ratings.holisticInvestment + '/5\n' +
+              '• Trusted Relationships: ' + resp.ratings.trustedRelationships + '/5\n' +
+              '• Humble Excellence: ' + resp.ratings.humbleExcellence + '/5\n' +
+              '• Locally Led: ' + resp.ratings.locallyLed + '/5\n' +
+              '• Unwavering Integrity: ' + resp.ratings.unwaveringIntegrity + '/5\n' +
+              '• Sustainable Empowerment: ' + resp.ratings.sustainableEmpowerment + '/5');
+      }
       loadPendingFeedbackRequests();
     } else {
-      alert('Error submitting feedback: ' + (resp.message || 'Unknown error'));
+      if (typeof showToast === 'function') {
+        showToast('❌ Error submitting feedback: ' + (resp.message || 'Unknown error'), 'error');
+      } else {
+        alert('Error submitting feedback: ' + (resp.message || 'Unknown error'));
+      }
     }
   };
   
@@ -2217,9 +2245,22 @@ function submitPeerFeedbackRequest() {
     if (resp.result === 'success') {
       alert(`✅ Peer feedback requests sent successfully!\n\n${filteredReviewers.length} reviewer${filteredReviewers.length > 1 ? 's' : ''} will receive anonymous feedback requests for ${employeeName}.\n\nThey will evaluate based on 7 ROSE core values.`);
       document.querySelectorAll('.reviewer-checkbox').forEach(cb => cb.checked = false);
+  window.handleRequestFeedbackResponse = function(resp) {
+    console.log('Request feedback response:', resp);
+    if (resp.result === 'success') {
+      if (typeof showToast === 'function') {
+        showToast(`✅ Peer feedback requests sent to ${filteredReviewers.length} reviewer${filteredReviewers.length > 1 ? 's' : ''} for ${employeeName}!`, 'success', 5000);
+      } else {
+        alert(`✅ Peer feedback requests sent successfully!\n\n${filteredReviewers.length} reviewer${filteredReviewers.length > 1 ? 's' : ''} will receive anonymous feedback requests for ${employeeName}.\n\nThey will evaluate based on 7 ROSE core values.`);
+      }
+      document.querySelectorAll('.reviewer-checkbox').forEach(cb => cb.checked = false);
       loadReviewerCheckboxes();
     } else {
-      alert('Error sending requests: ' + (resp.message || 'Unknown error'));
+      if (typeof showToast === 'function') {
+        showToast('❌ Error sending requests: ' + (resp.message || 'Unknown error'), 'error');
+      } else {
+        alert('Error sending requests: ' + (resp.message || 'Unknown error'));
+      }
     }
   };
   

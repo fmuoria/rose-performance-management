@@ -29,8 +29,9 @@
   <link rel="preconnect" href="https://accounts.google.com" crossorigin>
   <link rel="preconnect" href="https://script.google.com" crossorigin>
   
-  <!-- Link to external CSS file -->
+  <!-- Link to external CSS files -->
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="loader.css">
   
   <!-- PWA Manifest -->
   <link rel="manifest" href="manifest.json">
@@ -49,6 +50,21 @@
   -->
 </head>
 <body>
+<!-- Loading Animation -->
+<div class="rose-loader-overlay" id="roseLoader">
+  <div class="rose-flower">
+    <div class="rose-petal"></div>
+    <div class="rose-petal"></div>
+    <div class="rose-petal"></div>
+    <div class="rose-petal"></div>
+    <div class="rose-petal"></div>
+    <div class="rose-petal"></div>
+    <div class="rose-center"></div>
+  </div>
+  <div class="loader-message">Your data is about to bloom<span class="loading-dots"></span></div>
+  <div class="loader-submessage">Loading ROSE Performance Management System</div>
+</div>
+
 <div class="container" role="main" aria-label="Performance Management Application">
   <div class="signin-bar" id="signinBar" role="banner" aria-label="User authentication and profile">
     <div id="userStatus" role="status" aria-live="polite"></div>
@@ -267,7 +283,8 @@
   </div>
 </div>
 
-<!-- Load external JavaScript file at the end of body for better performance -->
+<!-- Load external JavaScript files at the end of body for better performance -->
+<script src="ui-enhancements.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
