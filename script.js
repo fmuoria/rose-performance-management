@@ -1,25 +1,22 @@
 // ===== SERVICE WORKER REGISTRATION =====
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
+    navigator.serviceWorker.register(CONFIG.SERVICE_WORKER_PATH)
       .then((registration) => {
         console.log('Service Worker registered successfully:', registration.scope);
         
         // Check for updates periodically
         setInterval(() => {
           registration.update();
-        }, 60000); // Check every minute
+        }, CONFIG.SERVICE_WORKER_UPDATE_INTERVAL);
         
         // Listen for updates
         registration.addEventListener('updatefound', () => {
           const newWorker = registration.installing;
           newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              // New service worker available, notify user
-              if (confirm('A new version is available! Would you like to update?')) {
-                newWorker.postMessage({ type: 'SKIP_WAITING' });
-                window.location.reload();
-              }
+              // New service worker available, notify user with custom notification
+              showUpdateAvailableNotification(newWorker);
             }
           });
         });
@@ -30,10 +27,84 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+// Custom notification for service worker updates
+function showUpdateAvailableNotification(newWorker) {
+  const notification = document.createElement('div');
+  notification.className = 'update-notification';
+  notification.innerHTML = `
+    <div style="display: flex; align-items: center; gap: 12px; padding: 16px 20px;">
+      <span style="font-size: 1.5em;">🔄</span>
+      <div style="flex: 1;">
+        <div style="font-weight: bold; margin-bottom: 4px;">New Version Available!</div>
+        <div style="font-size: 0.9em; opacity: 0.9;">A new version of the app is ready. Update now for the latest features.</div>
+      </div>
+      <button onclick="updateServiceWorker()" id="updateBtn"
+              style="background: white; color: #667eea; border: none; padding: 8px 16px; 
+                     border-radius: 6px; cursor: pointer; font-weight: bold;">
+        Update Now
+      </button>
+      <button onclick="this.closest('.update-notification').remove()"
+              style="background: rgba(255,255,255,0.3); color: white; border: none; 
+                     padding: 8px 16px; border-radius: 6px; cursor: pointer;">
+        Later
+      </button>
+    </div>
+  `;
+  
+  notification.style.cssText = `
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    z-index: 10000;
+    max-width: 450px;
+    animation: slideUp 0.3s ease-out;
+  `;
+  
+  // Add animation style
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes slideUp {
+      from {
+        transform: translateY(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+  
+  document.body.appendChild(notification);
+  
+  // Store reference to new worker for update function
+  window.pendingServiceWorker = newWorker;
+}
+
+// Function to activate new service worker
+window.updateServiceWorker = function() {
+  if (window.pendingServiceWorker) {
+    window.pendingServiceWorker.postMessage({ type: 'SKIP_WAITING' });
+    window.location.reload();
+  }
+};
+
 // ===== SESSION PERSISTENCE =====
 const SESSION_KEY = 'rose_pms_session';
 const SESSION_EXPIRY_KEY = 'rose_pms_session_expiry';
-const SESSION_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+
+// Configuration constants
+const CONFIG = {
+  SESSION_DURATION: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
+  POLLING_INTERVAL: 30000, // 30 seconds for real-time updates
+  SERVICE_WORKER_PATH: '/sw.js', // Service worker file path
+  SERVICE_WORKER_UPDATE_INTERVAL: 60000 // Check for updates every minute
+};
 
 // Save session to localStorage
 function saveSession(profile, role) {
@@ -44,7 +115,7 @@ function saveSession(profile, role) {
       timestamp: Date.now()
     };
     localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
-    localStorage.setItem(SESSION_EXPIRY_KEY, Date.now() + SESSION_DURATION);
+    localStorage.setItem(SESSION_EXPIRY_KEY, Date.now() + CONFIG.SESSION_DURATION);
     console.log('Session saved successfully');
   } catch (error) {
     console.error('Error saving session:', error);
@@ -2166,9 +2237,9 @@ function startRealtimeUpdates() {
     if (userProfile && userRole) {
       checkForUpdates();
     }
-  }, 30000); // 30 seconds
+  }, CONFIG.POLLING_INTERVAL);
   
-  console.log('Real-time updates enabled (polling every 30 seconds)');
+  console.log(`Real-time updates enabled (polling every ${CONFIG.POLLING_INTERVAL / 1000} seconds)`);
 }
 
 // Check for updates from the server
@@ -2191,9 +2262,16 @@ function checkTargetsUpdate() {
   
   const quarter = "Q" + Math.ceil(parseInt(month) / 3);
   
-  const url = APPS_SCRIPT_URL + '?action=getTargetsUpdateTime&email=' + 
-              encodeURIComponent(userProfile.email) + '&year=' + year + 
-              '&quarter=' + quarter + '&callback=handleTargetsUpdateCheck';
+  // Build URL safely with URLSearchParams
+  const params = new URLSearchParams({
+    action: 'getTargetsUpdateTime',
+    email: userProfile.email,
+    year: year,
+    quarter: quarter,
+    callback: 'handleTargetsUpdateCheck'
+  });
+  
+  const url = APPS_SCRIPT_URL + '?' + params.toString();
   
   window.handleTargetsUpdateCheck = function(data) {
     if (data && data.updateTime) {
@@ -2221,8 +2299,14 @@ function checkTargetsUpdate() {
 
 // Check for new peer feedback requests
 function checkFeedbackUpdate() {
-  const url = APPS_SCRIPT_URL + '?action=getPendingFeedbackCount&email=' + 
-              encodeURIComponent(userProfile.email) + '&callback=handleFeedbackUpdateCheck';
+  // Build URL safely with URLSearchParams
+  const params = new URLSearchParams({
+    action: 'getPendingFeedbackCount',
+    email: userProfile.email,
+    callback: 'handleFeedbackUpdateCheck'
+  });
+  
+  const url = APPS_SCRIPT_URL + '?' + params.toString();
   
   window.handleFeedbackUpdateCheck = function(data) {
     if (data && data.count !== undefined) {

@@ -419,3 +419,26 @@ Same as main project license.
 
 **Last Updated**: October 2025  
 **Version**: 2.0.0
+
+---
+
+## 🔒 Security Note
+
+### Content Security Policy
+
+The current CSP configuration includes `'unsafe-inline'` for scripts and styles to maintain compatibility with Google Sign-In and the existing codebase. For enhanced security in production:
+
+1. **Consider using nonces**: Generate unique tokens for inline scripts
+2. **Extract inline styles**: Move to external CSS files
+3. **Use script hashes**: Calculate SHA hashes for specific inline scripts
+4. **Evaluate necessity**: Some inline code may be removable
+
+Example improved CSP (after removing inline code):
+```
+Content-Security-Policy: default-src 'self'; 
+  script-src 'self' 'nonce-{random}' https://accounts.google.com; 
+  style-src 'self' 'nonce-{random}'; 
+  img-src 'self' https: data:;
+```
+
+This is a future enhancement that requires refactoring inline code throughout the application.
