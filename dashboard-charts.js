@@ -214,8 +214,9 @@ function createComparisonBarChart(canvasId, data) {
   const ctx = document.getElementById(canvasId);
   if (!ctx) return null;
   
-  const labels = data.map(d => d.label);
-  const values = data.map(d => d.value);
+  // Handle both data formats: {label, value} or {dimension, score}
+  const labels = data.map(d => d.label || d.dimension);
+  const values = data.map(d => d.value || d.score);
   
   // Create gradient for bars
   const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 400);
