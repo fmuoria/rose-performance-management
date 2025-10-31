@@ -2243,11 +2243,6 @@ function submitPeerFeedbackRequest() {
   window.handleRequestFeedbackResponse = function(resp) {
     console.log('Request feedback response:', resp);
     if (resp.result === 'success') {
-      alert(`✅ Peer feedback requests sent successfully!\n\n${filteredReviewers.length} reviewer${filteredReviewers.length > 1 ? 's' : ''} will receive anonymous feedback requests for ${employeeName}.\n\nThey will evaluate based on 7 ROSE core values.`);
-      document.querySelectorAll('.reviewer-checkbox').forEach(cb => cb.checked = false);
-  window.handleRequestFeedbackResponse = function(resp) {
-    console.log('Request feedback response:', resp);
-    if (resp.result === 'success') {
       if (typeof showToast === 'function') {
         showToast(`✅ Peer feedback requests sent to ${filteredReviewers.length} reviewer${filteredReviewers.length > 1 ? 's' : ''} for ${employeeName}!`, 'success', 5000);
       } else {

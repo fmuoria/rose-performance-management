@@ -285,7 +285,10 @@ const originalRenderScorecardRows = window.renderScorecardRows;
 if (originalRenderScorecardRows) {
   window.renderScorecardRows = function() {
     originalRenderScorecardRows.apply(this, arguments);
-    setTimeout(addSectionIcons, 100);
+    // Use requestAnimationFrame for better timing
+    requestAnimationFrame(() => {
+      addSectionIcons();
+    });
   };
 }
 
