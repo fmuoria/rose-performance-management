@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ROSE PMS - UI Demo</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="loader.css">
+  <style>
+    .demo-section {
+      margin: 40px 0;
+      padding: 30px;
+      background: white;
+      border-radius: 12px;
+      border-left: 4px solid #c12040;
+    }
+    
+    .demo-section h2 {
+      margin-top: 0;
+    }
+    
+    .demo-buttons {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      margin: 20px 0;
+    }
+    
+    .icon-demo {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin: 20px 0;
+    }
+    
+    .icon-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      background: #f5daaf;
+      border-radius: 12px;
+      min-width: 120px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .icon-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(193, 32, 64, 0.2);
+    }
+    
+    .icon-large {
+      font-size: 3rem;
+      margin-bottom: 10px;
+    }
+    
+    .form-demo {
+      margin: 20px 0;
+    }
+    
+    .tooltip-demo {
+      display: inline-block;
+      margin: 10px;
+    }
+  </style>
+</head>
+<body>
+<div class="container" style="max-width: 1000px;">
+  <div class="signin-bar">
+    <div class="user">
+      <span>Welcome to ROSE Performance Management</span>
+    </div>
+  </div>
+  
+  <h1>🌹 UI Enhancement Demo</h1>
+  
+  <div class="demo-section">
+    <h2>💰 1. Interactive Icons</h2>
+    <p>Hover over each icon to see the interaction:</p>
+    <div class="icon-demo">
+      <div class="icon-item" onclick="showToast('Financial section selected!', 'info')">
+        <span class="icon-large">💰</span>
+        <strong>Financial</strong>
+      </div>
+      <div class="icon-item" onclick="showToast('Customer section selected!', 'info')">
+        <span class="icon-large">👥</span>
+        <strong>Customer</strong>
+      </div>
+      <div class="icon-item" onclick="showToast('Internal Process selected!', 'info')">
+        <span class="icon-large">⚙️</span>
+        <strong>Process</strong>
+      </div>
+      <div class="icon-item" onclick="showToast('Learning & Growth selected!', 'info')">
+        <span class="icon-large">📚</span>
+        <strong>Learning</strong>
+      </div>
+      <div class="icon-item" onclick="showToast('Dashboard selected!', 'info')">
+        <span class="icon-large">📊</span>
+        <strong>Dashboard</strong>
+      </div>
+      <div class="icon-item" onclick="showToast('Reports selected!', 'info')">
+        <span class="icon-large">📈</span>
+        <strong>Reports</strong>
+      </div>
+      <div class="icon-item" onclick="showToast('Team selected!', 'info')">
+        <span class="icon-large">👨‍👩‍👧‍👦</span>
+        <strong>Team</strong>
+      </div>
+      <div class="icon-item" onclick="showToast('Settings selected!', 'info')">
+        <span class="icon-large">⚙️</span>
+        <strong>Settings</strong>
+      </div>
+    </div>
+  </div>
+  
+  <div class="demo-section">
+    <h2>🔔 2. Toast Notifications</h2>
+    <p>Click buttons to see different notification types:</p>
+    <div class="demo-buttons">
+      <button onclick="showToast('✅ Scorecard saved successfully!', 'success')">
+        Success Toast
+      </button>
+      <button onclick="showToast('❌ Error saving data. Please try again.', 'error')">
+        Error Toast
+      </button>
+      <button onclick="showToast('⚠️ Please complete all required fields.', 'warning')">
+        Warning Toast
+      </button>
+      <button onclick="showToast('ℹ️ Your data will be auto-saved every 5 minutes.', 'info')">
+        Info Toast
+      </button>
+    </div>
+  </div>
+  
+  <div class="demo-section">
+    <h2>🎨 3. Button Hover Effects</h2>
+    <p>Hover over buttons to see smooth transitions and effects:</p>
+    <div class="demo-buttons">
+      <button>Primary Action</button>
+      <button type="reset">Secondary Action</button>
+      <button onclick="showLoader('Processing your request', 'Please wait...'); setTimeout(hideLoader, 3000)">
+        Show Loader
+      </button>
+      <button disabled>Disabled Button</button>
+    </div>
+  </div>
+  
+  <div class="demo-section">
+    <h2>📝 4. Form Elements with Transitions</h2>
+    <div class="form-demo">
+      <div class="info-row">
+        <div class="info-col">
+          <label>Employee Name (hover & focus):</label>
+          <input type="text" placeholder="Enter name..." />
+        </div>
+        <div class="info-col">
+          <label>Department:</label>
+          <select>
+            <option>Select department</option>
+            <option>Finance</option>
+            <option>HR</option>
+            <option>IT</option>
+          </select>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-col">
+          <label>Comments:</label>
+          <textarea placeholder="Enter comments..."></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="demo-section">
+    <h2>💡 5. Tooltips</h2>
+    <p>Hover over elements below to see tooltips:</p>
+    <div style="display: flex; gap: 20px; margin: 20px 0;">
+      <span class="tooltip">
+        <span style="padding: 10px 20px; background: #f5daaf; border-radius: 8px; cursor: help;">
+          💰 Financial
+        </span>
+        <span class="tooltiptext">Tracks budget management and financial performance metrics</span>
+      </span>
+      
+      <span class="tooltip">
+        <span style="padding: 10px 20px; background: #f5daaf; border-radius: 8px; cursor: help;">
+          👥 Customer
+        </span>
+        <span class="tooltiptext">Measures customer satisfaction and relationship quality</span>
+      </span>
+      
+      <span class="tooltip">
+        <span style="padding: 10px 20px; background: #f5daaf; border-radius: 8px; cursor: help;">
+          ⚙️ Process
+        </span>
+        <span class="tooltiptext">Evaluates internal process improvements and efficiency</span>
+      </span>
+      
+      <span class="tooltip">
+        <span style="padding: 10px 20px; background: #f5daaf; border-radius: 8px; cursor: help;">
+          📚 Learning
+        </span>
+        <span class="tooltiptext">Tracks training hours and professional development</span>
+      </span>
+    </div>
+  </div>
+  
+  <div class="demo-section">
+    <h2>📊 6. Table with Hover Effects</h2>
+    <table class="scorecard-table">
+      <thead>
+        <tr>
+          <th>Dimension</th>
+          <th>Target</th>
+          <th>Actual</th>
+          <th>Rating</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="scorecard-section-header">
+          <td colspan="4"><span style="margin-right: 10px;">💰</span>Financial</td>
+        </tr>
+        <tr>
+          <td>Budget Management</td>
+          <td>$100,000</td>
+          <td>$95,000</td>
+          <td>4.5</td>
+        </tr>
+        <tr class="scorecard-section-header">
+          <td colspan="4"><span style="margin-right: 10px;">👥</span>Customer</td>
+        </tr>
+        <tr>
+          <td>Customer Satisfaction</td>
+          <td>90%</td>
+          <td>92%</td>
+          <td>4.2</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  
+  <div class="demo-section">
+    <h2>🏷️ 7. Role Badges with Animation</h2>
+    <p>Hover over badges to see animation:</p>
+    <div style="margin: 20px 0;">
+      <span class="role-badge admin">Admin</span>
+      <span class="role-badge manager">Manager</span>
+      <span class="role-badge employee">Employee</span>
+    </div>
+  </div>
+  
+  <div class="demo-section">
+    <h2>📦 8. Cards with Hover Effects</h2>
+    <div class="team-grid">
+      <div class="team-card">
+        <h4>John Doe</h4>
+        <p><strong>Title:</strong> Senior Developer</p>
+        <p><strong>Division:</strong> Engineering</p>
+        <span class="role-badge employee">Employee</span>
+      </div>
+      <div class="team-card">
+        <h4>Jane Smith</h4>
+        <p><strong>Title:</strong> Team Lead</p>
+        <p><strong>Division:</strong> Product</p>
+        <span class="role-badge manager">Manager</span>
+      </div>
+      <div class="team-card">
+        <h4>Bob Johnson</h4>
+        <p><strong>Title:</strong> Director</p>
+        <p><strong>Division:</strong> Operations</p>
+        <span class="role-badge admin">Admin</span>
+      </div>
+    </div>
+  </div>
+  
+  <div class="demo-section">
+    <h2>📊 9. Progress Bar Animation</h2>
+    <div class="score-summary">
+      <strong>Overall Performance Score:</strong> 4.2/5.0
+      <div class="progress-bar-wrap">
+        <div class="progress-bar" style="width: 84%">84%</div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="demo-section">
+    <h2>🎯 10. Legend Boxes</h2>
+    <div class="legend">
+      <b>Score Legend:</b><br>
+      1.00–2.99 Below Target; 3.00 Target Met; 3.1–4.99 Exceeds Target; 5.00 Far Exceeds Target
+    </div>
+  </div>
+  
+</div>
+
+<script src="ui-enhancements.js"></script>
+<script>
+  // Demo: Simulate data update animation
+  setTimeout(() => {
+    const table = document.querySelector('.scorecard-table tbody tr:last-child');
+    if (table) {
+      animateDataUpdate(table);
+    }
+  }, 2000);
+  
+  // Show initial toast
+  setTimeout(() => {
+    showToast('🌹 Welcome to the enhanced ROSE Performance Management System!', 'success', 6000);
+  }, 1500);
+</script>
+</body>
+</html>
