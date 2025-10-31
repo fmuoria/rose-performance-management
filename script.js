@@ -1,3 +1,11 @@
+// ===== CONFIGURATION =====
+const CONFIG = {
+  SESSION_DURATION: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
+  POLLING_INTERVAL: 30000, // 30 seconds for real-time updates
+  SERVICE_WORKER_PATH: '/sw.js', // Service worker file path
+  SERVICE_WORKER_UPDATE_INTERVAL: 60000 // Check for updates every minute
+};
+
 // ===== SERVICE WORKER REGISTRATION =====
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -97,14 +105,6 @@ window.updateServiceWorker = function() {
 // ===== SESSION PERSISTENCE =====
 const SESSION_KEY = 'rose_pms_session';
 const SESSION_EXPIRY_KEY = 'rose_pms_session_expiry';
-
-// Configuration constants
-const CONFIG = {
-  SESSION_DURATION: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
-  POLLING_INTERVAL: 30000, // 30 seconds for real-time updates
-  SERVICE_WORKER_PATH: '/sw.js', // Service worker file path
-  SERVICE_WORKER_UPDATE_INTERVAL: 60000 // Check for updates every minute
-};
 
 // Save session to localStorage
 function saveSession(profile, role) {
