@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- ROSE Logo with a stylized rose flower -->
+  <defs>
+    <linearGradient id="petalGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#c12040;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f57b51;stop-opacity:1" />
+    </linearGradient>
+    <radialGradient id="centerGradient" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#f5daaf;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f57b51;stop-opacity:1" />
+    </radialGradient>
+  </defs>
+  
+  <!-- Rose petals -->
+  <g id="rose">
+    <!-- Outer petals -->
+    <ellipse cx="100" cy="80" rx="35" ry="45" fill="url(#petalGradient)" transform="rotate(-30 100 100)" opacity="0.8"/>
+    <ellipse cx="130" cy="95" rx="35" ry="45" fill="url(#petalGradient)" transform="rotate(30 100 100)" opacity="0.85"/>
+    <ellipse cx="130" cy="130" rx="35" ry="45" fill="url(#petalGradient)" transform="rotate(90 100 100)" opacity="0.8"/>
+    <ellipse cx="100" cy="145" rx="35" ry="45" fill="url(#petalGradient)" transform="rotate(150 100 100)" opacity="0.85"/>
+    <ellipse cx="70" cy="130" rx="35" ry="45" fill="url(#petalGradient)" transform="rotate(210 100 100)" opacity="0.8"/>
+    <ellipse cx="70" cy="95" rx="35" ry="45" fill="url(#petalGradient)" transform="rotate(270 100 100)" opacity="0.85"/>
+    
+    <!-- Inner petals -->
+    <ellipse cx="90" cy="95" rx="25" ry="30" fill="#c12040" opacity="0.9"/>
+    <ellipse cx="110" cy="95" rx="25" ry="30" fill="#c12040" opacity="0.9"/>
+    <ellipse cx="110" cy="115" rx="25" ry="30" fill="#f57b51" opacity="0.9"/>
+    <ellipse cx="90" cy="115" rx="25" ry="30" fill="#f57b51" opacity="0.9"/>
+    
+    <!-- Center -->
+    <circle cx="100" cy="105" r="18" fill="url(#centerGradient)"/>
+    <circle cx="100" cy="105" r="10" fill="#231f1f" opacity="0.3"/>
+  </g>
+  
+  <!-- Text ROSE -->
+  <text x="100" y="175" font-family="Poppins, Arial, sans-serif" font-size="32" font-weight="700" text-anchor="middle" fill="#c12040">ROSE</text>
+</svg>

@@ -44,6 +44,9 @@
   <!-- Google Identity Services - Deferred for Performance -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   
+  <!-- Chart.js for Data Visualizations -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  
   <!-- 
     PERFORMANCE: Enable server-side caching and compression (Gzip/Brotli) for optimal performance.
     See documentation at: https://web.dev/uses-long-cache-ttl/ and https://web.dev/uses-text-compression/
@@ -61,16 +64,22 @@
     <div class="rose-petal"></div>
     <div class="rose-center"></div>
   </div>
-  <div class="loader-message">Your data is about to bloom<span class="loading-dots"></span></div>
+  <div class="loader-message">Fetching data... Please wait while your insights bloom<span class="loading-dots"></span></div>
   <div class="loader-submessage">Loading ROSE Performance Management System</div>
 </div>
 
 <div class="container" role="main" aria-label="Performance Management Application">
+  <!-- Watermark -->
+  <div class="watermark" aria-hidden="true">Created by fmuoria and powered by the ultimate engine</div>
+  
   <div class="signin-bar" id="signinBar" role="banner" aria-label="User authentication and profile">
+    <div class="logo-container">
+      <img src="rose-logo.svg" alt="ROSE Logo" class="rose-logo">
+    </div>
     <div id="userStatus" role="status" aria-live="polite"></div>
     <div id="g_id_signin" aria-label="Google Sign-In Button"></div>
   </div>
-  <h1>Quarterly Performance Scorecard</h1>
+  <h1 class="main-heading">🌹 ROSE Performance Dashboard</h1>
   <div class="tabs" id="tabsContainer" role="tablist" aria-label="Main navigation tabs">
     <!-- Tabs will be dynamically generated based on role -->
   </div>
@@ -283,8 +292,18 @@
   </div>
 </div>
 
+<!-- Footer -->
+<footer class="rose-footer">
+  <div class="footer-content">
+    <img src="rose-logo.svg" alt="ROSE Logo" class="footer-logo">
+    <p class="footer-text">ROSE Performance Management System</p>
+    <p class="footer-tagline">Empowering Excellence Through Data-Driven Insights</p>
+  </div>
+</footer>
+
 <!-- Load external JavaScript files at the end of body for better performance -->
 <script src="ui-enhancements.js"></script>
+<script src="dashboard-charts.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

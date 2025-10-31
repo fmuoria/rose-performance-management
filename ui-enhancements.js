@@ -11,7 +11,7 @@ function hideLoader() {
   }
 }
 
-function showLoader(message = 'Your data is about to bloom', submessage = 'Loading...') {
+function showLoader(message = 'Fetching data... Please wait while your insights bloom', submessage = 'Loading ROSE Performance Management System') {
   const loader = document.getElementById('roseLoader');
   if (loader) {
     loader.style.display = 'flex';

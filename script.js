@@ -1748,6 +1748,14 @@ function loadDashboard(wrapId) {
 
 function renderDashboard(records, wrapId) {
   wrapId = wrapId || 'dashboardWrap';
+  
+  // Use enhanced dashboard with charts if available
+  if (typeof renderDashboardWithCharts === 'function') {
+    renderDashboardWithCharts(records, wrapId);
+    return;
+  }
+  
+  // Fallback to original dashboard
   const wrap = document.getElementById(wrapId);
   if (!wrap) return;
   
