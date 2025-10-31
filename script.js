@@ -313,6 +313,7 @@ function renderTabs() {
     <button class="tab-btn" onclick="showTab('reportsTab', this)" role="tab" aria-selected="false" aria-controls="reportsTab" id="reports-tab">Reports</button>
     <button class="tab-btn" onclick="showTab('dashboardTab', this)" role="tab" aria-selected="false" aria-controls="dashboardTab" id="dashboard-tab">Dashboard</button>
     <button class="tab-btn" onclick="showTab('peerFeedbackTab', this)" role="tab" aria-selected="false" aria-controls="peerFeedbackTab" id="peer-feedback-tab">Peer Feedback</button>
+    <button class="tab-btn" onclick="showTab('recognitionTab', this)" role="tab" aria-selected="false" aria-controls="recognitionTab" id="recognition-tab">🏆 Recognition</button>
   `;
   
   if (userRole === 'Manager' || userRole === 'Admin') {
@@ -320,6 +321,7 @@ function renderTabs() {
       <button class="tab-btn" onclick="showTab('myTeamTab', this)" role="tab" aria-selected="false" aria-controls="myTeamTab" id="team-tab">My Team</button>
       <button class="tab-btn" onclick="showTab('setTargetsTab', this)" role="tab" aria-selected="false" aria-controls="setTargetsTab" id="targets-tab">Set Targets</button>
       <button class="tab-btn" onclick="showTab('requestPeerFeedbackTab', this)" role="tab" aria-selected="false" aria-controls="requestPeerFeedbackTab" id="request-feedback-tab">Request Feedback</button>
+      <button class="tab-btn" onclick="showTab('aiInsightsTab', this)" role="tab" aria-selected="false" aria-controls="aiInsightsTab" id="ai-insights-tab">🤖 AI Insights</button>
       <button class="tab-btn" onclick="showTab('teamReportsTab', this)" role="tab" aria-selected="false" aria-controls="teamReportsTab" id="team-reports-tab">Team Reports</button>
       <button class="tab-btn" onclick="showTab('teamDashboardTab', this)" role="tab" aria-selected="false" aria-controls="teamDashboardTab" id="team-dashboard-tab">Team Dashboard</button>
     `;
@@ -330,6 +332,8 @@ function renderTabs() {
 
 function updateUserUI() {
   const userStatus = document.getElementById("userStatus");
+  const notificationBell = document.getElementById("notificationBell");
+  
   if (userProfile && userRole) {
     const roleBadgeClass = userRole.toLowerCase();
     // Note: Profile pictures from Google are already optimized
@@ -345,12 +349,22 @@ function updateUserUI() {
     `;
     document.getElementById("g_id_signin").style.display = "none";
     document.querySelectorAll('.tab-content, .tabs').forEach(el => el.style.display = "");
+    
+    // Show notification bell and update badge
+    if (notificationBell) {
+      notificationBell.style.display = "block";
+      if (typeof updateNotificationBadge === 'function') {
+        updateNotificationBadge();
+      }
+    }
   } else if (userProfile) {
     userStatus.innerHTML = `<span style="font-size:1.07rem;">Loading your profile...</span>`;
+    if (notificationBell) notificationBell.style.display = "none";
   } else {
     userStatus.innerHTML = `<span style="font-size:1.07rem;">Please sign in with your Google account to use the scorecard.</span>`;
     document.getElementById("g_id_signin").style.display = "";
     document.querySelectorAll('.tab-content, .tabs').forEach(el => el.style.display = "none");
+    if (notificationBell) notificationBell.style.display = "none";
   }
 }
 
@@ -389,6 +403,8 @@ function showTab(tabId, btn) {
   if (tabId === 'teamDashboardTab') loadTeamDashboardTab();
   if (tabId === 'peerFeedbackTab') loadPeerFeedbackTab();
   if (tabId === 'requestPeerFeedbackTab') loadRequestPeerFeedbackTab();
+  if (tabId === 'aiInsightsTab') loadAIInsightsTab();
+  if (tabId === 'recognitionTab') loadRecognitionTab();
 }
 
 // ========== TEAM MANAGEMENT (MANAGER/ADMIN) ==========
@@ -2822,4 +2838,368 @@ function initializeRealtimeFeatures() {
       }
     }, 2000); // Wait 2 seconds after sign-in to ask
   }
+}
+
+// ========== AI INSIGHTS TAB (MANAGER/ADMIN) ==========
+function loadAIInsightsTab() {
+  populateTeamSelects();
+  
+  // Populate AI insights employee selector
+  const select = document.getElementById('aiInsightsEmployeeSelect');
+  if (select) {
+    select.innerHTML = '<option value="">-- Select Team Member --</option>';
+    teamMembers.forEach(member => {
+      const option = document.createElement('option');
+      option.value = member.email;
+      option.textContent = `${member.name} (${member.title})`;
+      option.dataset.name = member.name;
+      select.appendChild(option);
+    });
+    
+    // Add change handler
+    select.onchange = function() {
+      const selectedEmail = this.value;
+      const selectedName = this.options[this.selectedIndex]?.dataset.name;
+      
+      if (!selectedEmail) {
+        document.getElementById('aiInsightsWrap').innerHTML = 
+          '<div class="empty-msg">Select a team member to generate AI-powered insights and monthly performance reviews.</div>';
+        return;
+      }
+      
+      // Show AI insights interface
+      document.getElementById('aiInsightsWrap').innerHTML = `
+        <div style="max-width: 800px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                      color: white; padding: 30px; border-radius: 12px; margin-bottom: 30px; text-align: center;">
+            <h3 style="margin: 0 0 15px 0; color: white; font-size: 1.8em;">
+              🤖 AI-Powered Performance Analytics
+            </h3>
+            <p style="margin: 0; font-size: 1.1em; opacity: 0.95;">
+              Generate comprehensive insights for ${selectedName}
+            </p>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 30px;">
+            <div class="ai-feature-card" style="padding: 25px; background: white; border-radius: 12px; 
+                 box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 2px solid #e2e8f0; text-align: center;">
+              <div style="font-size: 3em; margin-bottom: 15px;">📝</div>
+              <h4 style="color: #2d3748; margin: 0 0 12px 0;">Monthly Performance Review</h4>
+              <p style="color: #718096; margin: 0 0 20px 0; font-size: 0.95em;">
+                Generate comprehensive AI-powered monthly review with strengths, improvements, and goals
+              </p>
+              <button onclick="showMonthlyReviewGenerator('${selectedEmail}', '${selectedName}')" 
+                      class="ai-btn" style="width: 100%;">
+                Generate Review
+              </button>
+            </div>
+            
+            <div class="ai-feature-card" style="padding: 25px; background: white; border-radius: 12px; 
+                 box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 2px solid #e2e8f0; text-align: center;">
+              <div style="font-size: 3em; margin-bottom: 15px;">💡</div>
+              <h4 style="color: #2d3748; margin: 0 0 12px 0;">Goal Suggestions</h4>
+              <p style="color: #718096; margin: 0 0 20px 0; font-size: 0.95em;">
+                Get AI-generated goal suggestions based on performance data and best practices
+              </p>
+              <button onclick="showAIGoalDimensionSelector('${selectedEmail}', '${selectedName}')" 
+                      class="ai-btn" style="width: 100%;">
+                Generate Goals
+              </button>
+            </div>
+            
+            <div class="ai-feature-card" style="padding: 25px; background: white; border-radius: 12px; 
+                 box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 2px solid #e2e8f0; text-align: center;">
+              <div style="font-size: 3em; margin-bottom: 15px;">📊</div>
+              <h4 style="color: #2d3748; margin: 0 0 12px 0;">Performance Dashboard</h4>
+              <p style="color: #718096; margin: 0 0 20px 0; font-size: 0.95em;">
+                View detailed performance metrics and trends for data-driven insights
+              </p>
+              <button onclick="loadTeamMemberDashboardFromAI('${selectedEmail}')" 
+                      class="ai-btn" style="width: 100%;">
+                View Dashboard
+              </button>
+            </div>
+          </div>
+          
+          <div style="background: #fffbeb; padding: 20px; border-radius: 10px; border-left: 4px solid #f59e0b;">
+            <h4 style="margin: 0 0 10px 0; color: #92400e;">💡 AI-Powered Features</h4>
+            <p style="margin: 0; color: #78350f; line-height: 1.6;">
+              Our AI analyzes performance data, peer feedback, and historical trends to provide actionable insights. 
+              All suggestions are designed to help you write more effective reviews and set meaningful goals.
+            </p>
+          </div>
+        </div>
+      `;
+    };
+  }
+}
+
+// Helper function to show goal dimension selector
+function showAIGoalDimensionSelector(employeeEmail, employeeName) {
+  const modal = document.createElement('div');
+  modal.className = 'scorecard-modal';
+  
+  modal.innerHTML = `
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <h2>🎯 Select Performance Dimension</h2>
+        <button class="modal-close" onclick="this.closest('.scorecard-modal').remove()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="color: #718096; margin-bottom: 20px;">
+          Select a performance dimension to generate AI-powered goal suggestions for ${employeeName}:
+        </p>
+        
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+          <button onclick="generateAndShowGoals('${employeeEmail}', '${employeeName}', 'Financial')" 
+                  class="ai-btn" style="width: 100%; justify-content: center; padding: 15px;">
+            💰 Financial
+          </button>
+          <button onclick="generateAndShowGoals('${employeeEmail}', '${employeeName}', 'Customer')" 
+                  class="ai-btn" style="width: 100%; justify-content: center; padding: 15px;">
+            👥 Customer
+          </button>
+          <button onclick="generateAndShowGoals('${employeeEmail}', '${employeeName}', 'Internal Process')" 
+                  class="ai-btn" style="width: 100%; justify-content: center; padding: 15px;">
+            ⚙️ Internal Process
+          </button>
+          <button onclick="generateAndShowGoals('${employeeEmail}', '${employeeName}', 'Learning & Growth')" 
+                  class="ai-btn" style="width: 100%; justify-content: center; padding: 15px;">
+            📚 Learning & Growth
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button onclick="this.closest('.scorecard-modal').remove()" class="btn-close-modal">Cancel</button>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+}
+
+// Helper function to generate and show goals
+function generateAndShowGoals(employeeEmail, employeeName, dimension) {
+  // Close dimension selector
+  document.querySelector('.scorecard-modal')?.remove();
+  
+  // Get employee data
+  const url = APPS_SCRIPT_URL + '?action=getEmployeeScores&employeeEmail=' + 
+              encodeURIComponent(employeeEmail) + '&callback=handleGoalGenerationData';
+  
+  window.handleGoalGenerationData = function(records) {
+    const employeeData = { averageScore: 0 };
+    
+    if (records && records.length > 0) {
+      const recentRecords = records.slice(0, 5);
+      let totalScore = 0;
+      let count = 0;
+      
+      recentRecords.forEach(rec => {
+        try {
+          let scoresData = rec.Scores || rec.scores;
+          let scoresArr = typeof scoresData === 'string' ? JSON.parse(scoresData) : scoresData;
+          if (Array.isArray(scoresArr)) {
+            scoresArr.forEach(s => {
+              const rating = parseFloat(s.rating) || 0;
+              if (rating > 0) {
+                totalScore += rating;
+                count++;
+              }
+            });
+          }
+        } catch (e) {
+          console.error('Error parsing scores:', e);
+        }
+      });
+      
+      if (count > 0) {
+        employeeData.averageScore = totalScore / count;
+      }
+    }
+    
+    // Generate goals using AI
+    showAIGoalSuggestionModal(dimension, employeeData, function(selectedGoal) {
+      // Copy to clipboard
+      navigator.clipboard.writeText(selectedGoal).then(() => {
+        if (typeof showToast === 'function') {
+          showToast('✅ Goal copied to clipboard!', 'success');
+        }
+      });
+    });
+  };
+  
+  const script = document.createElement('script');
+  script.src = url;
+  document.body.appendChild(script);
+}
+
+// Helper function to load team member dashboard from AI insights
+function loadTeamMemberDashboardFromAI(employeeEmail) {
+  // Set the team dashboard selector and trigger load
+  const teamDashboardSelect = document.getElementById('teamDashboardSelect');
+  if (teamDashboardSelect) {
+    teamDashboardSelect.value = employeeEmail;
+    
+    // Switch to team dashboard tab
+    const teamDashboardBtn = document.getElementById('team-dashboard-tab');
+    if (teamDashboardBtn) {
+      showTab('teamDashboardTab', teamDashboardBtn);
+      loadTeamMemberDashboard();
+    }
+  }
+}
+
+// ========== RECOGNITION TAB ==========
+function loadRecognitionTab() {
+  displayRecognitionAwards('recognitionWrap');
+  
+  // If manager/admin, add a button to calculate recognition
+  if (userRole === 'Manager' || userRole === 'Admin') {
+    const wrap = document.getElementById('recognitionWrap');
+    if (wrap && wrap.querySelector) {
+      const existingBtn = wrap.querySelector('.calculate-recognition-btn');
+      if (!existingBtn) {
+        const btnContainer = document.createElement('div');
+        btnContainer.style.cssText = 'text-align: center; margin: 30px 0;';
+        btnContainer.innerHTML = `
+          <button onclick="calculateAndSaveRecognition()" class="ai-btn calculate-recognition-btn" 
+                  style="font-size: 1.1em; padding: 15px 30px;">
+            🏆 Calculate Recognition Awards
+          </button>
+          <p style="color: #718096; margin-top: 15px; font-size: 0.95em;">
+            Generate Employee of the Month, Quarter, and Year awards based on performance data
+          </p>
+        `;
+        wrap.insertBefore(btnContainer, wrap.firstChild);
+      }
+    }
+  }
+}
+
+// Function to calculate and save recognition awards
+function calculateAndSaveRecognition() {
+  if (!userProfile || (userRole !== 'Manager' && userRole !== 'Admin')) {
+    alert('This feature is only available to managers and administrators.');
+    return;
+  }
+  
+  if (typeof showToast === 'function') {
+    showToast('🤖 Calculating recognition awards... This may take a moment.', 'info', 3000);
+  }
+  
+  // Get all employee data
+  const url = APPS_SCRIPT_URL + '?action=getAllEmployeeScores&callback=handleRecognitionCalculation';
+  
+  window.handleRecognitionCalculation = function(allData) {
+    if (!allData || allData.length === 0) {
+      alert('No employee data available to calculate recognition awards.');
+      return;
+    }
+    
+    // Process data by employee
+    const employeeMap = {};
+    
+    allData.forEach(record => {
+      const email = record['User Email'] || record.userEmail;
+      const name = record.Name || record.name;
+      const division = record.Division || record.division;
+      
+      if (!email) return;
+      
+      if (!employeeMap[email]) {
+        employeeMap[email] = {
+          email: email,
+          name: name,
+          division: division,
+          scores: []
+        };
+      }
+      
+      try {
+        let scoresData = record.Scores || record.scores;
+        let scoresArr = typeof scoresData === 'string' ? JSON.parse(scoresData) : scoresData;
+        if (Array.isArray(scoresArr)) {
+          employeeMap[email].scores.push(...scoresArr);
+        }
+      } catch (e) {
+        console.error('Error parsing scores:', e);
+      }
+    });
+    
+    const employees = Object.values(employeeMap);
+    
+    // Calculate recognition for current month
+    const now = new Date();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const year = String(now.getFullYear());
+    const quarter = 'Q' + Math.ceil(parseInt(month) / 3);
+    
+    // Get unique departments
+    const departments = [...new Set(employees.map(e => e.division).filter(Boolean))];
+    
+    const recognitions = [];
+    
+    // Employee of the Month - per department
+    departments.forEach(dept => {
+      const winner = window.AIAnalytics.selectEmployeeOfMonth(employees, dept, month, year);
+      if (winner) recognitions.push(winner);
+    });
+    
+    // Organization-wide Employee of the Month
+    const orgMonthWinner = window.AIAnalytics.selectOrganizationWinner(employees, 'month', month, year);
+    if (orgMonthWinner) recognitions.push(orgMonthWinner);
+    
+    // Employee of the Quarter - per department
+    departments.forEach(dept => {
+      const winner = window.AIAnalytics.selectEmployeeOfQuarter(employees, dept, quarter, year);
+      if (winner) recognitions.push(winner);
+    });
+    
+    // Organization-wide Employee of the Quarter
+    const orgQuarterWinner = window.AIAnalytics.selectOrganizationWinner(employees, 'quarter', quarter, year);
+    if (orgQuarterWinner) recognitions.push(orgQuarterWinner);
+    
+    // Employee of the Year - per department
+    departments.forEach(dept => {
+      const winner = window.AIAnalytics.selectEmployeeOfYear(employees, dept, year);
+      if (winner) recognitions.push(winner);
+    });
+    
+    // Organization-wide Employee of the Year
+    const orgYearWinner = window.AIAnalytics.selectOrganizationWinner(employees, 'year', year, year);
+    if (orgYearWinner) recognitions.push(orgYearWinner);
+    
+    // Save recognitions to localStorage
+    try {
+      localStorage.setItem('rose_pms_recognitions', JSON.stringify(recognitions));
+      
+      // Create notifications for winners
+      recognitions.forEach(recognition => {
+        const notification = window.AIAnalytics.createRecognitionNotification(recognition);
+        window.AIAnalytics.storeNotification(notification);
+      });
+      
+      if (typeof showToast === 'function') {
+        showToast(`✅ Recognition awards calculated! ${recognitions.length} awards generated.`, 'success', 5000);
+      } else {
+        alert(`Recognition awards calculated successfully!\n\n${recognitions.length} awards have been generated and notifications sent to winners.`);
+      }
+      
+      // Reload recognition display
+      loadRecognitionTab();
+      
+      // Update notification badge
+      if (typeof updateNotificationBadge === 'function') {
+        updateNotificationBadge();
+      }
+    } catch (error) {
+      console.error('Error saving recognitions:', error);
+      alert('Error saving recognition awards: ' + error.message);
+    }
+  };
+  
+  const script = document.createElement('script');
+  script.src = url;
+  document.body.appendChild(script);
 }
