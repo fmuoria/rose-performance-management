@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ROSE Dashboard Demo - With Charts</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="loader.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="container" role="main">
+  <!-- Watermark -->
+  <div class="watermark" aria-hidden="true">Created by fmuoria and powered by the ultimate engine</div>
+  
+  <div class="signin-bar">
+    <div class="logo-container">
+      <img src="rose-logo.svg" alt="ROSE Logo" class="rose-logo">
+    </div>
+    <div class="user">
+      <b>Demo User</b>
+      <span class="role-badge admin">Demo Mode</span>
+    </div>
+  </div>
+  
+  <h1 class="main-heading">🌹 ROSE Performance Dashboard</h1>
+  
+  <div class="tabs">
+    <button class="tab-btn active">📊 Dashboard</button>
+    <button class="tab-btn">📈 Reports</button>
+    <button class="tab-btn">🎯 Targets</button>
+  </div>
+  
+  <div class="tab-content active" style="padding: 38px;">
+    <h2>Performance Dashboard with Visualizations</h2>
+    
+    <div class="dashboard-container">
+      <!-- Overall Performance Card -->
+      <div class="dashboard-card overall-card">
+        <h3>📊 Overall Performance</h3>
+        <div class="metric-grid">
+          <div class="metric-item">
+            <span class="metric-label">Total Submissions</span>
+            <span class="metric-value">12</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">Average Score</span>
+            <span class="metric-value">4.2</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">Best Score</span>
+            <span class="metric-value">4.8</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">Lowest Score</span>
+            <span class="metric-value">3.5</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Performance Trend Chart -->
+      <div class="dashboard-card">
+        <h3>📈 Performance Trend</h3>
+        <canvas id="trendChart"></canvas>
+      </div>
+      
+      <!-- Dimension Breakdown -->
+      <div class="dashboard-card">
+        <h3>🎯 Performance by Dimension</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <div>
+            <canvas id="pieChart"></canvas>
+          </div>
+          <div>
+            <canvas id="radarChart"></canvas>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Dimension Comparison Bar Chart -->
+      <div class="dashboard-card">
+        <h3>📊 Dimension Comparison</h3>
+        <canvas id="barChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer class="rose-footer">
+  <div class="footer-content">
+    <img src="rose-logo.svg" alt="ROSE Logo" class="footer-logo">
+    <p class="footer-text">ROSE Performance Management System</p>
+    <p class="footer-tagline">Empowering Excellence Through Data-Driven Insights</p>
+  </div>
+</footer>
+
+<script src="dashboard-charts.js"></script>
+<script>
+// Demo data for charts
+window.addEventListener('load', function() {
+  // Trend data
+  const trendData = [
+    { label: '2025-01 W1', score: 3.8 },
+    { label: '2025-01 W2', score: 4.1 },
+    { label: '2025-01 W3', score: 4.0 },
+    { label: '2025-01 W4', score: 4.3 },
+    { label: '2025-02 W1', score: 4.2 },
+    { label: '2025-02 W2', score: 4.5 },
+    { label: '2025-02 W3', score: 4.4 },
+    { label: '2025-02 W4', score: 4.6 }
+  ];
+  
+  // Dimension data
+  const dimensionData = [
+    { dimension: 'Financial', score: 4.3 },
+    { dimension: 'Customer', score: 4.5 },
+    { dimension: 'Internal Process', score: 4.1 },
+    { dimension: 'Learning & Growth', score: 4.2 }
+  ];
+  
+  // Create charts
+  createPerformanceTrendChart('trendChart', trendData);
+  createDimensionPieChart('pieChart', dimensionData);
+  createRadarChart('radarChart', dimensionData);
+  createComparisonBarChart('barChart', dimensionData);
+});
+</script>
+</body>
+</html>

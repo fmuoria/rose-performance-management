@@ -11,7 +11,7 @@ function hideLoader() {
   }
 }
 
-function showLoader(message = 'Your data is about to bloom', submessage = 'Loading...') {
+function showLoader(message = 'Fetching data... Please wait while your insights bloom', submessage = 'Loading ROSE Performance Management System') {
   const loader = document.getElementById('roseLoader');
   if (loader) {
     loader.style.display = 'flex';
@@ -261,15 +261,39 @@ const sectionIcons = {
   'Financial': '💰',
   'Customer': '👥',
   'Internal Process': '⚙️',
-  'Learning & Growth': '📚'
+  'Learning & Growth': '📚',
+  'Reports': '📊',
+  'Targets': '🎯',
+  'Performance': '📈',
+  'Dashboard': '📊',
+  'Team': '👥',
+  'Feedback': '💬'
 };
 
 function addSectionIcons() {
+  // Add icons to scorecard section headers
   document.querySelectorAll('.scorecard-section-header').forEach(header => {
     const text = header.textContent.trim();
-    if (sectionIcons[text]) {
-      header.innerHTML = `<span style="margin-right: 10px;">${sectionIcons[text]}</span>${text}`;
+    if (sectionIcons[text] && !header.querySelector('.section-icon')) {
+      header.innerHTML = `<span class="section-icon" style="margin-right: 10px;">${sectionIcons[text]}</span>${text}`;
     }
+  });
+  
+  // Add icons to tab buttons
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    const text = btn.textContent.trim();
+    Object.keys(sectionIcons).forEach(key => {
+      if (text.toLowerCase().includes(key.toLowerCase()) && !btn.querySelector('.section-icon')) {
+        btn.innerHTML = `<span class="section-icon" style="margin-right: 6px;">${sectionIcons[key]}</span>${text}`;
+      }
+    });
+  });
+  
+  // Add icons to dashboard cards
+  document.querySelectorAll('.dashboard-card h3').forEach(heading => {
+    const text = heading.textContent.trim();
+    // Icons are already in the heading text from Chart.js rendering
+    // This just ensures consistency
   });
 }
 

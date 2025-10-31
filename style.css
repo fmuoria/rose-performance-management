@@ -17,6 +17,50 @@ body {
   padding: 0;
   color: #231f1f;
   transition: background 0.3s ease;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* ===== WATERMARK ===== */
+.watermark {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-45deg);
+  font-size: 2.5rem;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  color: rgba(245, 218, 175, 0.08);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 0;
+  user-select: none;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+@media (max-width: 900px) {
+  .watermark {
+    font-size: 1.5rem;
+  }
+}
+
+/* ===== LOGO ===== */
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rose-logo {
+  height: 50px;
+  width: auto;
+  transition: transform 0.3s ease;
+  filter: drop-shadow(0 2px 4px rgba(193, 32, 64, 0.3));
+}
+
+.rose-logo:hover {
+  transform: scale(1.1) rotate(5deg);
 }
 
 /* ===== HEADINGS WITH POPPINS ===== */
@@ -35,6 +79,7 @@ h1 {
   font-weight: 700;
   text-shadow: 0 2px 4px rgba(193, 32, 64, 0.1);
   transition: transform 0.3s ease;
+  position: relative;
 }
 
 h1:hover {
@@ -60,6 +105,8 @@ h3 {
   box-shadow: 0 10px 40px rgba(35, 31, 31, 0.2);
   padding: 0;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  z-index: 1;
 }
 
 .container:hover {
@@ -612,7 +659,9 @@ button:disabled:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 20px;
   transition: background 0.3s ease;
+  flex-wrap: wrap;
 }
 
 .signin-bar:hover {
@@ -1185,5 +1234,93 @@ textarea:focus {
   
   .tab-content {
     display: block !important;
+  }
+}
+
+/* ===== CHART CONTAINERS ===== */
+.chart-container {
+  position: relative;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  margin: 10px 0;
+}
+
+canvas {
+  max-width: 100%;
+  height: auto !important;
+}
+
+/* ===== DASHBOARD GRID RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .dashboard-card h3 {
+    font-size: 1.1rem;
+  }
+  
+  .metric-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .dashboard-card > div[style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ===== FOOTER ===== */
+.rose-footer {
+  background: linear-gradient(135deg, #231f1f 0%, #c12040 100%);
+  color: #f5daaf;
+  text-align: center;
+  padding: 40px 20px;
+  margin-top: 50px;
+  position: relative;
+  z-index: 1;
+}
+
+.footer-content {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.footer-logo {
+  height: 80px;
+  width: auto;
+  margin-bottom: 15px;
+  filter: brightness(0) invert(1);
+  opacity: 0.9;
+  transition: all 0.3s ease;
+}
+
+.footer-logo:hover {
+  transform: scale(1.1) rotate(5deg);
+  opacity: 1;
+}
+
+.footer-text {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 10px 0;
+  color: #fff;
+}
+
+.footer-tagline {
+  font-size: 0.95rem;
+  font-style: italic;
+  opacity: 0.8;
+  margin: 5px 0 0 0;
+}
+
+@media (max-width: 600px) {
+  .footer-logo {
+    height: 60px;
+  }
+  
+  .footer-text {
+    font-size: 1rem;
+  }
+  
+  .footer-tagline {
+    font-size: 0.85rem;
   }
 }
