@@ -192,15 +192,144 @@ After deployment, you must update your Google OAuth configuration:
    - **Authorized JavaScript origins**: `https://your-domain.com`
    - **Authorized redirect URIs**: `https://your-domain.com`
 
-### 2. Test Functionality
+### 2. Configure Apps Script Backend
+
+Ensure your Apps Script deployment is properly configured to support the new workflows:
+
+#### Required Apps Script Endpoints
+
+The system now requires the following endpoints to support target management and quarterly reviews:
+
+**Target Management:**
+- `action=saveTargets` - Save targets (now supports `isYearlyDistribution` flag)
+- `action=getTargets` - Retrieve targets for specific employee/year/quarter
+- `action=getTargetsUpdateTime` - Get last update timestamp for real-time notifications
+
+**Enhanced Scorecard Management:**
+- `action=saveScorecard` - Now includes `progressFrequency` and `quarter` fields
+- `action=getEmployeeScores` - Supports filtering by year and quarter
+
+#### Google Sheets Structure
+
+Ensure your Google Sheets has the following structure:
+
+**Targets Sheet:**
+- Columns: Manager Email, Employee Email, Year, Quarter, Dimension, Measure, Target Value, Weight, Frequency, Timestamp, Is Yearly Distribution
+
+**Sheet1 (Progress Data):**
+- Must include new columns: `Progress Frequency`, `Quarter`
+- These fields are automatically populated during scorecard submission
+
+#### Apps Script Configuration
+
+Add the following to your Apps Script to support the new workflows:
+
+```javascript
+function doGet(e) {
+  const action = e.parameter.action;
+  
+  // Existing actions...
+  
+  if (action === 'saveTargets') {
+    return saveTargetsToSheet(e.parameter);
+  }
+  if (action === 'getTargets') {
+    return getTargetsFromSheet(e.parameter);
+  }
+  if (action === 'getEmployeeScores') {
+    return getEmployeeScoresFromSheet(e.parameter);
+  }
+  
+  // ... other actions
+}
+
+function saveTargetsToSheet(params) {
+  // Reconstruct JSON from chunks
+  let jsonData = '';
+  let i = 0;
+  while (params['chunk' + i]) {
+    jsonData += params['chunk' + i];
+    i++;
+  }
+  
+  const data = JSON.parse(jsonData);
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Targets');
+  
+  // Save each target with metadata
+  data.targets.forEach(target => {
+    sheet.appendRow([
+      data.managerEmail,
+      data.employeeEmail,
+      data.year,
+      data.quarter,
+      target.dimension,
+      target.measure,
+      target.targetValue,
+      target.weight,
+      target.frequency,
+      new Date(),
+      data.isYearlyDistribution || false
+    ]);
+  });
+  
+  return ContentService.createTextOutput(
+    JSON.stringify({result: 'success'})
+  ).setMimeType(ContentService.MimeType.JAVASCRIPT);
+}
+
+function getEmployeeScoresFromSheet(params) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Sheet1');
+  const data = sheet.getDataRange().getValues();
+  const headers = data[0];
+  
+  // Filter by employee, year, and quarter if provided
+  const filtered = data.slice(1).filter(row => {
+    const emailMatch = !params.employeeEmail || row[headers.indexOf('User Email')] === params.employeeEmail;
+    const yearMatch = !params.year || row[headers.indexOf('Year')] == params.year;
+    const quarterMatch = !params.quarter || row[headers.indexOf('Quarter')] === params.quarter;
+    return emailMatch && yearMatch && quarterMatch;
+  });
+  
+  return ContentService.createTextOutput(
+    JSON.stringify(filtered.map(row => {
+      const obj = {};
+      headers.forEach((h, i) => obj[h] = row[i]);
+      return obj;
+    }))
+  ).setMimeType(ContentService.MimeType.JAVASCRIPT);
+}
+```
+
+### 3. Test Functionality
 
 Verify the following features work:
 
+**Authentication & Session:**
 - ✅ Google Sign-In
 - ✅ Session persistence after refresh
 - ✅ Offline functionality (disconnect internet and reload)
 - ✅ Real-time notifications (if backend supports polling endpoints)
 - ✅ All tabs and features accessible
+
+**New Target Management Features:**
+- ✅ Manager can set quarterly targets
+- ✅ Manager can set yearly targets (auto-distributes to 4 quarters)
+- ✅ Weight validation works correctly (must total 100%)
+- ✅ Targets sync to Google Sheets Targets sheet
+- ✅ Employees see targets loaded in scorecard form
+
+**New Progress Entry Features:**
+- ✅ Frequency selector works (weekly/monthly/quarterly)
+- ✅ Week field disables for monthly/quarterly entries
+- ✅ Progress saves with frequency metadata
+- ✅ Data syncs to Sheet1 with quarter field
+
+**New Quarterly Review Features:**
+- ✅ Quarterly Review tab appears for managers
+- ✅ Employee selection and quarter filtering work
+- ✅ Data aggregates correctly by quarter
+- ✅ Summary statistics calculate properly
+- ✅ Export and detailed history buttons work
 
 ### 3. Enable Service Worker
 
