@@ -7,9 +7,10 @@
   
   <!-- SEO Meta Tags -->
   <meta name="description" content="ROSE Performance Management System - Track quarterly performance scorecards, set targets, and manage team performance with comprehensive dashboards and peer feedback.">
-  <meta name="keywords" content="performance management, scorecard, quarterly review, employee performance, team management, peer feedback">
+  <meta name="keywords" content="performance management, scorecard, quarterly review, employee performance, team management, peer feedback, KPI tracking, 360 feedback">
   <meta name="author" content="ROSE Organization">
   <meta name="theme-color" content="#667eea">
+  <meta name="robots" content="index, follow">
   
   <!-- Open Graph Meta Tags -->
   <meta property="og:title" content="ROSE Performance Management - Quarterly Scorecard">
@@ -18,12 +19,49 @@
   <meta property="og:url" content="https://fmuoria.github.io/rose-performance-management/">
   <meta property="og:site_name" content="ROSE Performance Management">
   <meta property="og:locale" content="en_US">
+  <meta property="og:image" content="https://fmuoria.github.io/rose-performance-management/og-image.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
   
   <!-- Twitter Card Meta Tags -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="ROSE Performance Management - Quarterly Scorecard">
   <meta name="twitter:description" content="Comprehensive performance management system for tracking quarterly scorecards, team performance, and peer feedback.">
   <meta name="twitter:site" content="@ROSE">
+  <meta name="twitter:image" content="https://fmuoria.github.io/rose-performance-management/og-image.jpg">
+  
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://fmuoria.github.io/rose-performance-management/">
+  
+  <!-- Schema.org Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "ROSE Performance Management",
+    "description": "Comprehensive performance management system for tracking quarterly scorecards, team performance, and peer feedback",
+    "url": "https://fmuoria.github.io/rose-performance-management/",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Any",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "featureList": [
+      "Quarterly Performance Scorecards",
+      "KPI Tracking",
+      "Team Management",
+      "Peer Feedback System",
+      "Performance Dashboards",
+      "Target Setting"
+    ],
+    "provider": {
+      "@type": "Organization",
+      "name": "ROSE Organization"
+    }
+  }
+  </script>
   
   <!-- Preconnect to External Domains for Performance -->
   <link rel="preconnect" href="https://accounts.google.com" crossorigin>
@@ -40,6 +78,9 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="ROSE PMS">
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
   
   <!-- Google Identity Services - Deferred for Performance -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -296,6 +337,11 @@
       <button onclick="submitPeerFeedbackRequest()" style="margin-top: 20px; background: #48bb78;" aria-label="Send feedback requests">📤 Send Feedback Requests</button>
     </div>
   </div>
+</div>
+</div>
+
+<!-- Application JavaScript (Deferred for Performance) -->
+<script src="app.js" defer></script>
   
   <!-- AI INSIGHTS TAB (Manager/Admin only) -->
   <div class="tab-content" id="aiInsightsTab" role="tabpanel" aria-labelledby="ai-insights-tab" aria-label="AI Insights">
