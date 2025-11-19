@@ -320,6 +320,7 @@ function renderTabs() {
     tabs += `
       <button class="tab-btn" onclick="showTab('myTeamTab', this)" role="tab" aria-selected="false" aria-controls="myTeamTab" id="team-tab">My Team</button>
       <button class="tab-btn" onclick="showTab('setTargetsTab', this)" role="tab" aria-selected="false" aria-controls="setTargetsTab" id="targets-tab">Set Targets</button>
+      <button class="tab-btn" onclick="showTab('quarterlyReviewTab', this)" role="tab" aria-selected="false" aria-controls="quarterlyReviewTab" id="quarterly-review-tab">📊 Quarterly Review</button>
       <button class="tab-btn" onclick="showTab('requestPeerFeedbackTab', this)" role="tab" aria-selected="false" aria-controls="requestPeerFeedbackTab" id="request-feedback-tab">Request Feedback</button>
       <button class="tab-btn" onclick="showTab('aiInsightsTab', this)" role="tab" aria-selected="false" aria-controls="aiInsightsTab" id="ai-insights-tab">🤖 AI Insights</button>
       <button class="tab-btn" onclick="showTab('teamReportsTab', this)" role="tab" aria-selected="false" aria-controls="teamReportsTab" id="team-reports-tab">Team Reports</button>
@@ -399,6 +400,7 @@ function showTab(tabId, btn) {
   if (tabId === 'dashboardTab') loadDashboard();
   if (tabId === 'myTeamTab') displayTeamMembers();
   if (tabId === 'setTargetsTab') loadSetTargetsTab();
+  if (tabId === 'quarterlyReviewTab') loadQuarterlyReviewTab();
   if (tabId === 'teamReportsTab') loadTeamReportsTab();
   if (tabId === 'teamDashboardTab') loadTeamDashboardTab();
   if (tabId === 'peerFeedbackTab') loadPeerFeedbackTab();
@@ -505,6 +507,23 @@ function loadSetTargetsTab() {
         </p>
       </div>
       
+      <div style="background: #fffbeb; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #f59e0b;">
+        <h3 style="margin-top: 0; color: #92400e;">🎯 Target Entry Mode</h3>
+        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+          <label style="display: flex; align-items: center; padding: 10px; background: white; border-radius: 6px; cursor: pointer; flex: 1;">
+            <input type="radio" name="targetMode" value="quarterly" checked onchange="switchTargetMode(this.value)" style="margin-right: 8px;">
+            <span>Set Quarterly Targets</span>
+          </label>
+          <label style="display: flex; align-items: center; padding: 10px; background: white; border-radius: 6px; cursor: pointer; flex: 1;">
+            <input type="radio" name="targetMode" value="yearly" onchange="switchTargetMode(this.value)" style="margin-right: 8px;">
+            <span>Set Yearly Targets (Auto-divided)</span>
+          </label>
+        </div>
+        <p style="margin: 0; color: #78350f; font-size: 0.95em;" id="targetModeHelp">
+          <strong>Quarterly Mode:</strong> Set targets for the selected quarter only.
+        </p>
+      </div>
+      
       <h3>Set Performance Targets</h3>
       <div id="targetsList"></div>
       <div class="targets-button-row">
@@ -531,6 +550,31 @@ function resetTargetsForm() {
   }
 }
 
+function switchTargetMode(mode) {
+  const helpText = document.getElementById('targetModeHelp');
+  if (!helpText) return;
+  
+  if (mode === 'yearly') {
+    helpText.innerHTML = '<strong>Yearly Mode:</strong> Enter yearly targets. They will be automatically divided by 4 for each quarter when saved.';
+  } else {
+    helpText.innerHTML = '<strong>Quarterly Mode:</strong> Set targets for the selected quarter only.';
+  }
+  
+  // Update all existing rows to show/hide yearly input
+  const rows = document.querySelectorAll('.target-row');
+  rows.forEach(row => {
+    const yearlyInput = row.querySelector('.target-yearly');
+    const quarterlyInput = row.querySelector('.target-value');
+    if (mode === 'yearly') {
+      if (yearlyInput) yearlyInput.style.display = 'block';
+      if (quarterlyInput) quarterlyInput.style.display = 'none';
+    } else {
+      if (yearlyInput) yearlyInput.style.display = 'none';
+      if (quarterlyInput) quarterlyInput.style.display = 'block';
+    }
+  });
+}
+
 let targetRowCount = 0;
 
 function addTargetRow() {
@@ -539,6 +583,8 @@ function addTargetRow() {
   
   targetRowCount++;
   const rowId = `targetRow_${targetRowCount}`;
+  
+  const isYearlyMode = document.querySelector('input[name="targetMode"]:checked')?.value === 'yearly';
   
   const row = document.createElement('div');
   row.className = 'target-row';
@@ -552,7 +598,8 @@ function addTargetRow() {
       <option value="Learning & Growth">Learning & Growth</option>
     </select>
     <input type="text" class="target-measure" placeholder="Measure (e.g., Budget Savings)" style="flex: 2;">
-    <input type="number" class="target-value" placeholder="Target Value" style="flex: 1;">
+    <input type="number" class="target-value" placeholder="Quarterly Target" style="flex: 1; ${isYearlyMode ? 'display:none;' : ''}">
+    <input type="number" class="target-yearly" placeholder="Yearly Target" style="flex: 1; ${isYearlyMode ? '' : 'display:none;'}">
     <input type="number" class="target-weight" placeholder="Weight %" min="0" max="100" style="flex: 1;">
     <select class="target-frequency">
       <option value="Weekly">Weekly</option>
@@ -607,6 +654,7 @@ function saveTargets() {
   const selectedEmployee = document.getElementById('targetEmployeeSelect').value;
   const year = document.getElementById('targetYear').value;
   const quarter = document.getElementById('targetQuarter').value;
+  const isYearlyMode = document.querySelector('input[name="targetMode"]:checked')?.value === 'yearly';
   
   if (!selectedEmployee) {
     alert('Please select a team member.');
@@ -635,7 +683,17 @@ function saveTargets() {
   targetRows.forEach(row => {
     const dimension = row.querySelector('.target-dimension').value;
     const measure = row.querySelector('.target-measure').value;
-    const targetValue = row.querySelector('.target-value').value;
+    let targetValue;
+    
+    if (isYearlyMode) {
+      const yearlyValue = parseFloat(row.querySelector('.target-yearly').value);
+      if (yearlyValue) {
+        targetValue = (yearlyValue / 4).toFixed(2); // Auto-divide yearly by 4 for quarterly
+      }
+    } else {
+      targetValue = row.querySelector('.target-value').value;
+    }
+    
     const weight = parseFloat(row.querySelector('.target-weight').value) || 0;
     const frequency = row.querySelector('.target-frequency').value;
     
@@ -681,49 +739,108 @@ function saveTargets() {
     return;
   }
   
-  const data = {
-    managerEmail: userProfile.email,
-    employeeEmail: selectedEmployee,
-    year: year,
-    quarter: quarter,
-    targets: targets
-  };
-  
-  console.log('Saving targets:', data);
-  
-  const jsonData = JSON.stringify(data);
-  const chunkSize = 1500;
-  const chunks = [];
-  for (let i = 0; i < jsonData.length; i += chunkSize) {
-    chunks.push(jsonData.substring(i, i + chunkSize));
-  }
-  
-  let url = APPS_SCRIPT_URL + '?action=saveTargets&callback=handleSaveTargetsResponse';
-  chunks.forEach((chunk, index) => {
-    url += '&chunk' + index + '=' + encodeURIComponent(chunk);
-  });
-  
-  window.handleSaveTargetsResponse = function(resp) {
-    console.log('Save targets response:', resp);
-    if (resp.result === 'success') {
-      if (typeof showToast === 'function') {
-        showToast('✅ Targets saved successfully! Internal Customer (25%) + Your targets (' + (totalWeight - 25) + '%) = 100%', 'success', 5000);
-      } else {
-        alert('✅ Targets saved successfully!\n\n• Internal Customer (25%) - Peer Review\n• Your custom targets - ' + (totalWeight - 25) + '%\n• Total: 100%');
+  // If yearly mode, save to all 4 quarters
+  if (isYearlyMode) {
+    const quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
+    let savedCount = 0;
+    
+    quarters.forEach((q, index) => {
+      const data = {
+        managerEmail: userProfile.email,
+        employeeEmail: selectedEmployee,
+        year: year,
+        quarter: q,
+        targets: targets,
+        isYearlyDistribution: true
+      };
+      
+      console.log(`Saving targets for ${q}:`, data);
+      
+      const jsonData = JSON.stringify(data);
+      const chunkSize = 1500;
+      const chunks = [];
+      for (let i = 0; i < jsonData.length; i += chunkSize) {
+        chunks.push(jsonData.substring(i, i + chunkSize));
       }
-      loadEmployeeCurrentTargets();
-    } else {
-      if (typeof showToast === 'function') {
-        showToast('❌ Error saving targets: ' + (resp.message || 'Unknown error'), 'error');
-      } else {
-        alert('Error saving targets: ' + (resp.message || 'Unknown error'));
-      }
+      
+      let url = APPS_SCRIPT_URL + '?action=saveTargets&callback=handleSaveTargetsResponse_' + q;
+      chunks.forEach((chunk, idx) => {
+        url += '&chunk' + idx + '=' + encodeURIComponent(chunk);
+      });
+      
+      window['handleSaveTargetsResponse_' + q] = function(resp) {
+        console.log(`Save targets response for ${q}:`, resp);
+        savedCount++;
+        
+        if (resp.result !== 'success') {
+          if (typeof showToast === 'function') {
+            showToast(`❌ Error saving targets for ${q}: ` + (resp.message || 'Unknown error'), 'error');
+          } else {
+            alert(`Error saving targets for ${q}: ` + (resp.message || 'Unknown error'));
+          }
+        }
+        
+        // After all quarters saved
+        if (savedCount === quarters.length) {
+          if (typeof showToast === 'function') {
+            showToast(`✅ Yearly targets saved for all 4 quarters! Each quarter target = Yearly ÷ 4`, 'success', 5000);
+          } else {
+            alert(`✅ Yearly targets saved successfully for all 4 quarters!\n\n• Targets automatically distributed across Q1, Q2, Q3, Q4\n• Each quarter target = Yearly target ÷ 4\n• Internal Customer (25%) + Your targets (${totalWeight - 25}%) = 100%`);
+          }
+          loadEmployeeCurrentTargets();
+        }
+      };
+      
+      const script = document.createElement('script');
+      script.src = url;
+      document.body.appendChild(script);
+    });
+  } else {
+    // Quarterly mode - save only for selected quarter
+    const data = {
+      managerEmail: userProfile.email,
+      employeeEmail: selectedEmployee,
+      year: year,
+      quarter: quarter,
+      targets: targets
+    };
+    
+    console.log('Saving targets:', data);
+    
+    const jsonData = JSON.stringify(data);
+    const chunkSize = 1500;
+    const chunks = [];
+    for (let i = 0; i < jsonData.length; i += chunkSize) {
+      chunks.push(jsonData.substring(i, i + chunkSize));
     }
-  };
-  
-  const script = document.createElement('script');
-  script.src = url;
-  document.body.appendChild(script);
+    
+    let url = APPS_SCRIPT_URL + '?action=saveTargets&callback=handleSaveTargetsResponse';
+    chunks.forEach((chunk, index) => {
+      url += '&chunk' + index + '=' + encodeURIComponent(chunk);
+    });
+    
+    window.handleSaveTargetsResponse = function(resp) {
+      console.log('Save targets response:', resp);
+      if (resp.result === 'success') {
+        if (typeof showToast === 'function') {
+          showToast('✅ Targets saved successfully! Internal Customer (25%) + Your targets (' + (totalWeight - 25) + '%) = 100%', 'success', 5000);
+        } else {
+          alert('✅ Targets saved successfully!\n\n• Internal Customer (25%) - Peer Review\n• Your custom targets - ' + (totalWeight - 25) + '%\n• Total: 100%');
+        }
+        loadEmployeeCurrentTargets();
+      } else {
+        if (typeof showToast === 'function') {
+          showToast('❌ Error saving targets: ' + (resp.message || 'Unknown error'), 'error');
+        } else {
+          alert('Error saving targets: ' + (resp.message || 'Unknown error'));
+        }
+      }
+    };
+    
+    const script = document.createElement('script');
+    script.src = url;
+    document.body.appendChild(script);
+  }
 }
 
   function validateWeights() {
@@ -825,6 +942,253 @@ function loadTeamMemberDashboard() {
   const script = document.createElement('script');
   script.src = url;
   document.body.appendChild(script);
+}
+
+// ========== QUARTERLY REVIEW (MANAGER/ADMIN) ==========
+function loadQuarterlyReviewTab() {
+  populateTeamSelects();
+  
+  // Populate quarterly review employee selector
+  const select = document.getElementById('quarterlyReviewEmployeeSelect');
+  if (select) {
+    select.innerHTML = '<option value="">-- Select Team Member --</option>';
+    teamMembers.forEach(member => {
+      const option = document.createElement('option');
+      option.value = member.email;
+      option.textContent = `${member.name} (${member.title})`;
+      option.dataset.name = member.name;
+      select.appendChild(option);
+    });
+  }
+}
+
+function loadQuarterlyReviewData() {
+  const selectedEmail = document.getElementById('quarterlyReviewEmployeeSelect').value;
+  const year = document.getElementById('quarterlyReviewYear').value;
+  const quarter = document.getElementById('quarterlyReviewQuarter').value;
+  const wrap = document.getElementById('quarterlyReviewWrap');
+  
+  if (!selectedEmail) {
+    wrap.innerHTML = '<div class="empty-msg">Please select a team member to view quarterly review.</div>';
+    return;
+  }
+  
+  // Show loading message
+  wrap.innerHTML = '<div class="empty-msg">Loading quarterly data...</div>';
+  
+  const employeeName = document.querySelector('#quarterlyReviewEmployeeSelect option:checked')?.dataset.name || 'Employee';
+  
+  // Fetch employee scores for the specified quarter
+  const url = APPS_SCRIPT_URL + '?action=getEmployeeScores&employeeEmail=' + encodeURIComponent(selectedEmail) + 
+              '&year=' + year + '&quarter=' + quarter + '&callback=handleQuarterlyReviewData';
+  
+  window.handleQuarterlyReviewData = function(records) {
+    console.log('Quarterly review data:', records);
+    renderQuarterlyReview(records, employeeName, year, quarter, selectedEmail);
+  };
+  
+  const script = document.createElement('script');
+  script.src = url;
+  document.body.appendChild(script);
+}
+
+function renderQuarterlyReview(records, employeeName, year, quarter, employeeEmail) {
+  const wrap = document.getElementById('quarterlyReviewWrap');
+  
+  if (!records || records.length === 0) {
+    wrap.innerHTML = `<div class="empty-msg">No data found for ${employeeName} in ${year} ${quarter}.</div>`;
+    return;
+  }
+  
+  // Filter records for the selected quarter
+  const quarterMonths = {
+    'Q1': ['01', '02', '03'],
+    'Q2': ['04', '05', '06'],
+    'Q3': ['07', '08', '09'],
+    'Q4': ['10', '11', '12']
+  };
+  
+  const quarterlyRecords = records.filter(rec => {
+    const recYear = (rec.Year || rec.year) + '';
+    const recMonth = (rec.Month || rec.month) + '';
+    const paddedMonth = recMonth.padStart(2, '0');
+    return recYear === year && quarterMonths[quarter].includes(paddedMonth);
+  });
+  
+  if (quarterlyRecords.length === 0) {
+    wrap.innerHTML = `<div class="empty-msg">No data found for ${employeeName} in ${year} ${quarter}.</div>`;
+    return;
+  }
+  
+  // Aggregate scores by dimension and measure
+  const aggregated = {};
+  const frequencyMap = {};
+  
+  quarterlyRecords.forEach(rec => {
+    const freq = rec.progressFrequency || 'weekly';
+    frequencyMap[freq] = (frequencyMap[freq] || 0) + 1;
+    
+    try {
+      let scoresData = rec.Scores || rec.scores;
+      let scoresArr = typeof scoresData === 'string' ? JSON.parse(scoresData) : scoresData;
+      
+      if (Array.isArray(scoresArr)) {
+        scoresArr.forEach(score => {
+          const key = `${score.dimension}_${score.measure}`;
+          if (!aggregated[key]) {
+            aggregated[key] = {
+              dimension: score.dimension,
+              measure: score.measure,
+              ratings: [],
+              actuals: [],
+              targets: [],
+              weights: []
+            };
+          }
+          
+          aggregated[key].ratings.push(parseFloat(score.rating) || 0);
+          aggregated[key].actuals.push(parseFloat(score.actual || score.actualSpent) || 0);
+          aggregated[key].targets.push(parseFloat(score.target || score.targetBudget) || 0);
+          aggregated[key].weights.push(parseFloat(score.weight) || 0);
+        });
+      }
+    } catch (e) {
+      console.error('Error parsing scores:', e);
+    }
+  });
+  
+  // Calculate averages
+  const summaryData = Object.values(aggregated).map(item => {
+    const avgRating = item.ratings.length > 0 ? 
+      (item.ratings.reduce((a, b) => a + b, 0) / item.ratings.length) : 0;
+    const totalActual = item.actuals.reduce((a, b) => a + b, 0);
+    const avgTarget = item.targets.length > 0 ? 
+      (item.targets.reduce((a, b) => a + b, 0) / item.targets.length) : 0;
+    const avgWeight = item.weights.length > 0 ? 
+      (item.weights.reduce((a, b) => a + b, 0) / item.weights.length) : 0;
+    const weightedScore = (avgRating * avgWeight) / 100;
+    
+    return {
+      dimension: item.dimension,
+      measure: item.measure,
+      avgRating: avgRating.toFixed(2),
+      totalActual: totalActual.toFixed(2),
+      avgTarget: avgTarget.toFixed(2),
+      avgWeight: avgWeight.toFixed(1),
+      weightedScore: weightedScore.toFixed(2),
+      entries: item.ratings.length
+    };
+  });
+  
+  const totalWeightedScore = summaryData.reduce((sum, item) => 
+    sum + parseFloat(item.weightedScore), 0).toFixed(2);
+  
+  // Build HTML
+  let html = `
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 12px; margin-bottom: 25px;">
+      <h3 style="margin: 0 0 10px 0; color: white;">Quarterly Review: ${employeeName}</h3>
+      <p style="margin: 0; font-size: 1.1em;">
+        <strong>${year} - ${quarter}</strong> | 
+        Submissions: ${quarterlyRecords.length} | 
+        Total Score: <span style="font-size: 1.3em; font-weight: bold;">${totalWeightedScore}</span>
+      </p>
+    </div>
+    
+    <div style="background: #f7fafc; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+      <h4 style="margin-top: 0;">📈 Progress Summary</h4>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+        <div style="background: white; padding: 15px; border-radius: 8px; border-left: 4px solid #667eea;">
+          <div style="font-size: 0.9em; color: #718096;">Total Entries</div>
+          <div style="font-size: 1.8em; font-weight: bold; color: #2d3748;">${quarterlyRecords.length}</div>
+        </div>
+        ${Object.keys(frequencyMap).map(freq => `
+          <div style="background: white; padding: 15px; border-radius: 8px; border-left: 4px solid #48bb78;">
+            <div style="font-size: 0.9em; color: #718096;">${freq.charAt(0).toUpperCase() + freq.slice(1)} Entries</div>
+            <div style="font-size: 1.8em; font-weight: bold; color: #2d3748;">${frequencyMap[freq]}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    
+    <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      <h4 style="margin-top: 0;">📊 Performance by Dimension</h4>
+      <table class="summary-table" style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr style="background: #f7fafc;">
+            <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0;">Dimension</th>
+            <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0;">Measure</th>
+            <th style="padding: 12px; text-align: center; border-bottom: 2px solid #e2e8f0;">Entries</th>
+            <th style="padding: 12px; text-align: center; border-bottom: 2px solid #e2e8f0;">Avg Rating</th>
+            <th style="padding: 12px; text-align: center; border-bottom: 2px solid #e2e8f0;">Total Actual</th>
+            <th style="padding: 12px; text-align: center; border-bottom: 2px solid #e2e8f0;">Avg Target</th>
+            <th style="padding: 12px; text-align: center; border-bottom: 2px solid #e2e8f0;">Weight %</th>
+            <th style="padding: 12px; text-align: center; border-bottom: 2px solid #e2e8f0;">Weighted Score</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+  
+  summaryData.forEach((item, index) => {
+    const bgColor = index % 2 === 0 ? '#ffffff' : '#f7fafc';
+    html += `
+      <tr style="background: ${bgColor};">
+        <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;"><strong>${item.dimension}</strong></td>
+        <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">${item.measure}</td>
+        <td style="padding: 12px; text-align: center; border-bottom: 1px solid #e2e8f0;">${item.entries}</td>
+        <td style="padding: 12px; text-align: center; border-bottom: 1px solid #e2e8f0;"><strong>${item.avgRating}</strong></td>
+        <td style="padding: 12px; text-align: center; border-bottom: 1px solid #e2e8f0;">${item.totalActual}</td>
+        <td style="padding: 12px; text-align: center; border-bottom: 1px solid #e2e8f0;">${item.avgTarget}</td>
+        <td style="padding: 12px; text-align: center; border-bottom: 1px solid #e2e8f0;">${item.avgWeight}%</td>
+        <td style="padding: 12px; text-align: center; border-bottom: 1px solid #e2e8f0;"><strong style="color: #667eea;">${item.weightedScore}</strong></td>
+      </tr>
+    `;
+  });
+  
+  html += `
+        </tbody>
+        <tfoot>
+          <tr style="background: #f7fafc; font-weight: bold;">
+            <td colspan="7" style="padding: 15px; text-align: right; border-top: 2px solid #e2e8f0;">Total Weighted Score:</td>
+            <td style="padding: 15px; text-align: center; border-top: 2px solid #e2e8f0;">
+              <span style="font-size: 1.3em; color: #667eea;">${totalWeightedScore}</span>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    
+    <div style="margin-top: 25px; text-align: center;">
+      <button onclick="exportQuarterlyReview('${employeeName}', '${year}', '${quarter}')" 
+              style="background: #48bb78; color: white; border: none; padding: 12px 30px; 
+                     border-radius: 6px; cursor: pointer; font-size: 1em; font-weight: 600;">
+        📄 Export to PDF
+      </button>
+      <button onclick="viewDetailedHistory('${employeeEmail}', '${year}', '${quarter}')" 
+              style="background: #667eea; color: white; border: none; padding: 12px 30px; 
+                     border-radius: 6px; cursor: pointer; font-size: 1em; font-weight: 600; margin-left: 15px;">
+        📜 View Detailed History
+      </button>
+    </div>
+  `;
+  
+  wrap.innerHTML = html;
+}
+
+function exportQuarterlyReview(employeeName, year, quarter) {
+  window.print();
+}
+
+function viewDetailedHistory(employeeEmail, year, quarter) {
+  // Switch to Team Reports tab and load data
+  const teamReportSelect = document.getElementById('teamReportSelect');
+  if (teamReportSelect) {
+    teamReportSelect.value = employeeEmail;
+    const teamReportsBtn = document.getElementById('team-reports-tab');
+    if (teamReportsBtn) {
+      showTab('teamReportsTab', teamReportsBtn);
+      loadTeamMemberReports();
+    }
+  }
 }
 
 // ========== SCORECARD TABLE BUILDING ============
@@ -1671,6 +2035,35 @@ function autofillUserDetails() {
   document.body.appendChild(script);
 }
 
+// ========== PROGRESS FREQUENCY SELECTOR ==========
+function updateProgressFrequency() {
+  const frequency = document.getElementById('progressFrequency')?.value;
+  const weekField = document.getElementById('periodWeek');
+  const monthField = document.getElementById('periodMonth');
+  const infoDiv = document.getElementById('frequencyInfo');
+  const messageSpan = document.getElementById('frequencyMessage');
+  
+  if (!frequency || !infoDiv || !messageSpan) return;
+  
+  infoDiv.style.display = 'block';
+  
+  if (frequency === 'weekly') {
+    weekField.required = true;
+    weekField.disabled = false;
+    messageSpan.textContent = 'You are entering weekly progress. Select the specific week within the month.';
+  } else if (frequency === 'monthly') {
+    weekField.required = false;
+    weekField.disabled = true;
+    weekField.value = '1'; // Default to week 1 for monthly
+    messageSpan.textContent = 'You are entering monthly progress. Progress will be recorded for the entire month.';
+  } else if (frequency === 'quarterly') {
+    weekField.required = false;
+    weekField.disabled = true;
+    weekField.value = '1'; // Default to week 1 for quarterly
+    messageSpan.textContent = 'You are entering quarterly progress. Progress will be recorded for the entire quarter based on the selected month.';
+  }
+}
+
 function saveScorecard() {
   if (!userProfile) {
     alert("You must be signed in to submit a scorecard.");
@@ -1718,6 +2111,8 @@ function saveScorecard() {
     return;
   }
 
+  const progressFrequency = document.getElementById("progressFrequency")?.value || 'weekly';
+  
   const data = {
     userEmail: userProfile.email,
     name: document.getElementById("employeeName").value,
@@ -1727,6 +2122,8 @@ function saveScorecard() {
     year: year,
     month: month,
     week: week,
+    progressFrequency: progressFrequency,
+    quarter: 'Q' + Math.ceil(parseInt(month) / 3),
     scores: getScorecardFields()
   };
 

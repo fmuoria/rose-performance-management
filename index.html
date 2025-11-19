@@ -147,6 +147,19 @@
             <option value="5">Week 5</option>
           </select>
         </div>
+        <div class="info-col">
+          <label for="progressFrequency">Progress Entry:</label><br>
+          <select id="progressFrequency" onchange="updateProgressFrequency()" aria-label="Select progress frequency">
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+            <option value="quarterly">Quarterly</option>
+          </select>
+        </div>
+      </div>
+      <div id="frequencyInfo" style="background: #f0f9ff; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #667eea; display: none;">
+        <p style="margin: 0; color: #2d3748; font-size: 0.95em;">
+          <strong>Note:</strong> <span id="frequencyMessage"></span>
+        </p>
       </div>
       <table class="scorecard-table" id="scorecardTable" role="table" aria-label="Performance metrics table">
         <thead>
@@ -251,6 +264,40 @@
       </div>
     </div>
     <div id="teamDashboardWrap" role="region" aria-label="Team member dashboard"></div>
+  </div>
+  
+  <!-- QUARTERLY REVIEW TAB (Manager/Admin only) -->
+  <div class="tab-content" id="quarterlyReviewTab" role="tabpanel" aria-labelledby="quarterly-review-tab" aria-label="Quarterly Performance Review">
+    <h2>📊 Quarterly Performance Review</h2>
+    <p style="color: #718096; margin-bottom: 20px;">Review employee progress aggregated by quarter with historical comparison.</p>
+    
+    <div class="info-row" style="margin-bottom: 20px;">
+      <div class="info-col" style="max-width: 400px;">
+        <label for="quarterlyReviewEmployeeSelect">Select Team Member:</label>
+        <select id="quarterlyReviewEmployeeSelect" onchange="loadQuarterlyReviewData()" aria-label="Select team member for quarterly review">
+          <option value="">-- Select Team Member --</option>
+        </select>
+      </div>
+      <div class="info-col" style="max-width: 300px;">
+        <label for="quarterlyReviewYear">Year:</label>
+        <select id="quarterlyReviewYear" onchange="loadQuarterlyReviewData()" aria-label="Select review year">
+          <option value="2025">2025</option>
+          <option value="2026">2026</option>
+          <option value="2024">2024</option>
+        </select>
+      </div>
+      <div class="info-col" style="max-width: 300px;">
+        <label for="quarterlyReviewQuarter">Quarter:</label>
+        <select id="quarterlyReviewQuarter" onchange="loadQuarterlyReviewData()" aria-label="Select review quarter">
+          <option value="Q1">Q1 (Jan-Mar)</option>
+          <option value="Q2">Q2 (Apr-Jun)</option>
+          <option value="Q3">Q3 (Jul-Sep)</option>
+          <option value="Q4">Q4 (Oct-Dec)</option>
+        </select>
+      </div>
+    </div>
+    
+    <div id="quarterlyReviewWrap" role="region" aria-label="Quarterly review data"></div>
   </div>
     <!-- PEER FEEDBACK TAB (All Users) -->
   <div class="tab-content" id="peerFeedbackTab" role="tabpanel" aria-labelledby="peer-feedback-tab" aria-label="Peer Feedback Requests">
