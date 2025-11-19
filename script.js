@@ -474,7 +474,7 @@ function populateTeamSelects() {
 }
 
 // ========== SET TARGETS (MANAGER/ADMIN) ==========
-function loadSetTargetsTab() {
+function loadSetTargetsTab(isEditMode = false) {
   const wrap = document.getElementById('targetsFormWrap');
   if (!wrap) return;
   
@@ -485,8 +485,33 @@ function loadSetTargetsTab() {
     return;
   }
   
+  const year = document.getElementById('targetYear').value;
+  const quarter = document.getElementById('targetQuarter').value;
+  const memberName = document.getElementById('targetEmployeeSelect').selectedOptions[0]?.text || 'team member';
+  
+  // Show status message based on mode
+  const statusMessage = isEditMode 
+    ? `<div style="background: #e0f2fe; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #0284c7;">
+         <p style="margin: 0; color: #0c4a6e; font-weight: 600;">
+           ✏️ Edit Mode: Modifying existing targets for ${memberName} - ${year} ${quarter}
+         </p>
+         <p style="margin: 5px 0 0 0; color: #075985; font-size: 0.9em;">
+           These targets were previously set. You can edit and save your changes.
+         </p>
+       </div>`
+    : `<div style="background: #dcfce7; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #16a34a;">
+         <p style="margin: 0; color: #166534; font-weight: 600;">
+           ➕ New Targets: Setting targets for ${memberName} - ${year} ${quarter}
+         </p>
+         <p style="margin: 5px 0 0 0; color: #15803d; font-size: 0.9em;">
+           No targets exist yet for this period. Create new targets below.
+         </p>
+       </div>`;
+  
   wrap.innerHTML = `
     <div class="targets-form">
+      ${statusMessage}
+      
       <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #667eea;">
         <h3 style="margin-top: 0; color: #667eea;">📊 Weight Allocation Rules</h3>
         <p style="margin: 10px 0;"><strong>Customer Dimension (30% total):</strong></p>
@@ -524,7 +549,7 @@ function loadSetTargetsTab() {
         </p>
       </div>
       
-      <h3>Set Performance Targets</h3>
+      <h3>${isEditMode ? 'Edit' : 'Set'} Performance Targets</h3>
       <div id="targetsList"></div>
       <div class="targets-button-row">
         <button onclick="addTargetRow()" style="background: #667eea;">+ Add Target</button>
@@ -534,8 +559,6 @@ function loadSetTargetsTab() {
       </div>
     </div>
   `;
-  
-  addTargetRow();
 }
 
 function resetTargetsForm() {
@@ -614,11 +637,13 @@ function addTargetRow() {
 
 function loadEmployeeCurrentTargets() {
   const selectedEmployee = document.getElementById('targetEmployeeSelect').value;
-  if (!selectedEmployee) return;
+  if (!selectedEmployee) {
+    const wrap = document.getElementById('targetsFormWrap');
+    if (wrap) wrap.innerHTML = `<div class="empty-msg">Please select a team member to set targets.</div>`;
+    return;
+  }
   
-  loadSetTargetsTab();
-  
-  // Load existing targets
+  // First, check if targets exist for this employee/year/quarter
   const year = document.getElementById('targetYear').value;
   const quarter = document.getElementById('targetQuarter').value;
   
@@ -627,21 +652,32 @@ function loadEmployeeCurrentTargets() {
   
   window.handleExistingTargets = function(targets) {
     console.log('Existing targets:', targets);
+    
+    // If targets exist, show edit mode
     if (targets && targets.length > 0) {
-      const targetsList = document.getElementById('targetsList');
-      targetsList.innerHTML = '';
+      loadSetTargetsTab(true); // Pass true to indicate edit mode
       
-      targets.forEach(target => {
-        addTargetRow();
-        const rows = targetsList.querySelectorAll('.target-row');
-        const lastRow = rows[rows.length - 1];
+      // Populate the form with existing targets
+      const targetsList = document.getElementById('targetsList');
+      if (targetsList) {
+        targetsList.innerHTML = '';
         
-        lastRow.querySelector('.target-dimension').value = target.Dimension || target.dimension || '';
-        lastRow.querySelector('.target-measure').value = target.Measure || target.measure || '';
-        lastRow.querySelector('.target-value').value = target['Target Value'] || target.targetValue || '';
-        lastRow.querySelector('.target-weight').value = target.Weight || target.weight || '';
-        lastRow.querySelector('.target-frequency').value = target.Frequency || target.frequency || 'Weekly';
-      });
+        targets.forEach(target => {
+          addTargetRow();
+          const rows = targetsList.querySelectorAll('.target-row');
+          const lastRow = rows[rows.length - 1];
+          
+          lastRow.querySelector('.target-dimension').value = target.Dimension || target.dimension || '';
+          lastRow.querySelector('.target-measure').value = target.Measure || target.measure || '';
+          lastRow.querySelector('.target-value').value = target['Target Value'] || target.targetValue || '';
+          lastRow.querySelector('.target-weight').value = target.Weight || target.weight || '';
+          lastRow.querySelector('.target-frequency').value = target.Frequency || target.frequency || 'Weekly';
+        });
+      }
+    } else {
+      // No targets exist, show new targets mode
+      loadSetTargetsTab(false);
+      addTargetRow();
     }
   };
   
@@ -3449,29 +3485,258 @@ function loadTeamMemberDashboardFromAI(employeeEmail) {
 
 // ========== RECOGNITION TAB ==========
 function loadRecognitionTab() {
-  displayRecognitionAwards('recognitionWrap');
+  // Initialize the period options
+  updateRecognitionPeriodOptions();
   
-  // If manager/admin, add a button to calculate recognition
+  // Load best employees based on current selection
+  loadBestEmployees();
+}
+
+// Update the period dropdown options based on period type
+function updateRecognitionPeriodOptions() {
+  const periodType = document.getElementById('recognitionPeriodType').value;
+  const periodSelect = document.getElementById('recognitionPeriod');
+  
+  if (!periodSelect) return;
+  
+  periodSelect.innerHTML = '';
+  
+  if (periodType === 'month') {
+    const months = [
+      { value: '01', label: 'January' },
+      { value: '02', label: 'February' },
+      { value: '03', label: 'March' },
+      { value: '04', label: 'April' },
+      { value: '05', label: 'May' },
+      { value: '06', label: 'June' },
+      { value: '07', label: 'July' },
+      { value: '08', label: 'August' },
+      { value: '09', label: 'September' },
+      { value: '10', label: 'October' },
+      { value: '11', label: 'November' },
+      { value: '12', label: 'December' }
+    ];
+    
+    months.forEach(month => {
+      const option = document.createElement('option');
+      option.value = month.value;
+      option.textContent = month.label;
+      periodSelect.appendChild(option);
+    });
+    
+    // Set to current month
+    const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0');
+    periodSelect.value = currentMonth;
+  } else if (periodType === 'quarter') {
+    const quarters = [
+      { value: 'Q1', label: 'Q1 (Jan-Mar)' },
+      { value: 'Q2', label: 'Q2 (Apr-Jun)' },
+      { value: 'Q3', label: 'Q3 (Jul-Sep)' },
+      { value: 'Q4', label: 'Q4 (Oct-Dec)' }
+    ];
+    
+    quarters.forEach(quarter => {
+      const option = document.createElement('option');
+      option.value = quarter.value;
+      option.textContent = quarter.label;
+      periodSelect.appendChild(option);
+    });
+    
+    // Set to current quarter
+    const currentQuarter = 'Q' + Math.ceil((new Date().getMonth() + 1) / 3);
+    periodSelect.value = currentQuarter;
+  } else {
+    // For year, no specific period needed
+    const option = document.createElement('option');
+    option.value = 'all';
+    option.textContent = 'Full Year';
+    periodSelect.appendChild(option);
+  }
+}
+
+// Load best employees based on selection
+function loadBestEmployees() {
+  const periodType = document.getElementById('recognitionPeriodType').value;
+  const period = document.getElementById('recognitionPeriod').value;
+  const year = document.getElementById('recognitionYear').value;
+  const scope = document.getElementById('recognitionScope').value;
+  const wrap = document.getElementById('recognitionWrap');
+  
+  if (!wrap) return;
+  
+  // Show loading message
+  wrap.innerHTML = `
+    <div style="text-align: center; padding: 40px; color: #718096;">
+      <div style="font-size: 3em; margin-bottom: 15px;">⏳</div>
+      <p>Loading best performers...</p>
+    </div>
+  `;
+  
+  // Build the API call
+  let params = {
+    action: 'getBestEmployee',
+    periodType: periodType,
+    period: period,
+    year: year,
+    scope: scope,
+    callback: 'handleBestEmployeeData'
+  };
+  
+  // If manager/admin and scope is division, get their division
+  if (scope === 'division' && userProfile && (userRole === 'Manager' || userRole === 'Admin')) {
+    params.managerEmail = userProfile.email;
+  }
+  
+  const url = buildApiUrl(APPS_SCRIPT_URL, params);
+  
+  window.handleBestEmployeeData = function(data) {
+    console.log('Best employee data:', data);
+    displayBestEmployees(data, periodType, period, year, scope);
+  };
+  
+  const script = document.createElement('script');
+  script.src = url;
+  document.body.appendChild(script);
+}
+
+// Display best employees
+function displayBestEmployees(data, periodType, period, year, scope) {
+  const wrap = document.getElementById('recognitionWrap');
+  if (!wrap) return;
+  
+  // Handle no data or error
+  if (!data || data.error) {
+    wrap.innerHTML = `
+      <div class="empty-msg" style="text-align: center; padding: 40px;">
+        <span style="font-size: 3em;">📊</span>
+        <h3>No Performance Data Available</h3>
+        <p style="color: #718096;">
+          ${data?.error || 'No performance records found for the selected period.'}
+        </p>
+      </div>
+    `;
+    return;
+  }
+  
+  // Format period label
+  let periodLabel = '';
+  if (periodType === 'month') {
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                        'July', 'August', 'September', 'October', 'November', 'December'];
+    periodLabel = monthNames[parseInt(period) - 1] + ' ' + year;
+  } else if (periodType === 'quarter') {
+    periodLabel = period + ' ' + year;
+  } else {
+    periodLabel = 'Year ' + year;
+  }
+  
+  const scopeLabel = scope === 'organization' ? 'Organization-Wide' : 'Division';
+  
+  let html = `
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; 
+                padding: 30px; border-radius: 12px; margin-bottom: 30px; text-align: center;">
+      <h3 style="margin: 0 0 10px 0; color: white; font-size: 1.8em;">
+        🏆 Top Performer${data.length > 1 ? 's' : ''}
+      </h3>
+      <p style="margin: 0; font-size: 1.1em; opacity: 0.95;">
+        <strong>${scopeLabel}</strong> • ${periodLabel}
+      </p>
+    </div>
+  `;
+  
+  if (Array.isArray(data) && data.length > 0) {
+    html += '<div class="recognition-grid">';
+    
+    data.forEach((employee, index) => {
+      const isUserRecipient = userProfile && employee.email === userProfile.email;
+      const borderColor = isUserRecipient ? '#fbbf24' : '#667eea';
+      const rank = data.length > 1 ? `#${index + 1}` : '';
+      
+      html += `
+        <div class="recognition-card" style="border: 3px solid ${borderColor}; ${isUserRecipient ? 'background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);' : ''}">
+          <div style="text-align: center; margin-bottom: 15px;">
+            <span style="font-size: 4em;">${index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '⭐'}</span>
+          </div>
+          ${rank ? `<div style="text-align: center; font-size: 1.5em; font-weight: bold; color: #667eea; margin-bottom: 10px;">${rank}</div>` : ''}
+          <div style="text-align: center; padding: 20px; background: white; border-radius: 8px; margin: 15px 0;">
+            <h4 style="margin: 0 0 8px 0; color: #2d3748; font-size: 1.3em;">
+              ${escapeHtml(employee.name || employee.email)}
+            </h4>
+            <p style="margin: 5px 0; color: #718096; font-size: 0.95em;">
+              ${escapeHtml(employee.title || 'Employee')}
+            </p>
+            <p style="margin: 5px 0; color: #667eea; font-size: 0.9em; font-weight: 600;">
+              ${escapeHtml(employee.division || 'N/A')}
+            </p>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
+            <div style="text-align: center; padding: 15px; background: rgba(102, 126, 234, 0.1); border-radius: 6px;">
+              <div style="font-size: 0.8em; color: #667eea; font-weight: 600; text-transform: uppercase;">Score</div>
+              <div style="font-size: 1.5em; color: #2d3748; margin-top: 5px; font-weight: bold;">${parseFloat(employee.score || 0).toFixed(2)}</div>
+            </div>
+            <div style="text-align: center; padding: 15px; background: rgba(72, 187, 120, 0.1); border-radius: 6px;">
+              <div style="font-size: 0.8em; color: #48bb78; font-weight: 600; text-transform: uppercase;">Submissions</div>
+              <div style="font-size: 1.5em; color: #2d3748; margin-top: 5px; font-weight: bold;">${employee.submissions || 0}</div>
+            </div>
+          </div>
+          ${isUserRecipient ? '<div style="text-align: center; margin-top: 15px; padding: 12px; background: rgba(251, 191, 36, 0.3); border-radius: 6px; font-weight: 600; color: #92400e; font-size: 1.05em;">🎉 Congratulations! You are a top performer!</div>' : ''}
+        </div>
+      `;
+    });
+    
+    html += '</div>';
+  } else {
+    html += `
+      <div class="empty-msg" style="text-align: center; padding: 40px;">
+        <span style="font-size: 3em;">📊</span>
+        <h3>No Top Performers Found</h3>
+        <p style="color: #718096;">No performance data available for this selection.</p>
+      </div>
+    `;
+  }
+  
+  // Add legacy recognition awards section below
+  html += `
+    <div style="margin-top: 50px; padding-top: 30px; border-top: 2px solid #e2e8f0;">
+      <h3 style="color: #2d3748; margin-bottom: 20px;">📜 Historical Recognition Awards</h3>
+      <div id="legacyRecognitionWrap"></div>
+    </div>
+  `;
+  
+  wrap.innerHTML = html;
+  
+  // Load legacy recognition awards
+  displayRecognitionAwards('legacyRecognitionWrap');
+  
+  // If manager/admin, add a button to calculate recognition in the legacy section
   if (userRole === 'Manager' || userRole === 'Admin') {
-    const wrap = document.getElementById('recognitionWrap');
-    if (wrap && wrap.querySelector) {
-      const existingBtn = wrap.querySelector('.calculate-recognition-btn');
+    const legacyWrap = document.getElementById('legacyRecognitionWrap');
+    if (legacyWrap) {
+      const existingBtn = legacyWrap.querySelector('.calculate-recognition-btn');
       if (!existingBtn) {
         const btnContainer = document.createElement('div');
-        btnContainer.style.cssText = 'text-align: center; margin: 30px 0;';
+        btnContainer.style.cssText = 'text-align: center; margin: 20px 0;';
         btnContainer.innerHTML = `
           <button onclick="calculateAndSaveRecognition()" class="ai-btn calculate-recognition-btn" 
-                  style="font-size: 1.1em; padding: 15px 30px;">
-            🏆 Calculate Recognition Awards
+                  style="font-size: 1em; padding: 12px 25px;">
+            🏆 Calculate & Save Recognition Awards
           </button>
-          <p style="color: #718096; margin-top: 15px; font-size: 0.95em;">
-            Generate Employee of the Month, Quarter, and Year awards based on performance data
+          <p style="color: #718096; margin-top: 10px; font-size: 0.9em;">
+            Generate and save historical awards based on performance data
           </p>
         `;
-        wrap.insertBefore(btnContainer, wrap.firstChild);
+        legacyWrap.insertBefore(btnContainer, legacyWrap.firstChild);
       }
     }
   }
+}
+
+// Helper function to escape HTML
+function escapeHtml(text) {
+  if (!text) return '';
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
 }
 
 // Function to calculate and save recognition awards

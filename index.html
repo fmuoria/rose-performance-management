@@ -220,14 +220,14 @@
       </div>
       <div class="info-col">
         <label for="targetYear">Year:</label>
-        <select id="targetYear" aria-label="Select target year">
+        <select id="targetYear" onchange="loadEmployeeCurrentTargets()" aria-label="Select target year">
           <option value="2025">2025</option>
           <option value="2026">2026</option>
         </select>
       </div>
       <div class="info-col">
         <label for="targetQuarter">Quarter:</label>
-        <select id="targetQuarter" aria-label="Select target quarter">
+        <select id="targetQuarter" onchange="loadEmployeeCurrentTargets()" aria-label="Select target quarter">
           <option value="Q1">Q1 (Jan-Mar)</option>
           <option value="Q2">Q2 (Apr-Jun)</option>
           <option value="Q3">Q3 (Jul-Sep)</option>
@@ -367,6 +367,39 @@
   <div class="tab-content" id="recognitionTab" role="tabpanel" aria-labelledby="recognition-tab" aria-label="Employee Recognition">
     <h2>🏆 Employee Recognition Awards</h2>
     <p style="color: #718096; margin-bottom: 20px;">Celebrating excellence: Employee of the Month, Quarter, and Year awards.</p>
+    
+    <div class="info-row" style="margin-bottom: 30px; background: #f7fafc; padding: 20px; border-radius: 10px;">
+      <div class="info-col" style="max-width: 300px;">
+        <label for="recognitionPeriodType"><strong>Period Type:</strong></label>
+        <select id="recognitionPeriodType" onchange="updateRecognitionPeriodOptions(); loadBestEmployees();" aria-label="Select recognition period type">
+          <option value="month">Month</option>
+          <option value="quarter">Quarter</option>
+          <option value="year">Year</option>
+        </select>
+      </div>
+      <div class="info-col" style="max-width: 300px;">
+        <label for="recognitionPeriod"><strong>Period:</strong></label>
+        <select id="recognitionPeriod" onchange="loadBestEmployees();" aria-label="Select specific period">
+          <!-- Options will be populated dynamically -->
+        </select>
+      </div>
+      <div class="info-col" style="max-width: 300px;">
+        <label for="recognitionYear"><strong>Year:</strong></label>
+        <select id="recognitionYear" onchange="loadBestEmployees();" aria-label="Select year">
+          <option value="2025">2025</option>
+          <option value="2026">2026</option>
+          <option value="2024">2024</option>
+        </select>
+      </div>
+      <div class="info-col" style="max-width: 300px;">
+        <label for="recognitionScope"><strong>Scope:</strong></label>
+        <select id="recognitionScope" onchange="loadBestEmployees();" aria-label="Select recognition scope">
+          <option value="organization">Whole Organization</option>
+          <option value="division">By Division</option>
+        </select>
+      </div>
+    </div>
+    
     <div id="recognitionWrap" role="region" aria-label="Recognition awards"></div>
   </div>
 </div>
