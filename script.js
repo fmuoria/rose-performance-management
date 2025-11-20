@@ -3489,7 +3489,9 @@ function calculateAndSaveRecognition() {
   const url = APPS_SCRIPT_URL + '?action=getAllEmployeeScores&callback=handleRecognitionCalculation';
   
   window.handleRecognitionCalculation = function(allData) {
-    if (!allData || allData.length === 0) {
+    // Defensive coding: Check if response is an array before looping
+    // This prevents fatal errors when the backend returns a non-array object (e.g., an error or unexpected reply)
+    if (!Array.isArray(allData) || allData.length === 0) {
       alert('No employee data available to calculate recognition awards.');
       return;
     }
