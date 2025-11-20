@@ -3178,7 +3178,7 @@ function loadAIInsightsTab() {
       
       if (!selectedEmail) {
         document.getElementById('aiInsightsWrap').innerHTML = 
-          '<div class="empty-msg">Select a team member to generate AI-powered insights and monthly performance reviews.</div>';
+          '<div class="empty-msg">Select a team member to generate AI-powered insights and performance reviews.</div>';
         return;
       }
       
@@ -3199,9 +3199,9 @@ function loadAIInsightsTab() {
             <div class="ai-feature-card" style="padding: 25px; background: white; border-radius: 12px; 
                  box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 2px solid #e2e8f0; text-align: center;">
               <div style="font-size: 3em; margin-bottom: 15px;">📝</div>
-              <h4 style="color: #2d3748; margin: 0 0 12px 0;">Monthly Performance Review</h4>
+              <h4 style="color: #2d3748; margin: 0 0 12px 0;">Performance Review</h4>
               <p style="color: #718096; margin: 0 0 20px 0; font-size: 0.95em;">
-                Generate comprehensive AI-powered monthly review with strengths, improvements, and goals
+                Generate comprehensive AI-powered quarterly or yearly review with strengths, improvements, and goals
               </p>
               <button onclick="showMonthlyReviewGenerator('${selectedEmail}', '${selectedName}')" 
                       class="ai-btn" style="width: 100%;">
