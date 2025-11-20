@@ -187,6 +187,72 @@ function generateMonthlyReview(employeeData, month, year) {
   };
 }
 
+/**
+ * Generate AI-powered performance review for quarterly or yearly periods
+ * @param {Object} employeeData - Employee performance data with scores
+ * @param {string} periodType - 'quarterly' or 'yearly'
+ * @param {string} year - Year
+ * @param {string} quarter - Quarter (e.g., 'Q1') - only for quarterly reviews
+ * @returns {Object} Review with summary, strengths, improvements, and goals
+ */
+function generatePeriodReview(employeeData, periodType, year, quarter) {
+  if (!employeeData || !employeeData.scores || employeeData.scores.length === 0) {
+    return {
+      summary: 'Insufficient data for AI-generated review.',
+      strengths: [],
+      improvements: [],
+      goals: [],
+      overall: '',
+      score: '0.00'
+    };
+  }
+
+  const scores = employeeData.scores;
+  const avgScore = scores.reduce((sum, s) => sum + (parseFloat(s.rating) || 0), 0) / scores.length;
+
+  // Identify strengths (ratings >= 4.0)
+  const strengths = scores
+    .filter(s => parseFloat(s.rating) >= 4.0)
+    .map(s => `${s.measure}: Consistently strong performance with rating of ${s.rating}`);
+
+  // Identify improvement areas (ratings < 3.0)
+  const improvements = scores
+    .filter(s => parseFloat(s.rating) < 3.0)
+    .map(s => `${s.measure}: Requires attention, current rating ${s.rating}`);
+
+  // Generate recommended goals
+  const dimensionsNeedingWork = scores
+    .filter(s => parseFloat(s.rating) < 3.5)
+    .map(s => s.dimension);
+  
+  const uniqueDimensions = [...new Set(dimensionsNeedingWork)];
+  const goals = uniqueDimensions.slice(0, 3).map(dim => 
+    generateAIGoalSuggestions({ averageScore: avgScore }, dim)[0]
+  );
+
+  // Overall assessment based on period type
+  const periodLabel = periodType === 'yearly' ? `this year` : `this quarter`;
+  let overall = '';
+  if (avgScore >= 4.5) {
+    overall = `${employeeData.name} has demonstrated exceptional performance ${periodLabel} with an average score of ${avgScore.toFixed(2)}. Their consistent excellence across multiple dimensions makes them a valuable asset to the team.`;
+  } else if (avgScore >= 3.5) {
+    overall = `${employeeData.name} shows strong performance ${periodLabel} with an average score of ${avgScore.toFixed(2)}. They consistently meet expectations and demonstrate reliability in their responsibilities.`;
+  } else if (avgScore >= 3.0) {
+    overall = `${employeeData.name} meets baseline expectations with an average score of ${avgScore.toFixed(2)}. There are opportunities for growth and development in several areas.`;
+  } else {
+    overall = `${employeeData.name}'s performance ${periodLabel} (${avgScore.toFixed(2)}) indicates a need for focused improvement. Let's schedule a detailed discussion to address challenges and provide necessary support.`;
+  }
+
+  return {
+    summary: overall,
+    strengths: strengths.length > 0 ? strengths : ['No significant strengths identified this period'],
+    improvements: improvements.length > 0 ? improvements : ['Continue maintaining current performance levels'],
+    goals: goals.length > 0 ? goals : ['Set specific, measurable goals for next review period'],
+    overall: overall,
+    score: avgScore.toFixed(2)
+  };
+}
+
 // ===== EMPLOYEE RECOGNITION SYSTEM =====
 
 /**
@@ -481,6 +547,7 @@ if (typeof window !== 'undefined') {
     generateAIGoalSuggestions,
     generateAICommentSuggestions,
     generateMonthlyReview,
+    generatePeriodReview,
     calculateRecognitionScores,
     selectEmployeeOfMonth,
     selectEmployeeOfQuarter,
