@@ -508,19 +508,10 @@ function loadSetTargetsTab() {
       </div>
       
       <div style="background: #fffbeb; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #f59e0b;">
-        <h3 style="margin-top: 0; color: #92400e;">🎯 Target Entry Mode</h3>
-        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-          <label style="display: flex; align-items: center; padding: 10px; background: white; border-radius: 6px; cursor: pointer; flex: 1;">
-            <input type="radio" name="targetMode" value="quarterly" checked onchange="switchTargetMode(this.value)" style="margin-right: 8px;">
-            <span>Set Quarterly Targets</span>
-          </label>
-          <label style="display: flex; align-items: center; padding: 10px; background: white; border-radius: 6px; cursor: pointer; flex: 1;">
-            <input type="radio" name="targetMode" value="yearly" onchange="switchTargetMode(this.value)" style="margin-right: 8px;">
-            <span>Set Yearly Targets (Auto-divided)</span>
-          </label>
-        </div>
-        <p style="margin: 0; color: #78350f; font-size: 0.95em;" id="targetModeHelp">
-          <strong>Quarterly Mode:</strong> Set targets for the selected quarter only.
+        <h3 style="margin-top: 0; color: #92400e;">🎯 Yearly Target Mode</h3>
+        <p style="margin: 0; color: #78350f; font-size: 0.95em;">
+          <strong>Yearly Targets:</strong> Enter yearly targets below. They will be automatically divided by 4 for each quarter (Q1-Q4) when saved.
+          Targets can be set as numerical values or percentages.
         </p>
       </div>
       
@@ -550,31 +541,6 @@ function resetTargetsForm() {
   }
 }
 
-function switchTargetMode(mode) {
-  const helpText = document.getElementById('targetModeHelp');
-  if (!helpText) return;
-  
-  if (mode === 'yearly') {
-    helpText.innerHTML = '<strong>Yearly Mode:</strong> Enter yearly targets. They will be automatically divided by 4 for each quarter when saved.';
-  } else {
-    helpText.innerHTML = '<strong>Quarterly Mode:</strong> Set targets for the selected quarter only.';
-  }
-  
-  // Update all existing rows to show/hide yearly input
-  const rows = document.querySelectorAll('.target-row');
-  rows.forEach(row => {
-    const yearlyInput = row.querySelector('.target-yearly');
-    const quarterlyInput = row.querySelector('.target-value');
-    if (mode === 'yearly') {
-      if (yearlyInput) yearlyInput.style.display = 'block';
-      if (quarterlyInput) quarterlyInput.style.display = 'none';
-    } else {
-      if (yearlyInput) yearlyInput.style.display = 'none';
-      if (quarterlyInput) quarterlyInput.style.display = 'block';
-    }
-  });
-}
-
 let targetRowCount = 0;
 
 function addTargetRow() {
@@ -583,8 +549,6 @@ function addTargetRow() {
   
   targetRowCount++;
   const rowId = `targetRow_${targetRowCount}`;
-  
-  const isYearlyMode = document.querySelector('input[name="targetMode"]:checked')?.value === 'yearly';
   
   const row = document.createElement('div');
   row.className = 'target-row';
@@ -598,8 +562,11 @@ function addTargetRow() {
       <option value="Learning & Growth">Learning & Growth</option>
     </select>
     <input type="text" class="target-measure" placeholder="Measure (e.g., Budget Savings)" style="flex: 2;">
-    <input type="number" class="target-value" placeholder="Quarterly Target" style="flex: 1; ${isYearlyMode ? 'display:none;' : ''}">
-    <input type="number" class="target-yearly" placeholder="Yearly Target" style="flex: 1; ${isYearlyMode ? '' : 'display:none;'}">
+    <select class="target-type" title="Select if this target is a numerical value or percentage">
+      <option value="numerical">Numerical</option>
+      <option value="percentage">Percentage</option>
+    </select>
+    <input type="number" class="target-yearly" placeholder="Yearly Target" style="flex: 1;">
     <input type="number" class="target-weight" placeholder="Weight %" min="0" max="100" style="flex: 1;">
     <select class="target-frequency">
       <option value="Weekly">Weekly</option>
@@ -618,12 +585,11 @@ function loadEmployeeCurrentTargets() {
   
   loadSetTargetsTab();
   
-  // Load existing targets
+  // Load existing targets for year (Q1 will be used as reference for yearly targets)
   const year = document.getElementById('targetYear').value;
-  const quarter = document.getElementById('targetQuarter').value;
   
   const url = APPS_SCRIPT_URL + '?action=getTargets&email=' + encodeURIComponent(selectedEmployee) + 
-              '&year=' + year + '&quarter=' + quarter + '&callback=handleExistingTargets';
+              '&year=' + year + '&quarter=Q1&callback=handleExistingTargets';
   
   window.handleExistingTargets = function(targets) {
     console.log('Existing targets:', targets);
@@ -638,9 +604,12 @@ function loadEmployeeCurrentTargets() {
         
         lastRow.querySelector('.target-dimension').value = target.Dimension || target.dimension || '';
         lastRow.querySelector('.target-measure').value = target.Measure || target.measure || '';
-        lastRow.querySelector('.target-value').value = target['Target Value'] || target.targetValue || '';
+        // Multiply by 4 to show yearly value (quarterly targets are divided by 4)
+        const quarterlyValue = parseFloat(target['Target Value'] || target.targetValue || 0);
+        lastRow.querySelector('.target-yearly').value = (quarterlyValue * 4).toFixed(2);
         lastRow.querySelector('.target-weight').value = target.Weight || target.weight || '';
         lastRow.querySelector('.target-frequency').value = target.Frequency || target.frequency || 'Weekly';
+        lastRow.querySelector('.target-type').value = target.TargetType || target.targetType || 'numerical';
       });
     }
   };
@@ -653,8 +622,6 @@ function loadEmployeeCurrentTargets() {
 function saveTargets() {
   const selectedEmployee = document.getElementById('targetEmployeeSelect').value;
   const year = document.getElementById('targetYear').value;
-  const quarter = document.getElementById('targetQuarter').value;
-  const isYearlyMode = document.querySelector('input[name="targetMode"]:checked')?.value === 'yearly';
   
   if (!selectedEmployee) {
     alert('Please select a team member.');
@@ -679,19 +646,16 @@ function saveTargets() {
     'Learning & Growth': 0
   };
   
-  // Collect targets and calculate dimension totals
+  // Collect targets and calculate dimension totals (always yearly mode)
   targetRows.forEach(row => {
     const dimension = row.querySelector('.target-dimension').value;
     const measure = row.querySelector('.target-measure').value;
+    const targetType = row.querySelector('.target-type').value;
+    const yearlyValue = parseFloat(row.querySelector('.target-yearly').value);
     let targetValue;
     
-    if (isYearlyMode) {
-      const yearlyValue = parseFloat(row.querySelector('.target-yearly').value);
-      if (yearlyValue) {
-        targetValue = (yearlyValue / 4).toFixed(2); // Auto-divide yearly by 4 for quarterly
-      }
-    } else {
-      targetValue = row.querySelector('.target-value').value;
+    if (yearlyValue) {
+      targetValue = (yearlyValue / 4).toFixed(2); // Auto-divide yearly by 4 for quarterly
     }
     
     const weight = parseFloat(row.querySelector('.target-weight').value) || 0;
@@ -702,6 +666,7 @@ function saveTargets() {
         dimension: dimension,
         measure: measure,
         targetValue: targetValue,
+        targetType: targetType,
         weight: weight,
         frequency: frequency
       });
@@ -739,73 +704,21 @@ function saveTargets() {
     return;
   }
   
-  // If yearly mode, save to all 4 quarters
-  if (isYearlyMode) {
-    const quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
-    let savedCount = 0;
-    
-    quarters.forEach((q, index) => {
-      const data = {
-        managerEmail: userProfile.email,
-        employeeEmail: selectedEmployee,
-        year: year,
-        quarter: q,
-        targets: targets,
-        isYearlyDistribution: true
-      };
-      
-      console.log(`Saving targets for ${q}:`, data);
-      
-      const jsonData = JSON.stringify(data);
-      const chunkSize = 1500;
-      const chunks = [];
-      for (let i = 0; i < jsonData.length; i += chunkSize) {
-        chunks.push(jsonData.substring(i, i + chunkSize));
-      }
-      
-      let url = APPS_SCRIPT_URL + '?action=saveTargets&callback=handleSaveTargetsResponse_' + q;
-      chunks.forEach((chunk, idx) => {
-        url += '&chunk' + idx + '=' + encodeURIComponent(chunk);
-      });
-      
-      window['handleSaveTargetsResponse_' + q] = function(resp) {
-        console.log(`Save targets response for ${q}:`, resp);
-        savedCount++;
-        
-        if (resp.result !== 'success') {
-          if (typeof showToast === 'function') {
-            showToast(`❌ Error saving targets for ${q}: ` + (resp.message || 'Unknown error'), 'error');
-          } else {
-            alert(`Error saving targets for ${q}: ` + (resp.message || 'Unknown error'));
-          }
-        }
-        
-        // After all quarters saved
-        if (savedCount === quarters.length) {
-          if (typeof showToast === 'function') {
-            showToast(`✅ Yearly targets saved for all 4 quarters! Each quarter target = Yearly ÷ 4`, 'success', 5000);
-          } else {
-            alert(`✅ Yearly targets saved successfully for all 4 quarters!\n\n• Targets automatically distributed across Q1, Q2, Q3, Q4\n• Each quarter target = Yearly target ÷ 4\n• Internal Customer (25%) + Your targets (${totalWeight - 25}%) = 100%`);
-          }
-          loadEmployeeCurrentTargets();
-        }
-      };
-      
-      const script = document.createElement('script');
-      script.src = url;
-      document.body.appendChild(script);
-    });
-  } else {
-    // Quarterly mode - save only for selected quarter
+  // Save yearly targets to all 4 quarters
+  const quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
+  let savedCount = 0;
+  
+  quarters.forEach((q, index) => {
     const data = {
       managerEmail: userProfile.email,
       employeeEmail: selectedEmployee,
       year: year,
-      quarter: quarter,
-      targets: targets
+      quarter: q,
+      targets: targets,
+      isYearlyDistribution: true
     };
     
-    console.log('Saving targets:', data);
+    console.log(`Saving targets for ${q}:`, data);
     
     const jsonData = JSON.stringify(data);
     const chunkSize = 1500;
@@ -814,33 +727,38 @@ function saveTargets() {
       chunks.push(jsonData.substring(i, i + chunkSize));
     }
     
-    let url = APPS_SCRIPT_URL + '?action=saveTargets&callback=handleSaveTargetsResponse';
-    chunks.forEach((chunk, index) => {
-      url += '&chunk' + index + '=' + encodeURIComponent(chunk);
+    let url = APPS_SCRIPT_URL + '?action=saveTargets&callback=handleSaveTargetsResponse_' + q;
+    chunks.forEach((chunk, idx) => {
+      url += '&chunk' + idx + '=' + encodeURIComponent(chunk);
     });
     
-    window.handleSaveTargetsResponse = function(resp) {
-      console.log('Save targets response:', resp);
-      if (resp.result === 'success') {
+    window['handleSaveTargetsResponse_' + q] = function(resp) {
+      console.log(`Save targets response for ${q}:`, resp);
+      savedCount++;
+      
+      if (resp.result !== 'success') {
         if (typeof showToast === 'function') {
-          showToast('✅ Targets saved successfully! Internal Customer (25%) + Your targets (' + (totalWeight - 25) + '%) = 100%', 'success', 5000);
+          showToast(`❌ Error saving targets for ${q}: ` + (resp.message || 'Unknown error'), 'error');
         } else {
-          alert('✅ Targets saved successfully!\n\n• Internal Customer (25%) - Peer Review\n• Your custom targets - ' + (totalWeight - 25) + '%\n• Total: 100%');
+          alert(`Error saving targets for ${q}: ` + (resp.message || 'Unknown error'));
+        }
+      }
+      
+      // After all quarters saved
+      if (savedCount === quarters.length) {
+        if (typeof showToast === 'function') {
+          showToast(`✅ Yearly targets saved for all 4 quarters! Each quarter target = Yearly ÷ 4`, 'success', 5000);
+        } else {
+          alert(`✅ Yearly targets saved successfully for all 4 quarters!\n\n• Targets automatically distributed across Q1, Q2, Q3, Q4\n• Each quarter target = Yearly target ÷ 4\n• Internal Customer (25%) + Your targets (${totalWeight - 25}%) = 100%`);
         }
         loadEmployeeCurrentTargets();
-      } else {
-        if (typeof showToast === 'function') {
-          showToast('❌ Error saving targets: ' + (resp.message || 'Unknown error'), 'error');
-        } else {
-          alert('Error saving targets: ' + (resp.message || 'Unknown error'));
-        }
       }
     };
     
     const script = document.createElement('script');
     script.src = url;
     document.body.appendChild(script);
-  }
+  });
 }
 
   function validateWeights() {
