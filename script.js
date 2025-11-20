@@ -13,6 +13,68 @@ function buildApiUrl(baseUrl, params) {
   return baseUrl + '?' + urlParams.toString();
 }
 
+/**
+ * Modern fetch-based API call utility with CORS support
+ * 
+ * CORS Configuration:
+ * - Frontend: Uses fetch() API with proper CORS headers
+ * - Backend: Google Apps Script must respond with CORS headers:
+ *   * Access-Control-Allow-Origin: https://fmuoria.github.io (or * for development)
+ *   * Access-Control-Allow-Methods: GET, POST, OPTIONS
+ *   * Access-Control-Allow-Headers: Content-Type
+ * - The backend must return raw JSON, not JSONP callback wrappers
+ * 
+ * Browser Compatibility:
+ * - Chrome/Edge: Full support
+ * - Firefox: Full support
+ * - Safari: Full support (iOS 10.3+)
+ * - Works seamlessly with GitHub Pages hosting
+ * 
+ * @param {string} baseUrl - The Apps Script web app URL
+ * @param {Object} params - Query parameters (action, email, etc.)
+ * @param {Object} options - Additional fetch options (method, body, etc.)
+ * @returns {Promise<Object>} - Parsed JSON response
+ * @throws {Error} - Network or parsing errors
+ * 
+ * Example usage:
+ *   const data = await apiFetch(APPS_SCRIPT_URL, { action: 'getUserRole', email: user@example.com });
+ */
+async function apiFetch(baseUrl, params = {}, options = {}) {
+  try {
+    // Build URL with query parameters (no callback parameter)
+    const url = buildApiUrl(baseUrl, params);
+    
+    // Default fetch options with CORS enabled
+    const fetchOptions = {
+      method: options.method || 'GET',
+      mode: 'cors', // Enable CORS
+      cache: 'no-cache', // Always get fresh data
+      credentials: 'omit', // Don't send cookies for cross-origin
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+      },
+      ...options
+    };
+    
+    // Make the fetch request
+    const response = await fetch(url, fetchOptions);
+    
+    // Check if response is ok (status 200-299)
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    // Parse JSON response
+    const data = await response.json();
+    
+    return data;
+  } catch (error) {
+    console.error('API Fetch Error:', error);
+    throw error;
+  }
+}
+
 // ===== SERVICE WORKER REGISTRATION =====
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -272,38 +334,45 @@ function parseJwt(token) {
   return JSON.parse(jsonPayload);
 }
 
-function getUserRole() {
-  const url = APPS_SCRIPT_URL + '?action=getUserRole&email=' + encodeURIComponent(userProfile.email) + '&callback=handleUserRole';
-  
-  window.handleUserRole = function(data) {
-  console.log('User role data:', data);
-  userRole = data.role || 'Employee';
-  
-  // Save session to localStorage for persistence
-  saveSession(userProfile, userRole);
-  
-  updateUserUI();
-  renderTabs();
-  renderScorecardRows();
-  autofillUserDetails();
-  loadUserReports();
-  loadDashboard();
-  
-  // Load team data for managers/admins
-  if (userRole === 'Manager' || userRole === 'Admin') {
-    loadTeamMembers();
+/**
+ * Fetch user role from backend using modern fetch API with CORS
+ * Replaces legacy JSONP implementation with callback parameter
+ */
+async function getUserRole() {
+  try {
+    // Make fetch request without callback parameter
+    const data = await apiFetch(APPS_SCRIPT_URL, {
+      action: 'getUserRole',
+      email: userProfile.email
+    });
+    
+    console.log('User role data:', data);
+    userRole = data.role || 'Employee';
+    
+    // Save session to localStorage for persistence
+    saveSession(userProfile, userRole);
+    
+    updateUserUI();
+    renderTabs();
+    renderScorecardRows();
+    autofillUserDetails();
+    loadUserReports();
+    loadDashboard();
+    
+    // Load team data for managers/admins
+    if (userRole === 'Manager' || userRole === 'Admin') {
+      loadTeamMembers();
+    }
+    
+    // Initialize real-time updates
+    initializeRealtimeFeatures();
+    
+    // For employees, load targets when month is selected
+    // (will be triggered by onchange event on month dropdown)
+  } catch (error) {
+    console.error('Error fetching user role:', error);
+    alert('Failed to load user role. Please refresh the page and try again.');
   }
-  
-  // Initialize real-time updates
-  initializeRealtimeFeatures();
-  
-  // For employees, load targets when month is selected
-  // (will be triggered by onchange event on month dropdown)
-};
-  
-  const script = document.createElement('script');
-  script.src = url;
-  document.body.appendChild(script);
 }
 
 function renderTabs() {
@@ -410,19 +479,28 @@ function showTab(tabId, btn) {
 }
 
 // ========== TEAM MANAGEMENT (MANAGER/ADMIN) ==========
-function loadTeamMembers() {
-  const url = APPS_SCRIPT_URL + '?action=getTeamMembers&email=' + encodeURIComponent(userProfile.email) + '&callback=handleTeamMembers';
-  
-  window.handleTeamMembers = function(data) {
+/**
+ * Load team members using modern fetch API with CORS
+ * Replaces legacy JSONP implementation
+ */
+async function loadTeamMembers() {
+  try {
+    const data = await apiFetch(APPS_SCRIPT_URL, {
+      action: 'getTeamMembers',
+      email: userProfile.email
+    });
+    
     console.log('Team members:', data);
     teamMembers = data || [];
     displayTeamMembers();
     populateTeamSelects();
-  };
-  
-  const script = document.createElement('script');
-  script.src = url;
-  document.body.appendChild(script);
+  } catch (error) {
+    console.error('Error loading team members:', error);
+    const wrap = document.getElementById('teamMembersWrap');
+    if (wrap) {
+      wrap.innerHTML = '<div class="empty-msg">Failed to load team members. Please try again.</div>';
+    }
+  }
 }
 
 function displayTeamMembers() {
@@ -579,7 +657,11 @@ function addTargetRow() {
   targetsList.appendChild(row);
 }
 
-function loadEmployeeCurrentTargets() {
+/**
+ * Load employee's current targets using modern fetch API
+ * Replaces legacy JSONP implementation
+ */
+async function loadEmployeeCurrentTargets() {
   const selectedEmployee = document.getElementById('targetEmployeeSelect').value;
   if (!selectedEmployee) return;
   
@@ -588,10 +670,14 @@ function loadEmployeeCurrentTargets() {
   // Load existing targets for year (Q1 will be used as reference for yearly targets)
   const year = document.getElementById('targetYear').value;
   
-  const url = APPS_SCRIPT_URL + '?action=getTargets&email=' + encodeURIComponent(selectedEmployee) + 
-              '&year=' + year + '&quarter=Q1&callback=handleExistingTargets';
-  
-  window.handleExistingTargets = function(targets) {
+  try {
+    const targets = await apiFetch(APPS_SCRIPT_URL, {
+      action: 'getTargets',
+      email: selectedEmployee,
+      year: year,
+      quarter: 'Q1'
+    });
+    
     console.log('Existing targets:', targets);
     if (targets && targets.length > 0) {
       const targetsList = document.getElementById('targetsList');
@@ -612,11 +698,10 @@ function loadEmployeeCurrentTargets() {
         lastRow.querySelector('.target-type').value = target.TargetType || target.targetType || 'numerical';
       });
     }
-  };
-  
-  const script = document.createElement('script');
-  script.src = url;
-  document.body.appendChild(script);
+  } catch (error) {
+    console.error('Error loading existing targets:', error);
+    alert('Failed to load existing targets. Please try again.');
+  }
 }
 
 function saveTargets() {
@@ -704,61 +789,73 @@ function saveTargets() {
     return;
   }
   
-  // Save yearly targets to all 4 quarters
+  // Save yearly targets to all 4 quarters using modern fetch API
   const quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
   let savedCount = 0;
+  let hasError = false;
   
-  quarters.forEach((q, index) => {
-    const data = {
-      managerEmail: userProfile.email,
-      employeeEmail: selectedEmployee,
-      year: year,
-      quarter: q,
-      targets: targets,
-      isYearlyDistribution: true
-    };
-    
-    console.log(`Saving targets for ${q}:`, data);
-    
-    const jsonData = JSON.stringify(data);
-    const chunkSize = 1500;
-    const chunks = [];
-    for (let i = 0; i < jsonData.length; i += chunkSize) {
-      chunks.push(jsonData.substring(i, i + chunkSize));
+  // Save each quarter sequentially using async/await
+  (async () => {
+    for (const q of quarters) {
+      const data = {
+        managerEmail: userProfile.email,
+        employeeEmail: selectedEmployee,
+        year: year,
+        quarter: q,
+        targets: targets,
+        isYearlyDistribution: true
+      };
+      
+      console.log(`Saving targets for ${q}:`, data);
+      
+      try {
+        // Prepare data for sending
+        const jsonData = JSON.stringify(data);
+        const chunkSize = 1500;
+        const chunks = [];
+        for (let i = 0; i < jsonData.length; i += chunkSize) {
+          chunks.push(jsonData.substring(i, i + chunkSize));
+        }
+        
+        // Build params with chunked data
+        const params = { action: 'saveTargets' };
+        chunks.forEach((chunk, idx) => {
+          params['chunk' + idx] = chunk;
+        });
+        
+        const resp = await apiFetch(APPS_SCRIPT_URL, params);
+        console.log(`Save targets response for ${q}:`, resp);
+        savedCount++;
+        
+        if (resp.result !== 'success') {
+          hasError = true;
+          if (typeof showToast === 'function') {
+            showToast(`❌ Error saving targets for ${q}: ` + (resp.message || 'Unknown error'), 'error');
+          } else {
+            alert(`Error saving targets for ${q}: ` + (resp.message || 'Unknown error'));
+          }
+        }
+      } catch (error) {
+        hasError = true;
+        console.error(`Error saving targets for ${q}:`, error);
+        if (typeof showToast === 'function') {
+          showToast(`❌ Network error saving targets for ${q}`, 'error');
+        } else {
+          alert(`Network error saving targets for ${q}. Please try again.`);
+        }
+      }
     }
     
-    let url = APPS_SCRIPT_URL + '?action=saveTargets&callback=handleSaveTargetsResponse_' + q;
-    chunks.forEach((chunk, idx) => {
-      url += '&chunk' + idx + '=' + encodeURIComponent(chunk);
-    });
-    
-    window['handleSaveTargetsResponse_' + q] = function(resp) {
-      console.log(`Save targets response for ${q}:`, resp);
-      savedCount++;
-      
-      if (resp.result !== 'success') {
-        if (typeof showToast === 'function') {
-          showToast(`❌ Error saving targets for ${q}: ` + (resp.message || 'Unknown error'), 'error');
-        } else {
-          alert(`Error saving targets for ${q}: ` + (resp.message || 'Unknown error'));
-        }
+    // After all quarters processed
+    if (savedCount === quarters.length && !hasError) {
+      if (typeof showToast === 'function') {
+        showToast(`✅ Yearly targets saved for all 4 quarters! Each quarter target = Yearly ÷ 4`, 'success', 5000);
+      } else {
+        alert(`✅ Yearly targets saved successfully for all 4 quarters!\n\n• Targets automatically distributed across Q1, Q2, Q3, Q4\n• Each quarter target = Yearly target ÷ 4\n• Internal Customer (25%) + Your targets (${totalWeight - 25}%) = 100%`);
       }
-      
-      // After all quarters saved
-      if (savedCount === quarters.length) {
-        if (typeof showToast === 'function') {
-          showToast(`✅ Yearly targets saved for all 4 quarters! Each quarter target = Yearly ÷ 4`, 'success', 5000);
-        } else {
-          alert(`✅ Yearly targets saved successfully for all 4 quarters!\n\n• Targets automatically distributed across Q1, Q2, Q3, Q4\n• Each quarter target = Yearly target ÷ 4\n• Internal Customer (25%) + Your targets (${totalWeight - 25}%) = 100%`);
-        }
-        loadEmployeeCurrentTargets();
-      }
-    };
-    
-    const script = document.createElement('script');
-    script.src = url;
-    document.body.appendChild(script);
-  });
+      loadEmployeeCurrentTargets();
+    }
+  })();
 }
 
   function validateWeights() {
