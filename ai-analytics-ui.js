@@ -148,7 +148,91 @@ function showMonthlyReviewGenerator(employeeEmail, employeeName) {
     return;
   }
   
-  // Show loading modal first
+  // Show period selector modal first
+  const selectorModal = document.createElement('div');
+  selectorModal.className = 'scorecard-modal';
+  selectorModal.id = 'periodSelectorModal';
+  
+  const currentYear = new Date().getFullYear();
+  const currentQuarter = 'Q' + Math.ceil((new Date().getMonth() + 1) / 3);
+  
+  selectorModal.innerHTML = `
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <h2>📅 Select Review Period</h2>
+        <button class="modal-close" onclick="this.closest('.scorecard-modal').remove()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="color: #718096; margin-bottom: 20px;">
+          Choose the period for the performance review. Reviews can be generated quarterly or yearly.
+        </p>
+        
+        <div style="margin-bottom: 20px;">
+          <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2d3748;">Period Type:</label>
+          <select id="aiReviewPeriodType" style="width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 6px; font-size: 1em;">
+            <option value="quarterly">Quarterly Review</option>
+            <option value="yearly">Yearly Review</option>
+          </select>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+          <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2d3748;">Year:</label>
+          <select id="aiReviewYear" style="width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 6px; font-size: 1em;">
+            <option value="${currentYear}">${currentYear}</option>
+            <option value="${currentYear - 1}">${currentYear - 1}</option>
+            <option value="${currentYear + 1}">${currentYear + 1}</option>
+          </select>
+        </div>
+        
+        <div id="quarterSelectorDiv" style="margin-bottom: 20px;">
+          <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2d3748;">Quarter:</label>
+          <select id="aiReviewQuarter" style="width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 6px; font-size: 1em;">
+            <option value="Q1" ${currentQuarter === 'Q1' ? 'selected' : ''}>Q1 (Jan-Mar)</option>
+            <option value="Q2" ${currentQuarter === 'Q2' ? 'selected' : ''}>Q2 (Apr-Jun)</option>
+            <option value="Q3" ${currentQuarter === 'Q3' ? 'selected' : ''}>Q3 (Jul-Sep)</option>
+            <option value="Q4" ${currentQuarter === 'Q4' ? 'selected' : ''}>Q4 (Oct-Dec)</option>
+          </select>
+        </div>
+        
+        <div style="background: #f0f9ff; padding: 15px; border-radius: 8px; border-left: 4px solid #667eea; margin-top: 20px;">
+          <p style="margin: 0; font-size: 0.9em; color: #2d3748;">
+            💡 <strong>Tip:</strong> Quarterly reviews provide more detailed insights for recent performance, 
+            while yearly reviews give a comprehensive overview of the entire year.
+          </p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button onclick="this.closest('.scorecard-modal').remove()" class="btn-close-modal">Cancel</button>
+        <button onclick="generateReviewWithPeriod('${employeeEmail}', '${escapeHtml(employeeName)}')" 
+                style="background: #667eea; color: white; border: none; padding: 10px 24px; border-radius: 6px; cursor: pointer; font-weight: 600;">
+          Generate Review
+        </button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(selectorModal);
+  
+  // Add event listener to show/hide quarter selector
+  document.getElementById('aiReviewPeriodType').addEventListener('change', function() {
+    const quarterDiv = document.getElementById('quarterSelectorDiv');
+    if (this.value === 'yearly') {
+      quarterDiv.style.display = 'none';
+    } else {
+      quarterDiv.style.display = 'block';
+    }
+  });
+}
+
+function generateReviewWithPeriod(employeeEmail, employeeName) {
+  // Get selected period
+  const periodType = document.getElementById('aiReviewPeriodType').value;
+  const year = document.getElementById('aiReviewYear').value;
+  const quarter = document.getElementById('aiReviewQuarter')?.value;
+  
+  // Close period selector
+  document.getElementById('periodSelectorModal')?.remove();
+  
+  // Show loading modal
   const loadingModal = document.createElement('div');
   loadingModal.className = 'scorecard-modal';
   loadingModal.id = 'reviewLoadingModal';
@@ -165,30 +249,33 @@ function showMonthlyReviewGenerator(employeeEmail, employeeName) {
           <div class="rose-center"></div>
         </div>
         <h3>🤖 Generating AI-Powered Review...</h3>
-        <p style="color: #718096;">Analyzing performance data and generating insights for ${escapeHtml(employeeName)}</p>
+        <p style="color: #718096;">Analyzing performance data and generating ${periodType} insights for ${escapeHtml(employeeName)}</p>
       </div>
     </div>
   `;
   document.body.appendChild(loadingModal);
   
-  // Get employee performance data
-  const url = APPS_SCRIPT_URL + '?action=getEmployeeScores&employeeEmail=' + 
-              encodeURIComponent(employeeEmail) + '&callback=handleMonthlyReviewData';
+  // Get employee performance data with period filter
+  let url = APPS_SCRIPT_URL + '?action=getEmployeeScores&employeeEmail=' + 
+              encodeURIComponent(employeeEmail);
   
-  window.handleMonthlyReviewData = function(records) {
+  if (periodType === 'quarterly' && quarter) {
+    url += '&year=' + year + '&quarter=' + quarter;
+  } else if (periodType === 'yearly') {
+    url += '&year=' + year;
+  }
+  
+  url += '&callback=handlePeriodReviewData';
+  
+  window.handlePeriodReviewData = function(records) {
     // Remove loading modal
     const loading = document.getElementById('reviewLoadingModal');
     if (loading) loading.remove();
     
     if (!records || records.length === 0) {
-      alert('No performance data available for this employee.');
+      alert('No performance data available for this employee in the selected period.');
       return;
     }
-    
-    // Get current month and year
-    const now = new Date();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const year = String(now.getFullYear());
     
     // Prepare employee data
     const employeeData = {
@@ -197,9 +284,10 @@ function showMonthlyReviewGenerator(employeeEmail, employeeName) {
       scores: []
     };
     
-    // Aggregate scores from recent records (last 3 months)
-    const recentRecords = records.slice(0, 3);
-    recentRecords.forEach(rec => {
+    // Aggregate scores based on period type
+    const filteredRecords = filterRecordsByPeriod(records, periodType, year, quarter);
+    
+    filteredRecords.forEach(rec => {
       try {
         let scoresData = rec.Scores || rec.scores;
         let scoresArr = typeof scoresData === 'string' ? JSON.parse(scoresData) : scoresData;
@@ -211,11 +299,11 @@ function showMonthlyReviewGenerator(employeeEmail, employeeName) {
       }
     });
     
-    // Generate review
-    const review = window.AIAnalytics.generateMonthlyReview(employeeData, month, year);
+    // Generate review with period info
+    const review = window.AIAnalytics.generatePeriodReview(employeeData, periodType, year, quarter);
     
     // Display review modal
-    displayMonthlyReview(review, employeeEmail, employeeName);
+    displayPeriodReview(review, employeeEmail, employeeName, periodType, year, quarter);
   };
   
   const script = document.createElement('script');
@@ -223,24 +311,49 @@ function showMonthlyReviewGenerator(employeeEmail, employeeName) {
   document.body.appendChild(script);
 }
 
+function filterRecordsByPeriod(records, periodType, year, quarter) {
+  if (periodType === 'yearly') {
+    return records.filter(rec => {
+      const recYear = String(rec.Year || rec.year);
+      return recYear === String(year);
+    });
+  } else if (periodType === 'quarterly') {
+    const quarterMonths = {
+      'Q1': ['01', '02', '03'],
+      'Q2': ['04', '05', '06'],
+      'Q3': ['07', '08', '09'],
+      'Q4': ['10', '11', '12']
+    };
+    
+    return records.filter(rec => {
+      const recYear = String(rec.Year || rec.year);
+      const recMonth = String(rec.Month || rec.month).padStart(2, '0');
+      return recYear === String(year) && quarterMonths[quarter].includes(recMonth);
+    });
+  }
+  return records;
+}
+
 /**
- * Display generated monthly review
+ * Display generated period review (quarterly or yearly)
  */
-function displayMonthlyReview(review, employeeEmail, employeeName) {
+function displayPeriodReview(review, employeeEmail, employeeName, periodType, year, quarter) {
   const modal = document.createElement('div');
   modal.className = 'scorecard-modal';
+  
+  const periodLabel = periodType === 'yearly' ? `${year} Annual Review` : `${year} ${quarter} Review`;
   
   modal.innerHTML = `
     <div class="modal-content" style="max-width: 900px;">
       <div class="modal-header">
-        <h2>🤖 AI-Generated Monthly Performance Review</h2>
+        <h2>🤖 AI-Generated Performance Review</h2>
         <button class="modal-close" onclick="this.closest('.scorecard-modal').remove()">&times;</button>
       </div>
       <div class="modal-body">
         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; 
                     padding: 20px; border-radius: 8px; margin-bottom: 25px;">
           <h3 style="margin: 0 0 10px 0; color: white;">Performance Review: ${escapeHtml(employeeName)}</h3>
-          <p style="margin: 0; opacity: 0.9;">Period: ${review.monthYear}</p>
+          <p style="margin: 0; opacity: 0.9;">Period: ${periodLabel}</p>
           <p style="margin: 5px 0 0 0; font-size: 1.3em; font-weight: bold;">
             Overall Score: ${review.score} / 5.0
           </p>
