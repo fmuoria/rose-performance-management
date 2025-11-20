@@ -1,3 +1,88 @@
+/**
+ * =============================================================================
+ * ROSE PERFORMANCE MANAGEMENT SYSTEM - Frontend Application
+ * =============================================================================
+ * 
+ * CORS & API COMMUNICATION DOCUMENTATION
+ * 
+ * This application uses modern fetch() API with CORS (Cross-Origin Resource Sharing)
+ * to communicate with Google Apps Script backend.
+ * 
+ * IMPORTANT: Backend Configuration Required
+ * -----------------------------------------
+ * The Google Apps Script backend MUST be configured to:
+ * 
+ * 1. Return CORS Headers:
+ *    - Access-Control-Allow-Origin: https://fmuoria.github.io (or * for development)
+ *    - Access-Control-Allow-Methods: GET, POST, OPTIONS
+ *    - Access-Control-Allow-Headers: Content-Type
+ * 
+ * 2. Handle OPTIONS Preflight Requests:
+ *    The browser sends OPTIONS requests before POST requests for CORS validation.
+ *    The backend must respond to OPTIONS with appropriate CORS headers.
+ * 
+ * 3. Return Raw JSON (NOT JSONP):
+ *    Previously used JSONP with callback parameters. Now returns pure JSON:
+ *    ✗ OLD: callbackName({"result": "success"})
+ *    ✓ NEW: {"result": "success"}
+ * 
+ * Example Apps Script Backend (doGet function):
+ * ```javascript
+ * function doGet(e) {
+ *   // Handle CORS preflight
+ *   if (e.method === 'OPTIONS') {
+ *     return createCorsResponse({});
+ *   }
+ *   
+ *   const action = e.parameter.action;
+ *   let result;
+ *   
+ *   // Process actions...
+ *   switch(action) {
+ *     case 'getUserRole':
+ *       result = getUserRole(e.parameter.email);
+ *       break;
+ *     // ... other actions
+ *   }
+ *   
+ *   return createCorsResponse(result);
+ * }
+ * 
+ * function createCorsResponse(data) {
+ *   return ContentService
+ *     .createTextOutput(JSON.stringify(data))
+ *     .setMimeType(ContentService.MimeType.JSON)
+ *     .setHeader('Access-Control-Allow-Origin', '*')
+ *     .setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+ *     .setHeader('Access-Control-Allow-Headers', 'Content-Type');
+ * }
+ * ```
+ * 
+ * Browser Compatibility:
+ * ---------------------
+ * - Chrome/Edge: Full support for fetch() and CORS
+ * - Firefox: Full support for fetch() and CORS
+ * - Safari: Full support (iOS 10.3+)
+ * - Works seamlessly with GitHub Pages hosting
+ * 
+ * Migration from JSONP:
+ * --------------------
+ * This codebase has been fully migrated from JSONP to fetch() API:
+ * - ✓ All callback parameters removed from API URLs
+ * - ✓ All dynamic script tag creation removed
+ * - ✓ All global callback functions removed (except Google Auth)
+ * - ✓ All API calls use async/await pattern with proper error handling
+ * 
+ * For Developers:
+ * --------------
+ * - Use apiFetch() utility function for all API calls (defined below)
+ * - Never use callback parameters or dynamic script tags
+ * - Always use async/await for API calls
+ * - Ensure proper error handling with try/catch blocks
+ * 
+ * =============================================================================
+ */
+
 // ===== CONFIGURATION =====
 const CONFIG = {
   SESSION_DURATION: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
@@ -2432,7 +2517,11 @@ function viewScorecardDetails(index, wrapId) {
   document.body.appendChild(modal);
 }
 
-function viewTeamMemberPeerFeedback(employeeEmail, year, month) {
+/**
+ * View team member peer feedback using modern fetch API
+ * Replaces legacy JSONP implementation
+ */
+async function viewTeamMemberPeerFeedback(employeeEmail, year, month) {
   // Validate inputs
   if (!employeeEmail || !year || !month) {
     alert("Unable to load feedback. Missing required parameters.");
@@ -2447,11 +2536,14 @@ function viewTeamMemberPeerFeedback(employeeEmail, year, month) {
   
   const quarter = "Q" + Math.ceil(monthNum / 3);
   
-  const url = APPS_SCRIPT_URL + '?action=getAggregatedPeerFeedback&employeeEmail=' + 
-              encodeURIComponent(employeeEmail) + '&year=' + encodeURIComponent(year) + '&quarter=' + quarter + 
-              '&callback=handleTeamMemberFeedbackView';
-  
-  window.handleTeamMemberFeedbackView = function(data) {
+  try {
+    const data = await apiFetch(APPS_SCRIPT_URL, {
+      action: 'getAggregatedPeerFeedback',
+      employeeEmail: employeeEmail,
+      year: year,
+      quarter: quarter
+    });
+    
     console.log('Team member peer feedback view:', data);
     
     if (!data || data.count === 0) {
@@ -2523,11 +2615,10 @@ function viewTeamMemberPeerFeedback(employeeEmail, year, month) {
     `;
     
     document.body.appendChild(modal);
-  };
-  
-  const script = document.createElement('script');
-  script.src = url;
-  document.body.appendChild(script);
+  } catch (error) {
+    console.error('Error loading team member peer feedback:', error);
+    alert('Failed to load feedback. Please try again.');
+  }
 }
 
 /**
@@ -3019,7 +3110,11 @@ function loadReviewerCheckboxes() {
   }, 100);
 }
 
-function submitPeerFeedbackRequest() {
+/**
+ * Submit peer feedback request using modern fetch API
+ * Replaces legacy JSONP implementation
+ */
+async function submitPeerFeedbackRequest() {
   const employeeSelect = document.getElementById('feedbackEmployeeSelect');
   const selectedEmployee = employeeSelect.value;
   const employeeName = employeeSelect.options[employeeSelect.selectedIndex]?.dataset.name;
@@ -3070,13 +3165,16 @@ function submitPeerFeedbackRequest() {
     chunks.push(jsonData.substring(i, i + chunkSize));
   }
   
-  let url = APPS_SCRIPT_URL + '?action=requestPeerFeedback&callback=handleRequestFeedbackResponse';
+  // Build params with chunked data
+  const params = { action: 'requestPeerFeedback' };
   chunks.forEach((chunk, index) => {
-    url += '&chunk' + index + '=' + encodeURIComponent(chunk);
+    params['chunk' + index] = chunk;
   });
   
-  window.handleRequestFeedbackResponse = function(resp) {
+  try {
+    const resp = await apiFetch(APPS_SCRIPT_URL, params);
     console.log('Request feedback response:', resp);
+    
     if (resp.result === 'success') {
       if (typeof showToast === 'function') {
         showToast(`✅ Peer feedback requests sent to ${filteredReviewers.length} reviewer${filteredReviewers.length > 1 ? 's' : ''} for ${employeeName}!`, 'success', 5000);
@@ -3092,11 +3190,14 @@ function submitPeerFeedbackRequest() {
         alert('Error sending requests: ' + (resp.message || 'Unknown error'));
       }
     }
-  };
-  
-  const script = document.createElement('script');
-  script.src = url;
-  document.body.appendChild(script);
+  } catch (error) {
+    console.error('Error requesting peer feedback:', error);
+    if (typeof showToast === 'function') {
+      showToast('❌ Failed to send feedback requests. Please try again.', 'error');
+    } else {
+      alert('Failed to send feedback requests. Please try again.');
+    }
+  }
 }
 
 // ===== REAL-TIME UPDATES (Polling for changes) =====
@@ -3131,8 +3232,11 @@ function checkForUpdates() {
   checkFeedbackUpdate();
 }
 
-// Check if targets have been updated
-function checkTargetsUpdate() {
+/**
+ * Check if targets have been updated using modern fetch API
+ * Replaces legacy JSONP implementation
+ */
+async function checkTargetsUpdate() {
   const year = document.getElementById("periodYear")?.value || new Date().getFullYear();
   const month = document.getElementById("periodMonth")?.value;
   
@@ -3140,16 +3244,14 @@ function checkTargetsUpdate() {
   
   const quarter = "Q" + Math.ceil(parseInt(month) / 3);
   
-  // Build URL safely with helper function
-  const url = buildApiUrl(APPS_SCRIPT_URL, {
-    action: 'getTargetsUpdateTime',
-    email: userProfile.email,
-    year: year,
-    quarter: quarter,
-    callback: 'handleTargetsUpdateCheck'
-  });
-  
-  window.handleTargetsUpdateCheck = function(data) {
+  try {
+    const data = await apiFetch(APPS_SCRIPT_URL, {
+      action: 'getTargetsUpdateTime',
+      email: userProfile.email,
+      year: year,
+      quarter: quarter
+    });
+    
     if (data && data.updateTime) {
       const updateTime = new Date(data.updateTime).getTime();
       
@@ -3166,23 +3268,23 @@ function checkTargetsUpdate() {
         }
       }
     }
-  };
-  
-  const script = document.createElement('script');
-  script.src = url;
-  document.body.appendChild(script);
+  } catch (error) {
+    console.error('Error checking targets update:', error);
+    // Silent fail for polling
+  }
 }
 
-// Check for new peer feedback requests
-function checkFeedbackUpdate() {
-  // Build URL safely with helper function
-  const url = buildApiUrl(APPS_SCRIPT_URL, {
-    action: 'getPendingFeedbackCount',
-    email: userProfile.email,
-    callback: 'handleFeedbackUpdateCheck'
-  });
-  
-  window.handleFeedbackUpdateCheck = function(data) {
+/**
+ * Check for new peer feedback requests using modern fetch API
+ * Replaces legacy JSONP implementation
+ */
+async function checkFeedbackUpdate() {
+  try {
+    const data = await apiFetch(APPS_SCRIPT_URL, {
+      action: 'getPendingFeedbackCount',
+      email: userProfile.email
+    });
+    
     if (data && data.count !== undefined) {
       // Update the badge on the peer feedback tab if needed
       updatePeerFeedbackBadge(data.count);
@@ -3196,11 +3298,10 @@ function checkFeedbackUpdate() {
       
       lastFeedbackUpdate = data.count;
     }
-  };
-  
-  const script = document.createElement('script');
-  script.src = url;
-  document.body.appendChild(script);
+  } catch (error) {
+    console.error('Error checking feedback update:', error);
+    // Silent fail for polling
+  }
 }
 
 // Update badge on peer feedback tab
@@ -3489,16 +3590,21 @@ function showAIGoalDimensionSelector(employeeEmail, employeeName) {
   document.body.appendChild(modal);
 }
 
-// Helper function to generate and show goals
-function generateAndShowGoals(employeeEmail, employeeName, dimension) {
+/**
+ * Helper function to generate and show goals using modern fetch API
+ * Replaces legacy JSONP implementation
+ */
+async function generateAndShowGoals(employeeEmail, employeeName, dimension) {
   // Close dimension selector
   document.querySelector('.scorecard-modal')?.remove();
   
-  // Get employee data
-  const url = APPS_SCRIPT_URL + '?action=getEmployeeScores&employeeEmail=' + 
-              encodeURIComponent(employeeEmail) + '&callback=handleGoalGenerationData';
-  
-  window.handleGoalGenerationData = function(records) {
+  try {
+    // Get employee data
+    const records = await apiFetch(APPS_SCRIPT_URL, {
+      action: 'getEmployeeScores',
+      employeeEmail: employeeEmail
+    });
+    
     const employeeData = { averageScore: 0 };
     
     if (records && records.length > 0) {
@@ -3538,11 +3644,10 @@ function generateAndShowGoals(employeeEmail, employeeName, dimension) {
         }
       });
     });
-  };
-  
-  const script = document.createElement('script');
-  script.src = url;
-  document.body.appendChild(script);
+  } catch (error) {
+    console.error('Error loading employee scores for goal generation:', error);
+    alert('Failed to load employee data. Please try again.');
+  }
 }
 
 // Helper function to load team member dashboard from AI insights
@@ -3599,19 +3704,22 @@ function calculateAndSaveRecognition() {
     showToast('🤖 Calculating recognition awards... This may take a moment.', 'info', 3000);
   }
   
-  // Get all employee data
-  const url = APPS_SCRIPT_URL + '?action=getAllEmployeeScores&callback=handleRecognitionCalculation';
-  
-  window.handleRecognitionCalculation = function(allData) {
-    // Defensive coding: Check if response is an array before looping
-    // This prevents fatal errors when the backend returns a non-array object (e.g., an error or unexpected reply)
-    if (!Array.isArray(allData) || allData.length === 0) {
-      alert('No employee data available to calculate recognition awards.');
-      return;
-    }
-    
-    // Process data by employee
-    const employeeMap = {};
+  // Get all employee data using modern fetch API
+  (async () => {
+    try {
+      const allData = await apiFetch(APPS_SCRIPT_URL, {
+        action: 'getAllEmployeeScores'
+      });
+      
+      // Defensive coding: Check if response is an array before looping
+      // This prevents fatal errors when the backend returns a non-array object (e.g., an error or unexpected reply)
+      if (!Array.isArray(allData) || allData.length === 0) {
+        alert('No employee data available to calculate recognition awards.');
+        return;
+      }
+      
+      // Process data by employee
+      const employeeMap = {};
     
     allData.forEach(record => {
       const email = record['User Email'] || record.userEmail;
@@ -3710,9 +3818,13 @@ function calculateAndSaveRecognition() {
       console.error('Error saving recognitions:', error);
       alert('Error saving recognition awards: ' + error.message);
     }
-  };
-  
-  const script = document.createElement('script');
-  script.src = url;
-  document.body.appendChild(script);
+  } catch (error) {
+    console.error('Error calculating recognition awards:', error);
+    if (typeof showToast === 'function') {
+      showToast('❌ Failed to calculate recognition awards. Please try again.', 'error');
+    } else {
+      alert('Failed to calculate recognition awards. Please try again.');
+    }
+  }
+})();
 }
