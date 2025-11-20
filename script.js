@@ -918,22 +918,28 @@ function loadTeamReportsTab() {
   populateTeamSelects();
 }
 
-function loadTeamMemberReports() {
+/**
+ * Load team member reports using modern fetch API
+ * Replaces legacy JSONP implementation
+ */
+async function loadTeamMemberReports() {
   const selectedEmail = document.getElementById('teamReportSelect').value;
   if (!selectedEmail) {
     document.getElementById('teamReportsWrap').innerHTML = '<div class="empty-msg">Please select a team member.</div>';
     return;
   }
   
-  const url = APPS_SCRIPT_URL + '?action=getEmployeeScores&employeeEmail=' + encodeURIComponent(selectedEmail) + '&callback=handleTeamMemberReports';
-  
-  window.handleTeamMemberReports = function(records) {
+  try {
+    const records = await apiFetch(APPS_SCRIPT_URL, {
+      action: 'getEmployeeScores',
+      employeeEmail: selectedEmail
+    });
+    
     renderReportsTable(records, 'teamReportsWrap');
-  };
-  
-  const script = document.createElement('script');
-  script.src = url;
-  document.body.appendChild(script);
+  } catch (error) {
+    console.error('Error loading team member reports:', error);
+    document.getElementById('teamReportsWrap').innerHTML = '<div class="empty-msg">Failed to load reports. Please try again.</div>';
+  }
 }
 
 // ========== TEAM DASHBOARD (MANAGER/ADMIN) ==========
@@ -941,22 +947,28 @@ function loadTeamDashboardTab() {
   populateTeamSelects();
 }
 
-function loadTeamMemberDashboard() {
+/**
+ * Load team member dashboard using modern fetch API
+ * Replaces legacy JSONP implementation
+ */
+async function loadTeamMemberDashboard() {
   const selectedEmail = document.getElementById('teamDashboardSelect').value;
   if (!selectedEmail) {
     document.getElementById('teamDashboardWrap').innerHTML = '<div class="empty-msg">Please select a team member.</div>';
     return;
   }
   
-  const url = APPS_SCRIPT_URL + '?action=getEmployeeScores&employeeEmail=' + encodeURIComponent(selectedEmail) + '&callback=handleTeamMemberDashboard';
-  
-  window.handleTeamMemberDashboard = function(records) {
+  try {
+    const records = await apiFetch(APPS_SCRIPT_URL, {
+      action: 'getEmployeeScores',
+      employeeEmail: selectedEmail
+    });
+    
     renderDashboard(records, 'teamDashboardWrap');
-  };
-  
-  const script = document.createElement('script');
-  script.src = url;
-  document.body.appendChild(script);
+  } catch (error) {
+    console.error('Error loading team member dashboard:', error);
+    document.getElementById('teamDashboardWrap').innerHTML = '<div class="empty-msg">Failed to load dashboard. Please try again.</div>';
+  }
 }
 
 // ========== QUARTERLY REVIEW (MANAGER/ADMIN) ==========
@@ -977,7 +989,11 @@ function loadQuarterlyReviewTab() {
   }
 }
 
-function loadQuarterlyReviewData() {
+/**
+ * Load quarterly review data using modern fetch API
+ * Replaces legacy JSONP implementation
+ */
+async function loadQuarterlyReviewData() {
   const selectedEmail = document.getElementById('quarterlyReviewEmployeeSelect').value;
   const year = document.getElementById('quarterlyReviewYear').value;
   const quarter = document.getElementById('quarterlyReviewQuarter').value;
@@ -993,18 +1009,21 @@ function loadQuarterlyReviewData() {
   
   const employeeName = document.querySelector('#quarterlyReviewEmployeeSelect option:checked')?.dataset.name || 'Employee';
   
-  // Fetch employee scores for the specified quarter
-  const url = APPS_SCRIPT_URL + '?action=getEmployeeScores&employeeEmail=' + encodeURIComponent(selectedEmail) + 
-              '&year=' + year + '&quarter=' + quarter + '&callback=handleQuarterlyReviewData';
-  
-  window.handleQuarterlyReviewData = function(records) {
+  try {
+    // Fetch employee scores for the specified quarter
+    const records = await apiFetch(APPS_SCRIPT_URL, {
+      action: 'getEmployeeScores',
+      employeeEmail: selectedEmail,
+      year: year,
+      quarter: quarter
+    });
+    
     console.log('Quarterly review data:', records);
     renderQuarterlyReview(records, employeeName, year, quarter, selectedEmail);
-  };
-  
-  const script = document.createElement('script');
-  script.src = url;
-  document.body.appendChild(script);
+  } catch (error) {
+    console.error('Error loading quarterly review data:', error);
+    wrap.innerHTML = '<div class="empty-msg">Failed to load quarterly data. Please try again.</div>';
+  }
 }
 
 function renderQuarterlyReview(records, employeeName, year, quarter, employeeEmail) {
@@ -1292,7 +1311,11 @@ function renderScorecardRows() {
   updateScoreSummary();
 }
   // ========== LOAD PEER FEEDBACK SCORE ==========
-function loadPeerFeedbackScore(rowIdx) {
+/**
+ * Load peer feedback score using modern fetch API
+ * Replaces legacy JSONP implementation
+ */
+async function loadPeerFeedbackScore(rowIdx) {
   if (!userProfile) return;
   
   const year = document.getElementById("periodYear")?.value || new Date().getFullYear();
@@ -1305,11 +1328,14 @@ function loadPeerFeedbackScore(rowIdx) {
   
   const quarter = "Q" + Math.ceil(parseInt(month) / 3);
   
-  const url = APPS_SCRIPT_URL + '?action=getAggregatedPeerFeedback&employeeEmail=' + 
-              encodeURIComponent(userProfile.email) + '&year=' + year + '&quarter=' + quarter + 
-              '&callback=handlePeerFeedbackScore';
-  
-  window.handlePeerFeedbackScore = function(data) {
+  try {
+    const data = await apiFetch(APPS_SCRIPT_URL, {
+      action: 'getAggregatedPeerFeedback',
+      employeeEmail: userProfile.email,
+      year: year,
+      quarter: quarter
+    });
+    
     console.log('Peer feedback score:', data);
     
     const actualEl = document.getElementById(`actual_${rowIdx}`);
@@ -1336,11 +1362,13 @@ function loadPeerFeedbackScore(rowIdx) {
     }
     
     updateScoreSummary();
-  };
-  
-  const script = document.createElement('script');
-  script.src = url;
-  document.body.appendChild(script);
+  } catch (error) {
+    console.error('Error loading peer feedback score:', error);
+    const actualEl = document.getElementById(`actual_${rowIdx}`);
+    if (actualEl) {
+      actualEl.value = "Error loading";
+    }
+  }
 }
 
 function viewPeerFeedbackDetails() {
@@ -1353,7 +1381,11 @@ function viewPeerFeedbackDetails() {
   }
 }
 
-function showManagerPeerFeedbackModal() {
+/**
+ * Show manager peer feedback modal using modern fetch API
+ * Replaces legacy JSONP implementation
+ */
+async function showManagerPeerFeedbackModal() {
   const year = document.getElementById("periodYear")?.value || new Date().getFullYear();
   const month = document.getElementById("periodMonth")?.value;
   
@@ -1364,11 +1396,14 @@ function showManagerPeerFeedbackModal() {
   
   const quarter = "Q" + Math.ceil(parseInt(month) / 3);
   
-  const url = APPS_SCRIPT_URL + '?action=getAggregatedPeerFeedback&employeeEmail=' + 
-              encodeURIComponent(userProfile.email) + '&year=' + year + '&quarter=' + quarter + 
-              '&callback=handleManagerPeerFeedbackView';
-  
-  window.handleManagerPeerFeedbackView = function(data) {
+  try {
+    const data = await apiFetch(APPS_SCRIPT_URL, {
+      action: 'getAggregatedPeerFeedback',
+      employeeEmail: userProfile.email,
+      year: year,
+      quarter: quarter
+    });
+    
     console.log('Manager peer feedback view:', data);
     
     if (!data || data.count === 0) {
@@ -1440,11 +1475,10 @@ function showManagerPeerFeedbackModal() {
     `;
     
     document.body.appendChild(modal);
-  };
-  
-  const script = document.createElement('script');
-  script.src = url;
-  document.body.appendChild(script);
+  } catch (error) {
+    console.error('Error loading manager peer feedback:', error);
+    alert('Failed to load peer feedback. Please try again.');
+  }
 }
 
 function generateFeedbackBreakdown(data) {
