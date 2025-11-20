@@ -1,3 +1,88 @@
+/**
+ * =============================================================================
+ * ROSE PERFORMANCE MANAGEMENT SYSTEM - Frontend Application
+ * =============================================================================
+ * 
+ * CORS & API COMMUNICATION DOCUMENTATION
+ * 
+ * This application uses modern fetch() API with CORS (Cross-Origin Resource Sharing)
+ * to communicate with Google Apps Script backend.
+ * 
+ * IMPORTANT: Backend Configuration Required
+ * -----------------------------------------
+ * The Google Apps Script backend MUST be configured to:
+ * 
+ * 1. Return CORS Headers:
+ *    - Access-Control-Allow-Origin: https://fmuoria.github.io (or * for development)
+ *    - Access-Control-Allow-Methods: GET, POST, OPTIONS
+ *    - Access-Control-Allow-Headers: Content-Type
+ * 
+ * 2. Handle OPTIONS Preflight Requests:
+ *    The browser sends OPTIONS requests before POST requests for CORS validation.
+ *    The backend must respond to OPTIONS with appropriate CORS headers.
+ * 
+ * 3. Return Raw JSON (NOT JSONP):
+ *    Previously used JSONP with callback parameters. Now returns pure JSON:
+ *    ✗ OLD: callbackName({"result": "success"})
+ *    ✓ NEW: {"result": "success"}
+ * 
+ * Example Apps Script Backend (doGet function):
+ * ```javascript
+ * function doGet(e) {
+ *   // Handle CORS preflight
+ *   if (e.method === 'OPTIONS') {
+ *     return createCorsResponse({});
+ *   }
+ *   
+ *   const action = e.parameter.action;
+ *   let result;
+ *   
+ *   // Process actions...
+ *   switch(action) {
+ *     case 'getUserRole':
+ *       result = getUserRole(e.parameter.email);
+ *       break;
+ *     // ... other actions
+ *   }
+ *   
+ *   return createCorsResponse(result);
+ * }
+ * 
+ * function createCorsResponse(data) {
+ *   return ContentService
+ *     .createTextOutput(JSON.stringify(data))
+ *     .setMimeType(ContentService.MimeType.JSON)
+ *     .setHeader('Access-Control-Allow-Origin', '*')
+ *     .setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+ *     .setHeader('Access-Control-Allow-Headers', 'Content-Type');
+ * }
+ * ```
+ * 
+ * Browser Compatibility:
+ * ---------------------
+ * - Chrome/Edge: Full support for fetch() and CORS
+ * - Firefox: Full support for fetch() and CORS
+ * - Safari: Full support (iOS 10.3+)
+ * - Works seamlessly with GitHub Pages hosting
+ * 
+ * Migration from JSONP:
+ * --------------------
+ * This codebase has been fully migrated from JSONP to fetch() API:
+ * - ✓ All callback parameters removed from API URLs
+ * - ✓ All dynamic script tag creation removed
+ * - ✓ All global callback functions removed (except Google Auth)
+ * - ✓ All API calls use async/await pattern with proper error handling
+ * 
+ * For Developers:
+ * --------------
+ * - Use apiFetch() utility function for all API calls (defined below)
+ * - Never use callback parameters or dynamic script tags
+ * - Always use async/await for API calls
+ * - Ensure proper error handling with try/catch blocks
+ * 
+ * =============================================================================
+ */
+
 // ===== CONFIGURATION =====
 const CONFIG = {
   SESSION_DURATION: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
@@ -11,6 +96,68 @@ const CONFIG = {
 function buildApiUrl(baseUrl, params) {
   const urlParams = new URLSearchParams(params);
   return baseUrl + '?' + urlParams.toString();
+}
+
+/**
+ * Modern fetch-based API call utility with CORS support
+ * 
+ * CORS Configuration:
+ * - Frontend: Uses fetch() API with proper CORS headers
+ * - Backend: Google Apps Script must respond with CORS headers:
+ *   * Access-Control-Allow-Origin: https://fmuoria.github.io (or * for development)
+ *   * Access-Control-Allow-Methods: GET, POST, OPTIONS
+ *   * Access-Control-Allow-Headers: Content-Type
+ * - The backend must return raw JSON, not JSONP callback wrappers
+ * 
+ * Browser Compatibility:
+ * - Chrome/Edge: Full support
+ * - Firefox: Full support
+ * - Safari: Full support (iOS 10.3+)
+ * - Works seamlessly with GitHub Pages hosting
+ * 
+ * @param {string} baseUrl - The Apps Script web app URL
+ * @param {Object} params - Query parameters (action, email, etc.)
+ * @param {Object} options - Additional fetch options (method, body, etc.)
+ * @returns {Promise<Object>} - Parsed JSON response
+ * @throws {Error} - Network or parsing errors
+ * 
+ * Example usage:
+ *   const data = await apiFetch(APPS_SCRIPT_URL, { action: 'getUserRole', email: user@example.com });
+ */
+async function apiFetch(baseUrl, params = {}, options = {}) {
+  try {
+    // Build URL with query parameters (no callback parameter)
+    const url = buildApiUrl(baseUrl, params);
+    
+    // Default fetch options with CORS enabled
+    const fetchOptions = {
+      method: options.method || 'GET',
+      mode: 'cors', // Enable CORS
+      cache: 'no-cache', // Always get fresh data
+      credentials: 'omit', // Don't send cookies for cross-origin
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+      },
+      ...options
+    };
+    
+    // Make the fetch request
+    const response = await fetch(url, fetchOptions);
+    
+    // Check if response is ok (status 200-299)
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    // Parse JSON response
+    const data = await response.json();
+    
+    return data;
+  } catch (error) {
+    console.error('API Fetch Error:', error);
+    throw error;
+  }
 }
 
 // ===== SERVICE WORKER REGISTRATION =====
@@ -272,38 +419,45 @@ function parseJwt(token) {
   return JSON.parse(jsonPayload);
 }
 
-function getUserRole() {
-  const url = APPS_SCRIPT_URL + '?action=getUserRole&email=' + encodeURIComponent(userProfile.email) + '&callback=handleUserRole';
-  
-  window.handleUserRole = function(data) {
-  console.log('User role data:', data);
-  userRole = data.role || 'Employee';
-  
-  // Save session to localStorage for persistence
-  saveSession(userProfile, userRole);
-  
-  updateUserUI();
-  renderTabs();
-  renderScorecardRows();
-  autofillUserDetails();
-  loadUserReports();
-  loadDashboard();
-  
-  // Load team data for managers/admins
-  if (userRole === 'Manager' || userRole === 'Admin') {
-    loadTeamMembers();
+/**
+ * Fetch user role from backend using modern fetch API with CORS
+ * Replaces legacy JSONP implementation with callback parameter
+ */
+async function getUserRole() {
+  try {
+    // Make fetch request without callback parameter
+    const data = await apiFetch(APPS_SCRIPT_URL, {
+      action: 'getUserRole',
+      email: userProfile.email
+    });
+    
+    console.log('User role data:', data);
+    userRole = data.role || 'Employee';
+    
+    // Save session to localStorage for persistence
+    saveSession(userProfile, userRole);
+    
+    updateUserUI();
+    renderTabs();
+    renderScorecardRows();
+    autofillUserDetails();
+    loadUserReports();
+    loadDashboard();
+    
+    // Load team data for managers/admins
+    if (userRole === 'Manager' || userRole === 'Admin') {
+      loadTeamMembers();
+    }
+    
+    // Initialize real-time updates
+    initializeRealtimeFeatures();
+    
+    // For employees, load targets when month is selected
+    // (will be triggered by onchange event on month dropdown)
+  } catch (error) {
+    console.error('Error fetching user role:', error);
+    alert('Failed to load user role. Please refresh the page and try again.');
   }
-  
-  // Initialize real-time updates
-  initializeRealtimeFeatures();
-  
-  // For employees, load targets when month is selected
-  // (will be triggered by onchange event on month dropdown)
-};
-  
-  const script = document.createElement('script');
-  script.src = url;
-  document.body.appendChild(script);
 }
 
 function renderTabs() {
@@ -410,19 +564,28 @@ function showTab(tabId, btn) {
 }
 
 // ========== TEAM MANAGEMENT (MANAGER/ADMIN) ==========
-function loadTeamMembers() {
-  const url = APPS_SCRIPT_URL + '?action=getTeamMembers&email=' + encodeURIComponent(userProfile.email) + '&callback=handleTeamMembers';
-  
-  window.handleTeamMembers = function(data) {
+/**
+ * Load team members using modern fetch API with CORS
+ * Replaces legacy JSONP implementation
+ */
+async function loadTeamMembers() {
+  try {
+    const data = await apiFetch(APPS_SCRIPT_URL, {
+      action: 'getTeamMembers',
+      email: userProfile.email
+    });
+    
     console.log('Team members:', data);
     teamMembers = data || [];
     displayTeamMembers();
     populateTeamSelects();
-  };
-  
-  const script = document.createElement('script');
-  script.src = url;
-  document.body.appendChild(script);
+  } catch (error) {
+    console.error('Error loading team members:', error);
+    const wrap = document.getElementById('teamMembersWrap');
+    if (wrap) {
+      wrap.innerHTML = '<div class="empty-msg">Failed to load team members. Please try again.</div>';
+    }
+  }
 }
 
 function displayTeamMembers() {
@@ -579,7 +742,11 @@ function addTargetRow() {
   targetsList.appendChild(row);
 }
 
-function loadEmployeeCurrentTargets() {
+/**
+ * Load employee's current targets using modern fetch API
+ * Replaces legacy JSONP implementation
+ */
+async function loadEmployeeCurrentTargets() {
   const selectedEmployee = document.getElementById('targetEmployeeSelect').value;
   if (!selectedEmployee) return;
   
@@ -588,10 +755,14 @@ function loadEmployeeCurrentTargets() {
   // Load existing targets for year (Q1 will be used as reference for yearly targets)
   const year = document.getElementById('targetYear').value;
   
-  const url = APPS_SCRIPT_URL + '?action=getTargets&email=' + encodeURIComponent(selectedEmployee) + 
-              '&year=' + year + '&quarter=Q1&callback=handleExistingTargets';
-  
-  window.handleExistingTargets = function(targets) {
+  try {
+    const targets = await apiFetch(APPS_SCRIPT_URL, {
+      action: 'getTargets',
+      email: selectedEmployee,
+      year: year,
+      quarter: 'Q1'
+    });
+    
     console.log('Existing targets:', targets);
     if (targets && targets.length > 0) {
       const targetsList = document.getElementById('targetsList');
@@ -612,11 +783,10 @@ function loadEmployeeCurrentTargets() {
         lastRow.querySelector('.target-type').value = target.TargetType || target.targetType || 'numerical';
       });
     }
-  };
-  
-  const script = document.createElement('script');
-  script.src = url;
-  document.body.appendChild(script);
+  } catch (error) {
+    console.error('Error loading existing targets:', error);
+    alert('Failed to load existing targets. Please try again.');
+  }
 }
 
 function saveTargets() {
@@ -704,61 +874,73 @@ function saveTargets() {
     return;
   }
   
-  // Save yearly targets to all 4 quarters
+  // Save yearly targets to all 4 quarters using modern fetch API
   const quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
   let savedCount = 0;
+  let hasError = false;
   
-  quarters.forEach((q, index) => {
-    const data = {
-      managerEmail: userProfile.email,
-      employeeEmail: selectedEmployee,
-      year: year,
-      quarter: q,
-      targets: targets,
-      isYearlyDistribution: true
-    };
-    
-    console.log(`Saving targets for ${q}:`, data);
-    
-    const jsonData = JSON.stringify(data);
-    const chunkSize = 1500;
-    const chunks = [];
-    for (let i = 0; i < jsonData.length; i += chunkSize) {
-      chunks.push(jsonData.substring(i, i + chunkSize));
+  // Save each quarter sequentially using async/await
+  (async () => {
+    for (const q of quarters) {
+      const data = {
+        managerEmail: userProfile.email,
+        employeeEmail: selectedEmployee,
+        year: year,
+        quarter: q,
+        targets: targets,
+        isYearlyDistribution: true
+      };
+      
+      console.log(`Saving targets for ${q}:`, data);
+      
+      try {
+        // Prepare data for sending
+        const jsonData = JSON.stringify(data);
+        const chunkSize = 1500;
+        const chunks = [];
+        for (let i = 0; i < jsonData.length; i += chunkSize) {
+          chunks.push(jsonData.substring(i, i + chunkSize));
+        }
+        
+        // Build params with chunked data
+        const params = { action: 'saveTargets' };
+        chunks.forEach((chunk, idx) => {
+          params['chunk' + idx] = chunk;
+        });
+        
+        const resp = await apiFetch(APPS_SCRIPT_URL, params);
+        console.log(`Save targets response for ${q}:`, resp);
+        savedCount++;
+        
+        if (resp.result !== 'success') {
+          hasError = true;
+          if (typeof showToast === 'function') {
+            showToast(`❌ Error saving targets for ${q}: ` + (resp.message || 'Unknown error'), 'error');
+          } else {
+            alert(`Error saving targets for ${q}: ` + (resp.message || 'Unknown error'));
+          }
+        }
+      } catch (error) {
+        hasError = true;
+        console.error(`Error saving targets for ${q}:`, error);
+        if (typeof showToast === 'function') {
+          showToast(`❌ Network error saving targets for ${q}`, 'error');
+        } else {
+          alert(`Network error saving targets for ${q}. Please try again.`);
+        }
+      }
     }
     
-    let url = APPS_SCRIPT_URL + '?action=saveTargets&callback=handleSaveTargetsResponse_' + q;
-    chunks.forEach((chunk, idx) => {
-      url += '&chunk' + idx + '=' + encodeURIComponent(chunk);
-    });
-    
-    window['handleSaveTargetsResponse_' + q] = function(resp) {
-      console.log(`Save targets response for ${q}:`, resp);
-      savedCount++;
-      
-      if (resp.result !== 'success') {
-        if (typeof showToast === 'function') {
-          showToast(`❌ Error saving targets for ${q}: ` + (resp.message || 'Unknown error'), 'error');
-        } else {
-          alert(`Error saving targets for ${q}: ` + (resp.message || 'Unknown error'));
-        }
+    // After all quarters processed
+    if (savedCount === quarters.length && !hasError) {
+      if (typeof showToast === 'function') {
+        showToast(`✅ Yearly targets saved for all 4 quarters! Each quarter target = Yearly ÷ 4`, 'success', 5000);
+      } else {
+        alert(`✅ Yearly targets saved successfully for all 4 quarters!\n\n• Targets automatically distributed across Q1, Q2, Q3, Q4\n• Each quarter target = Yearly target ÷ 4\n• Internal Customer (25%) + Your targets (${totalWeight - 25}%) = 100%`);
       }
-      
-      // After all quarters saved
-      if (savedCount === quarters.length) {
-        if (typeof showToast === 'function') {
-          showToast(`✅ Yearly targets saved for all 4 quarters! Each quarter target = Yearly ÷ 4`, 'success', 5000);
-        } else {
-          alert(`✅ Yearly targets saved successfully for all 4 quarters!\n\n• Targets automatically distributed across Q1, Q2, Q3, Q4\n• Each quarter target = Yearly target ÷ 4\n• Internal Customer (25%) + Your targets (${totalWeight - 25}%) = 100%`);
-        }
-        loadEmployeeCurrentTargets();
-      }
-    };
-    
-    const script = document.createElement('script');
-    script.src = url;
-    document.body.appendChild(script);
-  });
+      loadEmployeeCurrentTargets();
+    }
+  })();
 }
 
   function validateWeights() {
@@ -821,22 +1003,28 @@ function loadTeamReportsTab() {
   populateTeamSelects();
 }
 
-function loadTeamMemberReports() {
+/**
+ * Load team member reports using modern fetch API
+ * Replaces legacy JSONP implementation
+ */
+async function loadTeamMemberReports() {
   const selectedEmail = document.getElementById('teamReportSelect').value;
   if (!selectedEmail) {
     document.getElementById('teamReportsWrap').innerHTML = '<div class="empty-msg">Please select a team member.</div>';
     return;
   }
   
-  const url = APPS_SCRIPT_URL + '?action=getEmployeeScores&employeeEmail=' + encodeURIComponent(selectedEmail) + '&callback=handleTeamMemberReports';
-  
-  window.handleTeamMemberReports = function(records) {
+  try {
+    const records = await apiFetch(APPS_SCRIPT_URL, {
+      action: 'getEmployeeScores',
+      employeeEmail: selectedEmail
+    });
+    
     renderReportsTable(records, 'teamReportsWrap');
-  };
-  
-  const script = document.createElement('script');
-  script.src = url;
-  document.body.appendChild(script);
+  } catch (error) {
+    console.error('Error loading team member reports:', error);
+    document.getElementById('teamReportsWrap').innerHTML = '<div class="empty-msg">Failed to load reports. Please try again.</div>';
+  }
 }
 
 // ========== TEAM DASHBOARD (MANAGER/ADMIN) ==========
@@ -844,22 +1032,28 @@ function loadTeamDashboardTab() {
   populateTeamSelects();
 }
 
-function loadTeamMemberDashboard() {
+/**
+ * Load team member dashboard using modern fetch API
+ * Replaces legacy JSONP implementation
+ */
+async function loadTeamMemberDashboard() {
   const selectedEmail = document.getElementById('teamDashboardSelect').value;
   if (!selectedEmail) {
     document.getElementById('teamDashboardWrap').innerHTML = '<div class="empty-msg">Please select a team member.</div>';
     return;
   }
   
-  const url = APPS_SCRIPT_URL + '?action=getEmployeeScores&employeeEmail=' + encodeURIComponent(selectedEmail) + '&callback=handleTeamMemberDashboard';
-  
-  window.handleTeamMemberDashboard = function(records) {
+  try {
+    const records = await apiFetch(APPS_SCRIPT_URL, {
+      action: 'getEmployeeScores',
+      employeeEmail: selectedEmail
+    });
+    
     renderDashboard(records, 'teamDashboardWrap');
-  };
-  
-  const script = document.createElement('script');
-  script.src = url;
-  document.body.appendChild(script);
+  } catch (error) {
+    console.error('Error loading team member dashboard:', error);
+    document.getElementById('teamDashboardWrap').innerHTML = '<div class="empty-msg">Failed to load dashboard. Please try again.</div>';
+  }
 }
 
 // ========== QUARTERLY REVIEW (MANAGER/ADMIN) ==========
@@ -880,7 +1074,11 @@ function loadQuarterlyReviewTab() {
   }
 }
 
-function loadQuarterlyReviewData() {
+/**
+ * Load quarterly review data using modern fetch API
+ * Replaces legacy JSONP implementation
+ */
+async function loadQuarterlyReviewData() {
   const selectedEmail = document.getElementById('quarterlyReviewEmployeeSelect').value;
   const year = document.getElementById('quarterlyReviewYear').value;
   const quarter = document.getElementById('quarterlyReviewQuarter').value;
@@ -896,18 +1094,21 @@ function loadQuarterlyReviewData() {
   
   const employeeName = document.querySelector('#quarterlyReviewEmployeeSelect option:checked')?.dataset.name || 'Employee';
   
-  // Fetch employee scores for the specified quarter
-  const url = APPS_SCRIPT_URL + '?action=getEmployeeScores&employeeEmail=' + encodeURIComponent(selectedEmail) + 
-              '&year=' + year + '&quarter=' + quarter + '&callback=handleQuarterlyReviewData';
-  
-  window.handleQuarterlyReviewData = function(records) {
+  try {
+    // Fetch employee scores for the specified quarter
+    const records = await apiFetch(APPS_SCRIPT_URL, {
+      action: 'getEmployeeScores',
+      employeeEmail: selectedEmail,
+      year: year,
+      quarter: quarter
+    });
+    
     console.log('Quarterly review data:', records);
     renderQuarterlyReview(records, employeeName, year, quarter, selectedEmail);
-  };
-  
-  const script = document.createElement('script');
-  script.src = url;
-  document.body.appendChild(script);
+  } catch (error) {
+    console.error('Error loading quarterly review data:', error);
+    wrap.innerHTML = '<div class="empty-msg">Failed to load quarterly data. Please try again.</div>';
+  }
 }
 
 function renderQuarterlyReview(records, employeeName, year, quarter, employeeEmail) {
@@ -1195,7 +1396,11 @@ function renderScorecardRows() {
   updateScoreSummary();
 }
   // ========== LOAD PEER FEEDBACK SCORE ==========
-function loadPeerFeedbackScore(rowIdx) {
+/**
+ * Load peer feedback score using modern fetch API
+ * Replaces legacy JSONP implementation
+ */
+async function loadPeerFeedbackScore(rowIdx) {
   if (!userProfile) return;
   
   const year = document.getElementById("periodYear")?.value || new Date().getFullYear();
@@ -1208,11 +1413,14 @@ function loadPeerFeedbackScore(rowIdx) {
   
   const quarter = "Q" + Math.ceil(parseInt(month) / 3);
   
-  const url = APPS_SCRIPT_URL + '?action=getAggregatedPeerFeedback&employeeEmail=' + 
-              encodeURIComponent(userProfile.email) + '&year=' + year + '&quarter=' + quarter + 
-              '&callback=handlePeerFeedbackScore';
-  
-  window.handlePeerFeedbackScore = function(data) {
+  try {
+    const data = await apiFetch(APPS_SCRIPT_URL, {
+      action: 'getAggregatedPeerFeedback',
+      employeeEmail: userProfile.email,
+      year: year,
+      quarter: quarter
+    });
+    
     console.log('Peer feedback score:', data);
     
     const actualEl = document.getElementById(`actual_${rowIdx}`);
@@ -1239,11 +1447,13 @@ function loadPeerFeedbackScore(rowIdx) {
     }
     
     updateScoreSummary();
-  };
-  
-  const script = document.createElement('script');
-  script.src = url;
-  document.body.appendChild(script);
+  } catch (error) {
+    console.error('Error loading peer feedback score:', error);
+    const actualEl = document.getElementById(`actual_${rowIdx}`);
+    if (actualEl) {
+      actualEl.value = "Error loading";
+    }
+  }
 }
 
 function viewPeerFeedbackDetails() {
@@ -1256,7 +1466,11 @@ function viewPeerFeedbackDetails() {
   }
 }
 
-function showManagerPeerFeedbackModal() {
+/**
+ * Show manager peer feedback modal using modern fetch API
+ * Replaces legacy JSONP implementation
+ */
+async function showManagerPeerFeedbackModal() {
   const year = document.getElementById("periodYear")?.value || new Date().getFullYear();
   const month = document.getElementById("periodMonth")?.value;
   
@@ -1267,11 +1481,14 @@ function showManagerPeerFeedbackModal() {
   
   const quarter = "Q" + Math.ceil(parseInt(month) / 3);
   
-  const url = APPS_SCRIPT_URL + '?action=getAggregatedPeerFeedback&employeeEmail=' + 
-              encodeURIComponent(userProfile.email) + '&year=' + year + '&quarter=' + quarter + 
-              '&callback=handleManagerPeerFeedbackView';
-  
-  window.handleManagerPeerFeedbackView = function(data) {
+  try {
+    const data = await apiFetch(APPS_SCRIPT_URL, {
+      action: 'getAggregatedPeerFeedback',
+      employeeEmail: userProfile.email,
+      year: year,
+      quarter: quarter
+    });
+    
     console.log('Manager peer feedback view:', data);
     
     if (!data || data.count === 0) {
@@ -1343,11 +1560,10 @@ function showManagerPeerFeedbackModal() {
     `;
     
     document.body.appendChild(modal);
-  };
-  
-  const script = document.createElement('script');
-  script.src = url;
-  document.body.appendChild(script);
+  } catch (error) {
+    console.error('Error loading manager peer feedback:', error);
+    alert('Failed to load peer feedback. Please try again.');
+  }
 }
 
 function generateFeedbackBreakdown(data) {
@@ -1424,7 +1640,11 @@ function generateFeedbackBreakdown(data) {
   `;
 }
   // ========== LOAD EMPLOYEE TARGETS ==========
-function loadEmployeeTargets() {
+/**
+ * Load employee targets using modern fetch API
+ * Replaces legacy JSONP implementation
+ */
+async function loadEmployeeTargets() {
   if (!userProfile || !userRole) return;
   
   // Only load targets for employees and managers (not for own scorecard)
@@ -1441,10 +1661,14 @@ function loadEmployeeTargets() {
   
   console.log(`Loading targets for ${userProfile.email}, Year: ${year}, Quarter: ${quarter}`);
   
-  const url = APPS_SCRIPT_URL + '?action=getTargets&email=' + encodeURIComponent(userProfile.email) + 
-              '&year=' + year + '&quarter=' + quarter + '&callback=handleEmployeeTargets';
-  
-  window.handleEmployeeTargets = function(targets) {
+  try {
+    const targets = await apiFetch(APPS_SCRIPT_URL, {
+      action: 'getTargets',
+      email: userProfile.email,
+      year: year,
+      quarter: quarter
+    });
+    
     console.log('Loaded targets:', targets);
     
     if (!targets || targets.length === 0) {
@@ -1459,14 +1683,20 @@ function loadEmployeeTargets() {
     // Apply targets to scorecard
     applyTargetsToScorecard(targets);
     enableScorecard();
-  };
-  
-  const script = document.createElement('script');
-  script.src = url;
-  document.body.appendChild(script);
+  } catch (error) {
+    console.error('Error loading employee targets:', error);
+    if (userRole === 'Employee') {
+      alert('Failed to load targets. Please try again or contact your manager.');
+      disableScorecard();
+    }
+  }
 }
   // ========== LOAD WEEKLY HISTORY FOR CUMULATIVE TRACKING ==========
-function loadWeeklyHistory() {
+/**
+ * Load weekly history using modern fetch API
+ * Replaces legacy JSONP implementation
+ */
+async function loadWeeklyHistory() {
   if (!userProfile) return;
   
   const year = document.getElementById("periodYear")?.value || new Date().getFullYear();
@@ -1474,20 +1704,25 @@ function loadWeeklyHistory() {
   
   if (!month) return;
   
-  const url = APPS_SCRIPT_URL + '?action=getWeeklyHistory&email=' + encodeURIComponent(userProfile.email) + 
-              '&year=' + year + '&month=' + month + '&callback=handleWeeklyHistory';
-  
-  window.handleWeeklyHistory = function(history) {
+  try {
+    const history = await apiFetch(APPS_SCRIPT_URL, {
+      action: 'getWeeklyHistory',
+      email: userProfile.email,
+      year: year,
+      month: month
+    });
+    
     console.log('Weekly history:', history);
     weeklyHistory = history || [];
     
     // After loading history, load targets
     loadEmployeeTargets();
-  };
-  
-  const script = document.createElement('script');
-  script.src = url;
-  document.body.appendChild(script);
+  } catch (error) {
+    console.error('Error loading weekly history:', error);
+    weeklyHistory = [];
+    // Still try to load targets even if history fails
+    loadEmployeeTargets();
+  }
 }
 
 // Helper: Get cumulative total for a measure
@@ -1928,14 +2163,21 @@ function getScorecardFields() {
   return results;
 }
 
-function autofillUserDetails() {
+/**
+ * Autofill user details using modern fetch API
+ * Replaces legacy JSONP implementation
+ */
+async function autofillUserDetails() {
   if (!userProfile) return;
   
   console.log('Fetching user details for:', userProfile.email);
   
-  const url = APPS_SCRIPT_URL + '?action=lookupUser&email=' + encodeURIComponent(userProfile.email) + '&callback=handleUserData';
-  
-  window.handleUserData = function(data) {
+  try {
+    const data = await apiFetch(APPS_SCRIPT_URL, {
+      action: 'lookupUser',
+      email: userProfile.email
+    });
+    
     console.log('Received data:', data);
     if (Array.isArray(data) && data.length > 0) {
       const user = data[0];
@@ -1946,11 +2188,10 @@ function autofillUserDetails() {
     } else {
       console.log('No user data found for email:', userProfile.email);
     }
-  };
-  
-  const script = document.createElement('script');
-  script.src = url;
-  document.body.appendChild(script);
+  } catch (error) {
+    console.error('Error fetching user details:', error);
+    // Not critical, user can manually fill
+  }
 }
 
 // ========== PROGRESS FREQUENCY SELECTOR ==========
@@ -1982,7 +2223,11 @@ function updateProgressFrequency() {
   }
 }
 
-function saveScorecard() {
+/**
+ * Save scorecard using modern fetch API
+ * Replaces legacy JSONP implementation
+ */
+async function saveScorecard() {
   if (!userProfile) {
     alert("You must be signed in to submit a scorecard.");
     return;
@@ -2047,6 +2292,7 @@ function saveScorecard() {
 
   console.log("Sending data:", data);
 
+  // Use modern fetch API to save scorecard
   const jsonData = JSON.stringify(data);
   const chunkSize = 1500;
   const chunks = [];
@@ -2054,13 +2300,16 @@ function saveScorecard() {
     chunks.push(jsonData.substring(i, i + chunkSize));
   }
   
-  let url = APPS_SCRIPT_URL + '?action=saveScorecard&callback=handleSaveResponse';
+  // Build params with chunked data
+  const params = { action: 'saveScorecard' };
   chunks.forEach((chunk, index) => {
-    url += '&chunk' + index + '=' + encodeURIComponent(chunk);
+    params['chunk' + index] = chunk;
   });
   
-  window.handleSaveResponse = function(resp) {
+  try {
+    const resp = await apiFetch(APPS_SCRIPT_URL, params);
     console.log("Response data:", resp);
+    
     if (resp.result === "success") {
       if (typeof showToast === 'function') {
         showToast("✅ Scorecard saved successfully!", "success");
@@ -2078,32 +2327,36 @@ function saveScorecard() {
       }
       console.error("Server error:", resp);
     }
-  };
-  
-  const script = document.createElement('script');
-  script.src = url;
-  script.onerror = function() {
+  } catch (error) {
+    console.error("Error saving scorecard:", error);
     if (typeof showToast === 'function') {
-      showToast("❌ Failed to save scorecard. The data might be too large.", "error");
+      showToast("❌ Failed to save scorecard. Please try again.", "error");
     } else {
-      alert("Error: Failed to save scorecard. The data might be too large.");
+      alert("Failed to save scorecard. Please try again.");
     }
-  };
-  document.body.appendChild(script);
+  }
 }
 
-function loadUserReports() {
+/**
+ * Load user reports using modern fetch API
+ * Replaces legacy JSONP implementation
+ */
+async function loadUserReports() {
   if (!userProfile) return;
   
-  const url = APPS_SCRIPT_URL + '?email=' + encodeURIComponent(userProfile.email) + '&callback=handleReportsData';
-  
-  window.handleReportsData = function(records) {
+  try {
+    const records = await apiFetch(APPS_SCRIPT_URL, {
+      email: userProfile.email
+    });
+    
     renderReportsTable(records, 'reportsTableWrap');
-  };
-  
-  const script = document.createElement('script');
-  script.src = url;
-  document.body.appendChild(script);
+  } catch (error) {
+    console.error('Error loading user reports:', error);
+    const wrap = document.getElementById('reportsTableWrap');
+    if (wrap) {
+      wrap.innerHTML = '<div class="empty-msg">Failed to load reports. Please try again.</div>';
+    }
+  }
 }
 
 function renderReportsTable(records, wrapId) {
@@ -2264,7 +2517,11 @@ function viewScorecardDetails(index, wrapId) {
   document.body.appendChild(modal);
 }
 
-function viewTeamMemberPeerFeedback(employeeEmail, year, month) {
+/**
+ * View team member peer feedback using modern fetch API
+ * Replaces legacy JSONP implementation
+ */
+async function viewTeamMemberPeerFeedback(employeeEmail, year, month) {
   // Validate inputs
   if (!employeeEmail || !year || !month) {
     alert("Unable to load feedback. Missing required parameters.");
@@ -2279,11 +2536,14 @@ function viewTeamMemberPeerFeedback(employeeEmail, year, month) {
   
   const quarter = "Q" + Math.ceil(monthNum / 3);
   
-  const url = APPS_SCRIPT_URL + '?action=getAggregatedPeerFeedback&employeeEmail=' + 
-              encodeURIComponent(employeeEmail) + '&year=' + encodeURIComponent(year) + '&quarter=' + quarter + 
-              '&callback=handleTeamMemberFeedbackView';
-  
-  window.handleTeamMemberFeedbackView = function(data) {
+  try {
+    const data = await apiFetch(APPS_SCRIPT_URL, {
+      action: 'getAggregatedPeerFeedback',
+      employeeEmail: employeeEmail,
+      year: year,
+      quarter: quarter
+    });
+    
     console.log('Team member peer feedback view:', data);
     
     if (!data || data.count === 0) {
@@ -2355,26 +2615,34 @@ function viewTeamMemberPeerFeedback(employeeEmail, year, month) {
     `;
     
     document.body.appendChild(modal);
-  };
-  
-  const script = document.createElement('script');
-  script.src = url;
-  document.body.appendChild(script);
+  } catch (error) {
+    console.error('Error loading team member peer feedback:', error);
+    alert('Failed to load feedback. Please try again.');
+  }
 }
 
-function loadDashboard(wrapId) {
+/**
+ * Load dashboard data using modern fetch API
+ * Replaces legacy JSONP implementation
+ */
+async function loadDashboard(wrapId) {
   if (!userProfile) return;
   
   wrapId = wrapId || 'dashboardWrap';
-  const url = APPS_SCRIPT_URL + '?email=' + encodeURIComponent(userProfile.email) + '&callback=handleDashboardData';
   
-  window.handleDashboardData = function(records) {
+  try {
+    const records = await apiFetch(APPS_SCRIPT_URL, {
+      email: userProfile.email
+    });
+    
     renderDashboard(records, wrapId);
-  };
-  
-  const script = document.createElement('script');
-  script.src = url;
-  document.body.appendChild(script);
+  } catch (error) {
+    console.error('Error loading dashboard:', error);
+    const wrap = document.getElementById(wrapId);
+    if (wrap) {
+      wrap.innerHTML = '<div class="empty-msg">Failed to load dashboard. Please try again.</div>';
+    }
+  }
 }
 
 function renderDashboard(records, wrapId) {
@@ -2544,19 +2812,28 @@ function loadPeerFeedbackTab() {
   loadPendingFeedbackRequests();
 }
 
-function loadPendingFeedbackRequests() {
+/**
+ * Load pending feedback requests using modern fetch API
+ * Replaces legacy JSONP implementation
+ */
+async function loadPendingFeedbackRequests() {
   if (!userProfile) return;
   
-  const url = APPS_SCRIPT_URL + '?action=getPendingFeedback&email=' + encodeURIComponent(userProfile.email) + '&callback=handlePendingFeedback';
-  
-  window.handlePendingFeedback = function(requests) {
+  try {
+    const requests = await apiFetch(APPS_SCRIPT_URL, {
+      action: 'getPendingFeedback',
+      email: userProfile.email
+    });
+    
     console.log('Pending feedback requests:', requests);
     renderPendingFeedback(requests);
-  };
-  
-  const script = document.createElement('script');
-  script.src = url;
-  document.body.appendChild(script);
+  } catch (error) {
+    console.error('Error loading pending feedback requests:', error);
+    const wrap = document.getElementById('peerFeedbackWrap');
+    if (wrap) {
+      wrap.innerHTML = '<div class="empty-msg">Failed to load feedback requests. Please try again.</div>';
+    }
+  }
 }
 
 function renderPendingFeedback(requests) {
@@ -2680,7 +2957,11 @@ function renderPendingFeedback(requests) {
   wrap.innerHTML = html;
 }
 
-function submitPeerFeedbackForm(requestId) {
+/**
+ * Submit peer feedback form using modern fetch API
+ * Replaces legacy JSONP implementation
+ */
+async function submitPeerFeedbackForm(requestId) {
   const coreValueIds = ['christCentered', 'holisticInvestment', 'trustedRelationships', 'humbleExcellence', 'locallyLed', 'unwaveringIntegrity', 'sustainableEmpowerment'];
   
   const feedback = {};
@@ -2719,13 +3000,16 @@ function submitPeerFeedbackForm(requestId) {
     chunks.push(jsonData.substring(i, i + chunkSize));
   }
   
-  let url = APPS_SCRIPT_URL + '?action=submitPeerFeedback&callback=handleSubmitFeedbackResponse';
+  // Build params with chunked data
+  const params = { action: 'submitPeerFeedback' };
   chunks.forEach((chunk, index) => {
-    url += '&chunk' + index + '=' + encodeURIComponent(chunk);
+    params['chunk' + index] = chunk;
   });
   
-  window.handleSubmitFeedbackResponse = function(resp) {
+  try {
+    const resp = await apiFetch(APPS_SCRIPT_URL, params);
     console.log('Submit feedback response:', resp);
+    
     if (resp.result === 'success') {
       if (typeof showToast === 'function') {
         showToast('✅ Thank you! Your anonymous feedback has been submitted successfully.', 'success', 5000);
@@ -2747,11 +3031,14 @@ function submitPeerFeedbackForm(requestId) {
         alert('Error submitting feedback: ' + (resp.message || 'Unknown error'));
       }
     }
-  };
-  
-  const script = document.createElement('script');
-  script.src = url;
-  document.body.appendChild(script);
+  } catch (error) {
+    console.error('Error submitting peer feedback:', error);
+    if (typeof showToast === 'function') {
+      showToast('❌ Failed to submit feedback. Please try again.', 'error');
+    } else {
+      alert('Failed to submit feedback. Please try again.');
+    }
+  }
 }
 
 function loadRequestPeerFeedbackTab() {
@@ -2823,7 +3110,11 @@ function loadReviewerCheckboxes() {
   }, 100);
 }
 
-function submitPeerFeedbackRequest() {
+/**
+ * Submit peer feedback request using modern fetch API
+ * Replaces legacy JSONP implementation
+ */
+async function submitPeerFeedbackRequest() {
   const employeeSelect = document.getElementById('feedbackEmployeeSelect');
   const selectedEmployee = employeeSelect.value;
   const employeeName = employeeSelect.options[employeeSelect.selectedIndex]?.dataset.name;
@@ -2874,13 +3165,16 @@ function submitPeerFeedbackRequest() {
     chunks.push(jsonData.substring(i, i + chunkSize));
   }
   
-  let url = APPS_SCRIPT_URL + '?action=requestPeerFeedback&callback=handleRequestFeedbackResponse';
+  // Build params with chunked data
+  const params = { action: 'requestPeerFeedback' };
   chunks.forEach((chunk, index) => {
-    url += '&chunk' + index + '=' + encodeURIComponent(chunk);
+    params['chunk' + index] = chunk;
   });
   
-  window.handleRequestFeedbackResponse = function(resp) {
+  try {
+    const resp = await apiFetch(APPS_SCRIPT_URL, params);
     console.log('Request feedback response:', resp);
+    
     if (resp.result === 'success') {
       if (typeof showToast === 'function') {
         showToast(`✅ Peer feedback requests sent to ${filteredReviewers.length} reviewer${filteredReviewers.length > 1 ? 's' : ''} for ${employeeName}!`, 'success', 5000);
@@ -2896,11 +3190,14 @@ function submitPeerFeedbackRequest() {
         alert('Error sending requests: ' + (resp.message || 'Unknown error'));
       }
     }
-  };
-  
-  const script = document.createElement('script');
-  script.src = url;
-  document.body.appendChild(script);
+  } catch (error) {
+    console.error('Error requesting peer feedback:', error);
+    if (typeof showToast === 'function') {
+      showToast('❌ Failed to send feedback requests. Please try again.', 'error');
+    } else {
+      alert('Failed to send feedback requests. Please try again.');
+    }
+  }
 }
 
 // ===== REAL-TIME UPDATES (Polling for changes) =====
@@ -2935,8 +3232,11 @@ function checkForUpdates() {
   checkFeedbackUpdate();
 }
 
-// Check if targets have been updated
-function checkTargetsUpdate() {
+/**
+ * Check if targets have been updated using modern fetch API
+ * Replaces legacy JSONP implementation
+ */
+async function checkTargetsUpdate() {
   const year = document.getElementById("periodYear")?.value || new Date().getFullYear();
   const month = document.getElementById("periodMonth")?.value;
   
@@ -2944,16 +3244,14 @@ function checkTargetsUpdate() {
   
   const quarter = "Q" + Math.ceil(parseInt(month) / 3);
   
-  // Build URL safely with helper function
-  const url = buildApiUrl(APPS_SCRIPT_URL, {
-    action: 'getTargetsUpdateTime',
-    email: userProfile.email,
-    year: year,
-    quarter: quarter,
-    callback: 'handleTargetsUpdateCheck'
-  });
-  
-  window.handleTargetsUpdateCheck = function(data) {
+  try {
+    const data = await apiFetch(APPS_SCRIPT_URL, {
+      action: 'getTargetsUpdateTime',
+      email: userProfile.email,
+      year: year,
+      quarter: quarter
+    });
+    
     if (data && data.updateTime) {
       const updateTime = new Date(data.updateTime).getTime();
       
@@ -2970,23 +3268,23 @@ function checkTargetsUpdate() {
         }
       }
     }
-  };
-  
-  const script = document.createElement('script');
-  script.src = url;
-  document.body.appendChild(script);
+  } catch (error) {
+    console.error('Error checking targets update:', error);
+    // Silent fail for polling
+  }
 }
 
-// Check for new peer feedback requests
-function checkFeedbackUpdate() {
-  // Build URL safely with helper function
-  const url = buildApiUrl(APPS_SCRIPT_URL, {
-    action: 'getPendingFeedbackCount',
-    email: userProfile.email,
-    callback: 'handleFeedbackUpdateCheck'
-  });
-  
-  window.handleFeedbackUpdateCheck = function(data) {
+/**
+ * Check for new peer feedback requests using modern fetch API
+ * Replaces legacy JSONP implementation
+ */
+async function checkFeedbackUpdate() {
+  try {
+    const data = await apiFetch(APPS_SCRIPT_URL, {
+      action: 'getPendingFeedbackCount',
+      email: userProfile.email
+    });
+    
     if (data && data.count !== undefined) {
       // Update the badge on the peer feedback tab if needed
       updatePeerFeedbackBadge(data.count);
@@ -3000,11 +3298,10 @@ function checkFeedbackUpdate() {
       
       lastFeedbackUpdate = data.count;
     }
-  };
-  
-  const script = document.createElement('script');
-  script.src = url;
-  document.body.appendChild(script);
+  } catch (error) {
+    console.error('Error checking feedback update:', error);
+    // Silent fail for polling
+  }
 }
 
 // Update badge on peer feedback tab
@@ -3293,16 +3590,21 @@ function showAIGoalDimensionSelector(employeeEmail, employeeName) {
   document.body.appendChild(modal);
 }
 
-// Helper function to generate and show goals
-function generateAndShowGoals(employeeEmail, employeeName, dimension) {
+/**
+ * Helper function to generate and show goals using modern fetch API
+ * Replaces legacy JSONP implementation
+ */
+async function generateAndShowGoals(employeeEmail, employeeName, dimension) {
   // Close dimension selector
   document.querySelector('.scorecard-modal')?.remove();
   
-  // Get employee data
-  const url = APPS_SCRIPT_URL + '?action=getEmployeeScores&employeeEmail=' + 
-              encodeURIComponent(employeeEmail) + '&callback=handleGoalGenerationData';
-  
-  window.handleGoalGenerationData = function(records) {
+  try {
+    // Get employee data
+    const records = await apiFetch(APPS_SCRIPT_URL, {
+      action: 'getEmployeeScores',
+      employeeEmail: employeeEmail
+    });
+    
     const employeeData = { averageScore: 0 };
     
     if (records && records.length > 0) {
@@ -3342,11 +3644,10 @@ function generateAndShowGoals(employeeEmail, employeeName, dimension) {
         }
       });
     });
-  };
-  
-  const script = document.createElement('script');
-  script.src = url;
-  document.body.appendChild(script);
+  } catch (error) {
+    console.error('Error loading employee scores for goal generation:', error);
+    alert('Failed to load employee data. Please try again.');
+  }
 }
 
 // Helper function to load team member dashboard from AI insights
@@ -3403,19 +3704,22 @@ function calculateAndSaveRecognition() {
     showToast('🤖 Calculating recognition awards... This may take a moment.', 'info', 3000);
   }
   
-  // Get all employee data
-  const url = APPS_SCRIPT_URL + '?action=getAllEmployeeScores&callback=handleRecognitionCalculation';
-  
-  window.handleRecognitionCalculation = function(allData) {
-    // Defensive coding: Check if response is an array before looping
-    // This prevents fatal errors when the backend returns a non-array object (e.g., an error or unexpected reply)
-    if (!Array.isArray(allData) || allData.length === 0) {
-      alert('No employee data available to calculate recognition awards.');
-      return;
-    }
-    
-    // Process data by employee
-    const employeeMap = {};
+  // Get all employee data using modern fetch API
+  (async () => {
+    try {
+      const allData = await apiFetch(APPS_SCRIPT_URL, {
+        action: 'getAllEmployeeScores'
+      });
+      
+      // Defensive coding: Check if response is an array before looping
+      // This prevents fatal errors when the backend returns a non-array object (e.g., an error or unexpected reply)
+      if (!Array.isArray(allData) || allData.length === 0) {
+        alert('No employee data available to calculate recognition awards.');
+        return;
+      }
+      
+      // Process data by employee
+      const employeeMap = {};
     
     allData.forEach(record => {
       const email = record['User Email'] || record.userEmail;
@@ -3514,9 +3818,13 @@ function calculateAndSaveRecognition() {
       console.error('Error saving recognitions:', error);
       alert('Error saving recognition awards: ' + error.message);
     }
-  };
-  
-  const script = document.createElement('script');
-  script.src = url;
-  document.body.appendChild(script);
+  } catch (error) {
+    console.error('Error calculating recognition awards:', error);
+    if (typeof showToast === 'function') {
+      showToast('❌ Failed to calculate recognition awards. Please try again.', 'error');
+    } else {
+      alert('Failed to calculate recognition awards. Please try again.');
+    }
+  }
+})();
 }
