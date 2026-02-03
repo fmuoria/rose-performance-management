@@ -44,8 +44,8 @@
   <!-- Google Identity Services - Deferred for Performance -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   
-  <!-- Chart.js for Data Visualizations -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- Chart.js for Data Visualizations - Lazy loaded in init.js for better performance -->
+  <!-- <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script> -->
   
   <!-- 
     PERFORMANCE: Enable server-side caching and compression (Gzip/Brotli) for optimal performance.
@@ -372,10 +372,25 @@
 </footer>
 
 <!-- Load external JavaScript files at the end of body for better performance -->
+<!-- Core modules - Load first -->
+<script src="js/core/config.js"></script>
+<script src="js/utils/validation.js"></script>
+<script src="js/utils/formatters.js"></script>
+<script src="js/core/api.js"></script>
+<script src="js/core/auth.js"></script>
+
+<!-- UI modules -->
+<script src="js/ui/notifications.js"></script>
+<script src="js/ui/components.js"></script>
+
+<!-- Original files - Keep for now during migration -->
 <script src="ai-analytics.js"></script>
 <script src="ai-analytics-ui.js"></script>
 <script src="ui-enhancements.js"></script>
 <script src="dashboard-charts.js"></script>
 <script src="script.js"></script>
+
+<!-- Initialization - Load last -->
+<script src="js/init.js"></script>
 </body>
 </html>
