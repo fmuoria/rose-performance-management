@@ -2859,9 +2859,23 @@ function submitPeerFeedbackRequest() {
   }
   
   if (reviewers.length < 2) {
-    const confirm = window.confirm('For more reliable feedback, we recommend selecting at least 2 reviewers. Continue with 1 reviewer?');
-    if (!confirm) return;
+    showConfirmDialog(
+      'For more reliable feedback, we recommend selecting at least 2 reviewers. Continue with 1 reviewer?',
+      () => {
+        continueSubmitPeerFeedbackRequest();
+      }
+    );
+    return;
   }
+  
+  continueSubmitPeerFeedbackRequest();
+}
+
+// Helper function to continue peer feedback request submission
+function continueSubmitPeerFeedbackRequest() {
+  const selectedEmployee = document.getElementById('feedbackEmployeeSelect').value;
+  const reviewers = Array.from(document.querySelectorAll('input[name="peerReviewers"]:checked'))
+    .map(cb => cb.value);
   
   const filteredReviewers = reviewers.filter(email => email !== selectedEmployee);
   
@@ -3162,9 +3176,12 @@ function initializeRealtimeFeatures() {
   // Request notification permission on first sign-in
   if ("Notification" in window && Notification.permission === "default") {
     setTimeout(() => {
-      if (confirm("Enable notifications to stay updated with changes in real-time?")) {
-        Notification.requestPermission();
-      }
+      showConfirmDialog(
+        "Enable notifications to stay updated with changes in real-time?",
+        () => {
+          Notification.requestPermission();
+        }
+      );
     }, 2000); // Wait 2 seconds after sign-in to ask
   }
 }
