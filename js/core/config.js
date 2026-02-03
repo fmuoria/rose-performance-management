@@ -14,11 +14,11 @@ const CONFIG = {
   SESSION_EXPIRY_KEY: 'rose_pms_session_expiry',
   
   // Polling intervals
-  POLLING_INTERVAL: 120000, // 2 minutes for real-time updates (changed from 30s)
+  POLLING_INTERVAL: 120000, // 2 minutes for periodic updates (changed from 30s)
   
   // Service Worker
   SERVICE_WORKER_PATH: '/sw.js',
-  SERVICE_WORKER_UPDATE_INTERVAL: 60000, // Check for updates every minute
+  SERVICE_WORKER_UPDATE_INTERVAL: 300000, // Check for updates every 5 minutes
   
   // API Configuration
   APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbzF9u325VOjHzVuZKU3xR8EMtKzq4jdIxVJqxzFSFOUnhgyvldSAaCTP-e-34krIaEu_Q/exec",

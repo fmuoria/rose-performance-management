@@ -50,9 +50,13 @@ function showToast(message, type = 'info', duration = null) {
   const toast = document.createElement('div');
   toast.className = `toast ${type}`;
   toast.setAttribute('role', 'alert');
+  
+  // Fallback for escapeHtml if not available
+  const safeMessage = typeof escapeHtml === 'function' ? escapeHtml(message) : message.replace(/[<>&"']/g, '');
+  
   toast.innerHTML = `
     <span class="toast-icon" aria-hidden="true">${icons[type] || icons.info}</span>
-    <span class="toast-message">${escapeHtml(message)}</span>
+    <span class="toast-message">${safeMessage}</span>
     <button class="toast-close" onclick="this.parentElement.remove()" aria-label="Close notification">×</button>
   `;
   
@@ -109,7 +113,7 @@ function showConfirmDialog(message, onConfirm, onCancel = null) {
   
   dialog.innerHTML = `
     <h3 id="confirm-dialog-title" style="margin: 0 0 16px 0;">Confirm Action</h3>
-    <p style="margin: 0 0 24px 0;">${escapeHtml(message)}</p>
+    <p style="margin: 0 0 24px 0;">${typeof escapeHtml === 'function' ? escapeHtml(message) : message.replace(/[<>&"']/g, '')}</p>
     <div style="display: flex; gap: 12px; justify-content: flex-end;">
       <button class="cancel-btn" style="padding: 8px 16px; border: 1px solid #ccc; background: white; border-radius: 4px; cursor: pointer;">Cancel</button>
       <button class="confirm-btn" style="padding: 8px 16px; border: none; background: #667eea; color: white; border-radius: 4px; cursor: pointer; font-weight: bold;">Confirm</button>
@@ -193,7 +197,8 @@ function showLoader(message = 'Fetching data... Please wait while your insights 
     const submessageEl = loader.querySelector('.loader-submessage');
     
     if (messageEl) {
-      messageEl.innerHTML = escapeHtml(message) + '<span class="loading-dots"></span>';
+      const safeMessage = typeof escapeHtml === 'function' ? escapeHtml(message) : message.replace(/[<>&"']/g, '');
+      messageEl.innerHTML = safeMessage + '<span class="loading-dots"></span>';
     }
     if (submessageEl) {
       submessageEl.textContent = submessage;

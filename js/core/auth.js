@@ -134,13 +134,17 @@ function updateUserUI() {
   
   if (userProfile && userRole) {
     const roleBadgeClass = userRole.toLowerCase();
+    const safePicture = userProfile.picture || '';
+    const safeName = userProfile.name || '';
+    const safeRole = userRole || '';
+    
     userStatus.innerHTML = `
       <span class="user">
-        <img src="${escapeHtml(userProfile.picture)}" alt="User profile picture" 
+        <img src="${safePicture}" alt="User profile picture" 
              loading="lazy" width="34" height="34" 
              style="width:34px;vertical-align:middle;border-radius:50%;margin-right:8px;">
-        Welcome, <b>${escapeHtml(userProfile.name)}</b> 
-        <span class="role-badge ${roleBadgeClass}">${escapeHtml(userRole)}</span>
+        Welcome, <b>${safeName}</b> 
+        <span class="role-badge ${roleBadgeClass}">${safeRole}</span>
       </span>
       <button class="signout-btn" onclick="signOut()" aria-label="Sign out of application">Sign out</button>
     `;

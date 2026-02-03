@@ -8,12 +8,14 @@
  * Validate email format
  * @param {string} email - Email address to validate
  * @returns {boolean} True if valid email format
+ * @note This is a basic validation. For production, consider more robust validation.
  */
 function validateEmail(email) {
   if (!email || typeof email !== 'string') {
     return false;
   }
-  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  // More robust email validation regex
+  const re = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
   return re.test(email.trim());
 }
 

@@ -171,12 +171,21 @@ function assertFalse(value, message = 'Expected false') {
   }
 }
 
+/**
+ * Assert function throws an error
+ * @param {Function} fn - Function that should throw
+ * @param {string} message - Error message if doesn't throw
+ */
 function assertThrows(fn, message = 'Expected function to throw') {
+  let didThrow = false;
   try {
     fn();
-    throw new Error(message);
   } catch (e) {
-    // Expected
+    didThrow = true;
+  }
+  
+  if (!didThrow) {
+    throw new Error(message);
   }
 }
 
