@@ -530,15 +530,19 @@ function loadSetTargetsTab() {
 }
 
 function resetTargetsForm() {
-  if (confirm('Are you sure you want to reset the form? This will clear all unsaved changes.')) {
-    // Clear the targets list while preserving the selected employee
-    const targetsList = document.getElementById('targetsList');
-    if (targetsList) {
-      targetsList.innerHTML = '';
-      // Add one empty row to start fresh
-      addTargetRow();
+  showConfirmDialog(
+    'Are you sure you want to reset the form? This will clear all unsaved changes.',
+    () => {
+      // Clear the targets list while preserving the selected employee
+      const targetsList = document.getElementById('targetsList');
+      if (targetsList) {
+        targetsList.innerHTML = '';
+        // Add one empty row to start fresh
+        addTargetRow();
+        showToast('Targets form reset successfully.', 'info');
+      }
     }
-  }
+  );
 }
 
 let targetRowCount = 0;
@@ -624,7 +628,7 @@ function saveTargets() {
   const year = document.getElementById('targetYear').value;
   
   if (!selectedEmployee) {
-    alert('Please select a team member.');
+    showToast('Please select a team member.', 'warning');
     return;
   }
   
@@ -678,7 +682,7 @@ function saveTargets() {
   });
   
   if (targets.length === 0) {
-    alert('Please add at least one target.');
+    showToast('Please add at least one target.', 'warning');
     return;
   }
   
@@ -692,7 +696,7 @@ function saveTargets() {
   });
   
   if (validationErrors.length > 0) {
-    alert('⚠️ Weight Limit Exceeded:\n\n' + validationErrors.join('\n') + '\n\nReminder:\n• Financial: max 15%\n• External Customer: max 5%\n• Internal Process: max 50%\n• Learning & Growth: max 10%\n• Internal Customer (25%) is automatic');
+    showToast('Weight limit exceeded. ' + validationErrors.join(', ') + '. Please adjust weights.', 'warning');
     return;
   }
   
@@ -700,7 +704,7 @@ function saveTargets() {
   const totalWeight = Object.values(dimensionTotals).reduce((sum, val) => sum + val, 0) + 25;
   
   if (Math.abs(totalWeight - 100) > 0.01) {
-    alert(`⚠️ Total Weight Error:\n\nCurrent total: ${totalWeight.toFixed(1)}%\n\nBreakdown:\n• Internal Customer: 25% (automatic)\n• Financial: ${dimensionTotals['Financial']}%\n• External Customer: ${dimensionTotals['Customer']}%\n• Internal Process: ${dimensionTotals['Internal Process']}%\n• Learning & Growth: ${dimensionTotals['Learning & Growth']}%\n\nTotal must equal 100%`);
+    showToast(`Total weight error: Current total is ${totalWeight.toFixed(1)}% but must equal 100%. Please adjust weights.`, 'warning');
     return;
   }
   
@@ -740,7 +744,7 @@ function saveTargets() {
         if (typeof showToast === 'function') {
           showToast(`❌ Error saving targets for ${q}: ` + (resp.message || 'Unknown error'), 'error');
         } else {
-          alert(`Error saving targets for ${q}: ` + (resp.message || 'Unknown error'));
+          showToast(`Error saving targets for ${q}: ` + (resp.message || 'Unknown error'), 'error');
         }
       }
       
@@ -749,7 +753,7 @@ function saveTargets() {
         if (typeof showToast === 'function') {
           showToast(`✅ Yearly targets saved for all 4 quarters! Each quarter target = Yearly ÷ 4`, 'success', 5000);
         } else {
-          alert(`✅ Yearly targets saved successfully for all 4 quarters!\n\n• Targets automatically distributed across Q1, Q2, Q3, Q4\n• Each quarter target = Yearly target ÷ 4\n• Internal Customer (25%) + Your targets (${totalWeight - 25}%) = 100%`);
+          showToast(`Yearly targets saved successfully for all 4 quarters! Targets distributed across Q1-Q4.`, 'success');
         }
         loadEmployeeCurrentTargets();
       }
@@ -813,7 +817,7 @@ function saveTargets() {
     report += `\n❌ Exceeded by ${(totalWeight - 100).toFixed(1)}%`;
   }
   
-  alert(report);
+  showToast(report, 'info');
 }
 
 // ========== TEAM REPORTS (MANAGER/ADMIN) ==========
@@ -1252,7 +1256,7 @@ function viewPeerFeedbackDetails() {
     showManagerPeerFeedbackModal();
   } else {
     // For employees, show simple message
-    alert("Peer feedback is anonymous. Your manager can view detailed feedback.\n\nYour score is based on the average of peer ratings across 7 ROSE core values.");
+    showToast("Peer feedback is anonymous. Your manager can view detailed feedback. Your score is based on peer ratings across 7 ROSE core values.", 'info');
   }
 }
 
@@ -1261,7 +1265,7 @@ function showManagerPeerFeedbackModal() {
   const month = document.getElementById("periodMonth")?.value;
   
   if (!month) {
-    alert("Please select a month first to view peer feedback.");
+    showToast("Please select a month first to view peer feedback.", 'warning');
     return;
   }
   
@@ -1275,7 +1279,7 @@ function showManagerPeerFeedbackModal() {
     console.log('Manager peer feedback view:', data);
     
     if (!data || data.count === 0) {
-      alert("No peer feedback has been received for this quarter yet.");
+      showToast("No peer feedback has been received for this quarter yet.", 'info');
       return;
     }
     
@@ -1286,7 +1290,7 @@ function showManagerPeerFeedbackModal() {
     const avgScore = parseFloat(data.averageScore);
     
     if (isNaN(avgScore) || safeCount === 0) {
-      alert("Invalid feedback data received.");
+      showToast("Invalid feedback data received.", 'error');
       return;
     }
     
@@ -1450,7 +1454,7 @@ function loadEmployeeTargets() {
     if (!targets || targets.length === 0) {
       // No targets set - show warning for employees
       if (userRole === 'Employee') {
-        alert('Your manager has not set targets for this quarter yet. Please contact your manager before submitting your scorecard.');
+        showToast('Your manager has not set targets for this quarter yet. Please contact your manager before submitting your scorecard.', 'warning');
         disableScorecard();
       }
       return;
@@ -1887,8 +1891,14 @@ function updateScoreSummary() {
 }
 
 function resetScorecard() {
-  renderScorecardRows();
-  document.getElementById("scoreSummary").innerHTML = "";
+  showConfirmDialog(
+    'Are you sure you want to reset the scorecard? All unsaved changes will be lost.',
+    () => {
+      renderScorecardRows();
+      document.getElementById("scoreSummary").innerHTML = "";
+      showToast('Scorecard reset successfully.', 'info');
+    }
+  );
 }
 
 function getScorecardFields() {
@@ -1984,7 +1994,7 @@ function updateProgressFrequency() {
 
 function saveScorecard() {
   if (!userProfile) {
-    alert("You must be signed in to submit a scorecard.");
+    showToast("You must be signed in to submit a scorecard.", 'warning');
     return;
   }
   
@@ -1993,7 +2003,7 @@ function saveScorecard() {
       !document.getElementById("division").value.trim() ||
       !document.getElementById("periodMonth").value ||
       !document.getElementById("periodWeek").value) {
-    alert("Please fill out all required fields.");
+    showToast("Please fill out all required fields.", 'warning');
     return;
   }
   
@@ -2008,7 +2018,7 @@ function saveScorecard() {
   });
   
   if (isDuplicate) {
-    alert(`You have already submitted a scorecard for Year ${year}, Month ${month}, Week ${week}.\n\nPlease select a different week or month.`);
+    showToast(`You have already submitted a scorecard for Year ${year}, Month ${month}, Week ${week}. Please select a different week or month.`, 'warning');
     return;
   }
   
@@ -2018,17 +2028,28 @@ function saveScorecard() {
   for (let i = 1; i <= n; ++i) {
     const weightValue = document.getElementById(`weight_${i}`)?.value;
     if (!weightValue || weightValue.trim() === "") {
-      alert("Please fill in all Weights.");
+      showToast("Please fill in all Weights.", 'warning');
       return;
     }
     totalWeight += parseFloat(weightValue) || 0;
   }
 
   if (Math.abs(totalWeight - 100) > 0.01) {
-    alert(`Weight percentages must add up to 100%.\n\nCurrent total: ${totalWeight.toFixed(2)}%\n\nPlease adjust the weights before submitting.`);
+    showToast(`Weight percentages must add up to 100%. Current total: ${totalWeight.toFixed(2)}%. Please adjust the weights before submitting.`, 'warning');
     return;
   }
 
+  // Confirm before submitting
+  showConfirmDialog(
+    `Are you sure you want to submit this scorecard for Year ${year}, Month ${month}, Week ${week}?`,
+    () => {
+      submitScorecardData(year, month, week);
+    }
+  );
+}
+
+// Helper function to submit scorecard data
+function submitScorecardData(year, month, week) {
   const progressFrequency = document.getElementById("progressFrequency")?.value || 'weekly';
   
   const data = {
@@ -2065,7 +2086,7 @@ function saveScorecard() {
       if (typeof showToast === 'function') {
         showToast("✅ Scorecard saved successfully!", "success");
       } else {
-        alert("Scorecard saved successfully!");
+        showToast("Scorecard saved successfully!", "success");
       }
       resetScorecard();
       loadUserReports();
@@ -2074,7 +2095,7 @@ function saveScorecard() {
       if (typeof showToast === 'function') {
         showToast("❌ Error saving scorecard: " + (resp.message || "Unknown error"), "error");
       } else {
-        alert("Error saving scorecard: " + (resp.message || "Unknown error"));
+        showToast("Error saving scorecard: " + (resp.message || "Unknown error"), "error");
       }
       console.error("Server error:", resp);
     }
@@ -2086,7 +2107,7 @@ function saveScorecard() {
     if (typeof showToast === 'function') {
       showToast("❌ Failed to save scorecard. The data might be too large.", "error");
     } else {
-      alert("Error: Failed to save scorecard. The data might be too large.");
+      showToast("Failed to save scorecard. The data might be too large.", "error");
     }
   };
   document.body.appendChild(script);
@@ -2169,7 +2190,7 @@ function renderReportsTable(records, wrapId) {
 function viewScorecardDetails(index, wrapId) {
   const record = (wrapId === 'reportsTableWrap') ? window.currentReports[index] : window.teamCurrentReports[index];
   if (!record) {
-    alert("Could not load scorecard details.");
+    showToast("Could not load scorecard details.", 'error');
     return;
   }
   
@@ -2178,7 +2199,7 @@ function viewScorecardDetails(index, wrapId) {
   try {
     scoresArr = typeof scoresData === 'string' ? JSON.parse(scoresData) : scoresData;
   } catch (e) {
-    alert("Error loading scorecard data.");
+    showToast("Error loading scorecard data.", 'error');
     return;
   }
   
@@ -2267,13 +2288,13 @@ function viewScorecardDetails(index, wrapId) {
 function viewTeamMemberPeerFeedback(employeeEmail, year, month) {
   // Validate inputs
   if (!employeeEmail || !year || !month) {
-    alert("Unable to load feedback. Missing required parameters.");
+    showToast("Unable to load feedback. Missing required parameters.", 'error');
     return;
   }
   
   const monthNum = parseInt(month);
   if (isNaN(monthNum) || monthNum < 1 || monthNum > 12) {
-    alert("Invalid month value.");
+    showToast("Invalid month value.", 'error');
     return;
   }
   
@@ -2287,7 +2308,7 @@ function viewTeamMemberPeerFeedback(employeeEmail, year, month) {
     console.log('Team member peer feedback view:', data);
     
     if (!data || data.count === 0) {
-      alert("No peer feedback has been received for this employee in this quarter.");
+      showToast("No peer feedback has been received for this employee in this quarter.", 'info');
       return;
     }
     
@@ -2298,7 +2319,7 @@ function viewTeamMemberPeerFeedback(employeeEmail, year, month) {
     const avgScore = parseFloat(data.averageScore);
     
     if (isNaN(avgScore) || safeCount === 0) {
-      alert("Invalid feedback data received.");
+      showToast("Invalid feedback data received.", 'error');
       return;
     }
     
@@ -2700,7 +2721,7 @@ function submitPeerFeedbackForm(requestId) {
   });
   
   if (!isValid) {
-    alert('Please provide more detailed feedback:\n\n' + errorMsg + '\nDetailed feedback helps provide meaningful insights for growth.');
+    showToast('Please provide more detailed feedback: ' + errorMsg + '. Detailed feedback helps provide meaningful insights for growth.', 'warning');
     return;
   }
   
@@ -2730,21 +2751,14 @@ function submitPeerFeedbackForm(requestId) {
       if (typeof showToast === 'function') {
         showToast('✅ Thank you! Your anonymous feedback has been submitted successfully.', 'success', 5000);
       } else {
-        alert('✅ Thank you! Your anonymous feedback has been submitted successfully.\n\nAI Analysis Ratings:\n' + 
-              '• Christ-Centered: ' + resp.ratings.christCentered + '/5\n' +
-              '• Holistic Investment: ' + resp.ratings.holisticInvestment + '/5\n' +
-              '• Trusted Relationships: ' + resp.ratings.trustedRelationships + '/5\n' +
-              '• Humble Excellence: ' + resp.ratings.humbleExcellence + '/5\n' +
-              '• Locally Led: ' + resp.ratings.locallyLed + '/5\n' +
-              '• Unwavering Integrity: ' + resp.ratings.unwaveringIntegrity + '/5\n' +
-              '• Sustainable Empowerment: ' + resp.ratings.sustainableEmpowerment + '/5');
+        showToast('Thank you! Your anonymous feedback has been submitted successfully.', 'success', 5000);
       }
       loadPendingFeedbackRequests();
     } else {
       if (typeof showToast === 'function') {
         showToast('❌ Error submitting feedback: ' + (resp.message || 'Unknown error'), 'error');
       } else {
-        alert('Error submitting feedback: ' + (resp.message || 'Unknown error'));
+        showToast('Error submitting feedback: ' + (resp.message || 'Unknown error'), 'error');
       }
     }
   };
@@ -2829,7 +2843,7 @@ function submitPeerFeedbackRequest() {
   const employeeName = employeeSelect.options[employeeSelect.selectedIndex]?.dataset.name;
   
   if (!selectedEmployee) {
-    alert('Please select a team member.');
+    showToast('Please select a team member.', 'warning');
     return;
   }
   
@@ -2840,19 +2854,33 @@ function submitPeerFeedbackRequest() {
   const reviewers = Array.from(checkboxes).map(cb => cb.value);
   
   if (reviewers.length === 0) {
-    alert('Please select at least one peer reviewer.');
+    showToast('Please select at least one peer reviewer.', 'warning');
     return;
   }
   
   if (reviewers.length < 2) {
-    const confirm = window.confirm('For more reliable feedback, we recommend selecting at least 2 reviewers. Continue with 1 reviewer?');
-    if (!confirm) return;
+    showConfirmDialog(
+      'For more reliable feedback, we recommend selecting at least 2 reviewers. Continue with 1 reviewer?',
+      () => {
+        continueSubmitPeerFeedbackRequest();
+      }
+    );
+    return;
   }
+  
+  continueSubmitPeerFeedbackRequest();
+}
+
+// Helper function to continue peer feedback request submission
+function continueSubmitPeerFeedbackRequest() {
+  const selectedEmployee = document.getElementById('feedbackEmployeeSelect').value;
+  const reviewers = Array.from(document.querySelectorAll('input[name="peerReviewers"]:checked'))
+    .map(cb => cb.value);
   
   const filteredReviewers = reviewers.filter(email => email !== selectedEmployee);
   
   if (filteredReviewers.length === 0) {
-    alert('Please select reviewers other than the employee being reviewed.');
+    showToast('Please select reviewers other than the employee being reviewed.', 'warning');
     return;
   }
   
@@ -2885,7 +2913,7 @@ function submitPeerFeedbackRequest() {
       if (typeof showToast === 'function') {
         showToast(`✅ Peer feedback requests sent to ${filteredReviewers.length} reviewer${filteredReviewers.length > 1 ? 's' : ''} for ${employeeName}!`, 'success', 5000);
       } else {
-        alert(`✅ Peer feedback requests sent successfully!\n\n${filteredReviewers.length} reviewer${filteredReviewers.length > 1 ? 's' : ''} will receive anonymous feedback requests for ${employeeName}.\n\nThey will evaluate based on 7 ROSE core values.`);
+        showToast(`Peer feedback requests sent successfully to ${filteredReviewers.length} reviewer${filteredReviewers.length > 1 ? 's' : ''} for ${employeeName}!`, 'success', 5000);
       }
       document.querySelectorAll('.reviewer-checkbox').forEach(cb => cb.checked = false);
       loadReviewerCheckboxes();
@@ -2893,7 +2921,7 @@ function submitPeerFeedbackRequest() {
       if (typeof showToast === 'function') {
         showToast('❌ Error sending requests: ' + (resp.message || 'Unknown error'), 'error');
       } else {
-        alert('Error sending requests: ' + (resp.message || 'Unknown error'));
+        showToast('Error sending requests: ' + (resp.message || 'Unknown error'), 'error');
       }
     }
   };
@@ -3148,9 +3176,12 @@ function initializeRealtimeFeatures() {
   // Request notification permission on first sign-in
   if ("Notification" in window && Notification.permission === "default") {
     setTimeout(() => {
-      if (confirm("Enable notifications to stay updated with changes in real-time?")) {
-        Notification.requestPermission();
-      }
+      showConfirmDialog(
+        "Enable notifications to stay updated with changes in real-time?",
+        () => {
+          Notification.requestPermission();
+        }
+      );
     }, 2000); // Wait 2 seconds after sign-in to ask
   }
 }
@@ -3395,22 +3426,25 @@ function loadRecognitionTab() {
 // Function to calculate and save recognition awards
 function calculateAndSaveRecognition() {
   if (!userProfile || (userRole !== 'Manager' && userRole !== 'Admin')) {
-    alert('This feature is only available to managers and administrators.');
+    showToast('This feature is only available to managers and administrators.', 'warning');
     return;
   }
   
-  if (typeof showToast === 'function') {
-    showToast('🤖 Calculating recognition awards... This may take a moment.', 'info', 3000);
-  }
-  
-  // Get all employee data
-  const url = APPS_SCRIPT_URL + '?action=getAllEmployeeScores&callback=handleRecognitionCalculation';
-  
-  window.handleRecognitionCalculation = function(allData) {
+  showConfirmDialog(
+    'This will calculate recognition awards for all employees based on their performance data. Continue?',
+    () => {
+      if (typeof showToast === 'function') {
+        showToast('🤖 Calculating recognition awards... This may take a moment.', 'info', 3000);
+      }
+      
+      // Get all employee data
+      const url = APPS_SCRIPT_URL + '?action=getAllEmployeeScores&callback=handleRecognitionCalculation';
+      
+      window.handleRecognitionCalculation = function(allData) {
     // Defensive coding: Check if response is an array before looping
     // This prevents fatal errors when the backend returns a non-array object (e.g., an error or unexpected reply)
     if (!Array.isArray(allData) || allData.length === 0) {
-      alert('No employee data available to calculate recognition awards.');
+      showToast('No employee data available to calculate recognition awards.', 'warning');
       return;
     }
     
@@ -3500,7 +3534,7 @@ function calculateAndSaveRecognition() {
       if (typeof showToast === 'function') {
         showToast(`✅ Recognition awards calculated! ${recognitions.length} awards generated.`, 'success', 5000);
       } else {
-        alert(`Recognition awards calculated successfully!\n\n${recognitions.length} awards have been generated and notifications sent to winners.`);
+        showToast(`Recognition awards calculated successfully! ${recognitions.length} awards have been generated and notifications sent to winners.`, 'success', 5000);
       }
       
       // Reload recognition display
@@ -3512,11 +3546,13 @@ function calculateAndSaveRecognition() {
       }
     } catch (error) {
       console.error('Error saving recognitions:', error);
-      alert('Error saving recognition awards: ' + error.message);
+      showToast('Error saving recognition awards: ' + error.message, 'error');
     }
   };
   
   const script = document.createElement('script');
   script.src = url;
   document.body.appendChild(script);
+    }
+  );
 }
